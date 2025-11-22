@@ -9,7 +9,7 @@ import tseslint from 'typescript-eslint';
 // You should change it to your needs following the documentation.
 export default tseslint.config(
   {
-    ignores: ['**/build/**', '**/tmp/**', '**/coverage/**'],
+    ignores: ['**/build/**', '**/tmp/**', '**/coverage/**', '**/node-typescript-boilerplate-main/**'],
   },
   eslint.configs.recommended,
   eslintConfigPrettier,
@@ -24,6 +24,7 @@ export default tseslint.config(
 
     rules: {
       '@typescript-eslint/explicit-function-return-type': 'warn',
+      '@typescript-eslint/no-explicit-any': 'warn',
     },
 
     languageOptions: {

@@ -27,3 +27,9 @@ build/
 
 # Misc
 .DS_Store
+
+# Boilerplate template (keep it as reference)
+# node-typescript-boilerplate-main/
+
+# Temp
+tmp/
