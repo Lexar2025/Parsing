@@ -124,6 +124,11 @@ export class RabotaMdParser implements Parser {
 
         currentPage++;
       } catch (error) {
+        // Если ошибка 404 — останавливаем парсинг
+        if (error && typeof error === 'object' && 'response' in error && error.response?.status === 404) {
+          log(`   ⛔ Получен 404 — страница не существует, завершаем парсинг.`);
+          break;
+        }
         log(`   ❌ Ошибка при парсинге страницы ${currentPage}:`, error);
         // Продолжаем даже при ошибке
         currentPage++;
