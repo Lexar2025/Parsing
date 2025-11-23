@@ -1,18 +1,37 @@
 /**
  * Парсер для сайта rabota.md
- * Версия с упрощенной пагинацией
+ * Версия с упрощенной пагинацией + парсинг деталей + p-limit + файловый кэш
  */
 
 import axios, { AxiosInstance } from 'axios';
 import { JSDOM } from 'jsdom';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import crypto from 'crypto';
+import pLimit from 'p-limit';
 import { Parser, ParserConfig, ParseResult, Vacancy } from '../types/vacancy.js';
 import { log, pause } from '../utils/helpers.js';
+
+type ParserOptions = {
+  concurrency?: number; // кол-во одновременных запросов при парсинге деталей
+  cacheEnabled?: boolean;
+  cacheDir?: string;
+  cacheTTLSeconds?: number; // время жизни кэша в секундах
+};
 
 export class RabotaMdParser implements Parser {
   private axiosInstance: AxiosInstance;
   private readonly baseUrl = 'https://www.rabota.md';
+  private options: Required<ParserOptions>;
 
-  constructor() {
+  constructor(opts?: ParserOptions) {
+    this.options = {
+      concurrency: opts?.concurrency ?? 3,
+      cacheEnabled: opts?.cacheEnabled ?? true,
+      cacheDir: opts?.cacheDir ?? path.resolve(process.cwd(), 'cache', 'rabota-md'),
+      cacheTTLSeconds: opts?.cacheTTLSeconds ?? 60 * 60 * 24, // 24 часа
+    };
+
     this.axiosInstance = axios.create({
       headers: {
         'User-Agent':
@@ -135,7 +154,42 @@ export class RabotaMdParser implements Parser {
       }
     }
 
-    return allVacancies;
+    // ============ ДОБАВЛЯЕМ ПАРСИНГ ДЕТАЛЕЙ ============
+
+    if (allVacancies.length === 0) {
+      return allVacancies;
+    }
+
+    // Убедимся, что папка кэша существует (если включен кэш)
+    if (this.options.cacheEnabled) {
+      try {
+        await fs.mkdir(this.options.cacheDir, { recursive: true });
+      } catch {
+        log('⚠️ Не смог создать директорию кэша:', this.options.cacheDir);
+      }
+    }
+
+    const limit = pLimit(this.options.concurrency);
+
+    log('\n🔍 Начинаю загрузку детальной информации по вакансиям...\n');
+
+    const detailed = await Promise.all(
+      allVacancies.map(v =>
+        limit(async () => {
+          try {
+            const extra = await this.parseVacancyDetailsWithCache(v.url);
+            return { ...v, ...extra };
+          } catch (err) {
+            log(`⚠️ Ошибка деталей для ${v.url}`, err);
+            return v;
+          }
+        })
+      )
+    );
+
+    log(`\n✅ Детальная информация загружена: ${detailed.length} вакансий`);
+
+    return detailed;
   }
 
   /**
@@ -148,7 +202,7 @@ export class RabotaMdParser implements Parser {
     // Упрощённый поиск контейнера профессий через прямой селектор
     const targetContainer = document.querySelector(
       '#main .content-container.px-3.lg\\:px-0.pt-5.sm\\:pt-6'
- );
+    );
 
     if (!targetContainer) {
       return null;
@@ -238,7 +292,7 @@ export class RabotaMdParser implements Parser {
   }
 
   /**
-   * Извлечение информации по SVG иконке
+   * Извлечение информации по SVG иконке (используется для карточек)
    */
   private extractInfoByIcon(infoBlock: Element | null, iconName: string): string | undefined {
     if (!infoBlock) return undefined;
@@ -304,10 +358,116 @@ export class RabotaMdParser implements Parser {
   }
 
   /**
-   * Парсинг детальной страницы вакансии (пока не реализовано)
+   * Вспомогательная обёртка: парсит детали с учётом кэша
    */
-  async parseVacancyDetails(url: string): Promise<Vacancy> {
-    log(`parseVacancyDetails вызван для ${url}, но пока не реализован`);
-    throw new Error('Метод parseVacancyDetails пока не реализован');
+  private async parseVacancyDetailsWithCache(url: string): Promise<Partial<Vacancy>> {
+    if (!this.options.cacheEnabled) {
+      return this.parseVacancyDetails(url);
+    }
+
+    const key = this.hash(url);
+    const filePath = path.join(this.options.cacheDir, `${key}.json`);
+
+    // Попробуем прочитать из кэша
+    try {
+      const stat = await fs.stat(filePath).catch(() => null);
+      if (stat) {
+        const now = Date.now();
+        const mtime = stat.mtime.getTime();
+        const ageSeconds = (now - mtime) / 1000;
+
+        if (ageSeconds < this.options.cacheTTLSeconds) {
+          const raw = await fs.readFile(filePath, 'utf-8');
+          const parsed = JSON.parse(raw) as Partial<Vacancy>;
+          return parsed;
+        }
+      }
+    } catch {
+      // Игнорируем ошибки чтения кэша
+    }
+
+    // Если кэша нет или он устарел — парсим и сохраняем
+    const details = await this.parseVacancyDetails(url);
+
+    try {
+      await fs.writeFile(filePath, JSON.stringify(details, null, 2), 'utf-8');
+    } catch {
+      log('⚠️ Не удалось записать кэш:', filePath);
+    }
+
+    return details;
+  }
+
+  /**
+   * Парсинг детальной страницы вакансии
+   * Возвращаем Partial<Vacancy> (только доп. поля)
+   */
+  async parseVacancyDetails(url: string): Promise<Partial<Vacancy>> {
+    const html = await this.fetchPage(url);
+    const dom = new JSDOM(html);
+    const document = dom.window.document;
+
+    const details: Partial<Vacancy> & Record<string, string> = {};
+
+    // Ищем все блоки, содержащие label/value (не полагаясь на порядок классов)
+    const candidateBlocks = Array.from(document.querySelectorAll('div'))
+      .filter(div => {
+        // быстрый фильтр: блок должен содержать label (text-gray-400) и value (text-gray-700)
+        return div.querySelector('.text-gray-400') && div.querySelector('.text-gray-700');
+      });
+
+    candidateBlocks.forEach(block => {
+      const labelEl = block.querySelector('.text-gray-400');
+      const valueEl = block.querySelector('.text-gray-700');
+
+      const label = labelEl?.textContent?.trim();
+      const value = valueEl?.textContent?.trim();
+
+      if (!label || !value) return;
+
+      const cleanLabel = label.replace(':', '').trim();
+
+      switch (cleanLabel) {
+        case 'Город':
+          details.location = value;
+          break;
+        case 'Образование':
+          details.education = value;
+          break;
+        case 'Опыт работы':
+          details.experience = value;
+          break;
+        case 'Зарплата':
+          details.salary = value;
+          break;
+        case 'График работы':
+          details.schedule = value;
+          break;
+        case 'Место работы':
+          details.workPlace = value;
+          break;
+        default:
+          // игнорируем остальные лейблы
+          break;
+      }
+    });
+
+    // Дополнительно попробуем получить дату актуализации (если надо)
+    const dateEl = document.querySelector('div .text-[15px].sm\\:text-sm.text-gray-700.lowercase, .text-[15px].sm\\:text-sm.text-gray-700');
+    if (dateEl?.textContent) {
+      const rawDate = dateEl.textContent.trim();
+      // Попробуем распарсить дату (формат обычно: "23 ноября 2025")
+      // Не делаем жёсткого парсинга, просто сохраняем как строку в publishedAtRaw
+      details['publishedAtRaw'] = rawDate;
+    }
+
+    return details;
+  }
+
+  /**
+   * Утилита: md5 hash
+   */
+  private hash(input: string): string {
+    return crypto.createHash('md5').update(input).digest('hex');
   }
 }

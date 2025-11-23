@@ -11,6 +11,10 @@ export interface Vacancy {
   description?: string;
   url: string;
   publishedAt?: Date;
+  education?: string;
+  experience?: string;
+  schedule?: string;
+  workPlace?: string;
   source: 'rabota.md' | 'other';
 }
 
@@ -30,5 +34,5 @@ export interface ParserConfig {
 
 export interface Parser {
   parse(config: ParserConfig): Promise<ParseResult>;
-  parseVacancyDetails(url: string): Promise<Vacancy>;
+  parseVacancyDetails(url: string): Promise<Partial<Vacancy>>;
 }

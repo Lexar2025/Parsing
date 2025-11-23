@@ -1,5 +1,13 @@
 [
   {
+    "id": "7926",
+    "title": "Программист 1С | Programator 1C",
+    "company": "Soft Lider",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/programmist-1s-programator-1c/7926",
+    "source": "rabota.md"
+  },
+  {
     "id": "12246",
     "title": "Программист PHP | iLab.md",
     "company": "Ilab.md",
@@ -8,11 +16,20 @@
     "source": "rabota.md"
   },
   {
-    "id": "7926",
-    "title": "Программист 1С | Programator 1C",
-    "company": "Soft Lider",
+    "id": "63798",
+    "title": "Программист UNA (Oracle)",
+    "company": "Bomba",
+    "salary": "25 000 леев",
     "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/programmist-1s-programator-1c/7926",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/programmist-una-oracle/63798",
+    "source": "rabota.md"
+  },
+  {
+    "id": "113022",
+    "title": "Программист PHP CodeIgniter / Laravel",
+    "company": "Bomba",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/programmist-php-codeigniter-laravel/113022",
     "source": "rabota.md"
   },
   {
@@ -37,23 +54,6 @@
     "company": "Enter",
     "location": "Кишинев",
     "url": "https://www.rabota.md/ru/locuri-de-munca/programmist-1s/130844",
-    "source": "rabota.md"
-  },
-  {
-    "id": "63798",
-    "title": "Программист UNA (Oracle)",
-    "company": "Bomba",
-    "salary": "25 000 леев",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/programmist-una-oracle/63798",
-    "source": "rabota.md"
-  },
-  {
-    "id": "113022",
-    "title": "Программист PHP CodeIgniter / Laravel",
-    "company": "Bomba",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/programmist-php-codeigniter-laravel/113022",
     "source": "rabota.md"
   },
   {
@@ -231,24 +231,6 @@
     "source": "rabota.md"
   },
   {
-    "id": "112621",
-    "title": "Front End Developer (React / Next.js) de la 1000 Euro",
-    "company": "Linkair",
-    "salary": "1 000 евро",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/front-end-developer-react-nextjs-de-la-1000-euro/112621",
-    "source": "rabota.md"
-  },
-  {
-    "id": "116174",
-    "title": "Node.js Developer de la 1500 Eur",
-    "company": "Linkair",
-    "salary": "1 500 евро",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/nodejs-developer-de-la-1500-eur/116174",
-    "source": "rabota.md"
-  },
-  {
     "id": "130346",
     "title": "Senior Java Developer",
     "company": "Computaris",
@@ -265,11 +247,11 @@
     "source": "rabota.md"
   },
   {
-    "id": "71087",
-    "title": "PL/SQL Developer",
-    "company": "S&T Mold",
+    "id": "106024",
+    "title": ".NET Developer middle (продуктовая разработка)",
+    "company": "Soft Lider",
     "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/pl-sql-developer/71087",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/net-developer-middle-produktovaya-razrabotka/106024",
     "source": "rabota.md"
   },
   {
@@ -298,14 +280,6 @@
     "source": "rabota.md"
   },
   {
-    "id": "106024",
-    "title": ".NET Developer middle (продуктовая разработка)",
-    "company": "Soft Lider",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/net-developer-middle-produktovaya-razrabotka/106024",
-    "source": "rabota.md"
-  },
-  {
     "id": "125636",
     "title": "Digital Content Designer & Developer",
     "company": "BackstageIT",
@@ -314,11 +288,51 @@
     "source": "rabota.md"
   },
   {
+    "id": "126713",
+    "title": ".NET Developer (with AWS expertise)",
+    "company": "Allied Testing",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/net-developer-with-aws-expertise/126713",
+    "source": "rabota.md"
+  },
+  {
+    "id": "128539",
+    "title": "Middle Java Developer",
+    "company": "Microinvest",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/middle-java-developer/128539",
+    "source": "rabota.md"
+  },
+  {
+    "id": "130726",
+    "title": "Data Analytics Developer",
+    "company": "Allied Testing",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/data-analytics-developer/130726",
+    "source": "rabota.md"
+  },
+  {
     "id": "130870",
     "title": "C++ / Python Developer",
     "company": "BackstageIT",
     "location": "Кишинев",
     "url": "https://www.rabota.md/ru/locuri-de-munca/c-python-developer/130870",
+    "source": "rabota.md"
+  },
+  {
+    "id": "131163",
+    "title": "Upper-Middle iOS Developer",
+    "company": "Microinvest",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/upper-middle-ios-developer/131163",
+    "source": "rabota.md"
+  },
+  {
+    "id": "131170",
+    "title": "Upper-Middle Android Developer",
+    "company": "Microinvest",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/upper-middle-android-developer/131170",
     "source": "rabota.md"
   },
   {
@@ -335,22 +349,6 @@
     "company": "BackstageIT",
     "location": "Кишинев",
     "url": "https://www.rabota.md/ru/locuri-de-munca/full-stack-net-developer/131853",
-    "source": "rabota.md"
-  },
-  {
-    "id": "131977",
-    "title": "Senior Back End Developer",
-    "company": "TBC",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/senior-back-end-developer/131977",
-    "source": "rabota.md"
-  },
-  {
-    "id": "131985",
-    "title": "Фронтенд-разработчик (React) — Part time с возможным переходом на Full time",
-    "company": "Frateca.com",
-    "location": "Удалённо",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/frontend-razrabotchik-react-part-time-s-vozmozhnym-perehodom-na-full-time/131985",
     "source": "rabota.md"
   },
   {
@@ -391,14 +389,6 @@
     "company": "GR8 Tech",
     "location": "Удалённо",
     "url": "https://www.rabota.md/ru/locuri-de-munca/senior-scala-developer-remote/131998",
-    "source": "rabota.md"
-  },
-  {
-    "id": "761",
-    "title": "Embedded programmer",
-    "company": "ADD Grup",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/embedded-programmer/761",
     "source": "rabota.md"
   },
   {
@@ -474,43 +464,46 @@
     "source": "rabota.md"
   },
   {
-    "id": "125843",
-    "title": "Middle .NET (С#) Back-end developer",
-    "company": "Paynet Services",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/middle-net-s-back-end-developer/125843",
+    "id": "131985",
+    "title": "Фронтенд-разработчик (React) — Part time с возможным переходом на Full time",
+    "company": "Frateca.com",
+    "location": "Удалённо",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/frontend-razrabotchik-react-part-time-s-vozmozhnym-perehodom-na-full-time/131985",
     "source": "rabota.md"
   },
   {
-    "id": "125845",
-    "title": "Developer of self-service terminals",
-    "company": "Paynet Services",
+    "id": "121183",
+    "title": "Unity C# Developer | 15 000 - 45 000",
+    "company": "ArtDock",
+    "salary": "15 000 – 45 000 леев",
     "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/developer-of-self-service-terminals/125845",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/unity-c-developer-15-000-45-000/121183",
     "source": "rabota.md"
   },
   {
-    "id": "126713",
-    "title": ".NET Developer (with AWS expertise)",
-    "company": "Allied Testing",
+    "id": "112621",
+    "title": "Front End Developer (React / Next.js) de la 1000 Euro",
+    "company": "Linkair",
+    "salary": "1 000 евро",
     "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/net-developer-with-aws-expertise/126713",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/front-end-developer-react-nextjs-de-la-1000-euro/112621",
     "source": "rabota.md"
   },
   {
-    "id": "130726",
-    "title": "Data Analytics Developer",
-    "company": "Allied Testing",
+    "id": "116174",
+    "title": "Node.js Developer de la 1500 Eur",
+    "company": "Linkair",
+    "salary": "1 500 евро",
     "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/data-analytics-developer/130726",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/nodejs-developer-de-la-1500-eur/116174",
     "source": "rabota.md"
   },
   {
-    "id": "15344",
-    "title": ".NET Developers",
-    "company": "Kapto",
+    "id": "131977",
+    "title": "Senior Back End Developer",
+    "company": "TBC",
     "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/net-developers/15344",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/senior-back-end-developer/131977",
     "source": "rabota.md"
   },
   {
@@ -527,6 +520,80 @@
     "company": "Identi",
     "location": "Кишинев",
     "url": "https://www.rabota.md/ru/locuri-de-munca/frontend-developer-html-css-wordpress/41220",
+    "source": "rabota.md"
+  },
+  {
+    "id": "58970",
+    "title": "Senior Full-stack (React / Node.js) Developer",
+    "company": "Proovia.IT",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/senior-full-stack-react-nodejs-developer/58970",
+    "source": "rabota.md"
+  },
+  {
+    "id": "90960",
+    "title": "Middle Full-stack (React / Node.js) Developer",
+    "company": "Proovia.IT",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/middle-full-stack-react-nodejs-developer/90960",
+    "source": "rabota.md"
+  },
+  {
+    "id": "130328",
+    "title": "Android Developer Direcția digital bank Departamentul tehnologii informaționale",
+    "company": "Moldindconbank",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/android-developer-directia-digital-bank-departamentul-tehnologii-informationale/130328",
+    "source": "rabota.md"
+  },
+  {
+    "id": "15344",
+    "title": ".NET Developers",
+    "company": "Kapto",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/net-developers/15344",
+    "source": "rabota.md"
+  },
+  {
+    "id": "129413",
+    "title": "Back-End Developer (Node.js / AWS / Azure)​",
+    "company": "Orange Moldova",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/back-end-developer-nodejs-aws-azure/129413",
+    "source": "rabota.md"
+  },
+  {
+    "id": "71087",
+    "title": "PL/SQL Developer",
+    "company": "S&T Mold",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/pl-sql-developer/71087",
+    "source": "rabota.md"
+  },
+  {
+    "id": "761",
+    "title": "Embedded programmer",
+    "company": "ADD Grup",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/embedded-programmer/761",
+    "source": "rabota.md"
+  },
+  {
+    "id": "117340",
+    "title": "Senior IOS Developer (SwiftUI)",
+    "company": "Brilic Media",
+    "salary": "3 000 – 3 700 евро",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/senior-ios-developer-swiftui/117340",
+    "source": "rabota.md"
+  },
+  {
+    "id": "130734",
+    "title": "Senior Flutter Developer",
+    "company": "Ecofinance",
+    "salary": "3 000 – 3 500 евро",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/senior-flutter-developer/130734",
     "source": "rabota.md"
   },
   {
@@ -554,43 +621,19 @@
     "source": "rabota.md"
   },
   {
-    "id": "128539",
-    "title": "Middle Java Developer",
-    "company": "Microinvest",
+    "id": "125843",
+    "title": "Middle .NET (С#) Back-end developer",
+    "company": "Paynet Services",
     "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/middle-java-developer/128539",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/middle-net-s-back-end-developer/125843",
     "source": "rabota.md"
   },
   {
-    "id": "131163",
-    "title": "Upper-Middle iOS Developer",
-    "company": "Microinvest",
+    "id": "125845",
+    "title": "Developer of self-service terminals",
+    "company": "Paynet Services",
     "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/upper-middle-ios-developer/131163",
-    "source": "rabota.md"
-  },
-  {
-    "id": "131170",
-    "title": "Upper-Middle Android Developer",
-    "company": "Microinvest",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/upper-middle-android-developer/131170",
-    "source": "rabota.md"
-  },
-  {
-    "id": "58970",
-    "title": "Senior Full-stack (React / Node.js) Developer",
-    "company": "Proovia.IT",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/senior-full-stack-react-nodejs-developer/58970",
-    "source": "rabota.md"
-  },
-  {
-    "id": "90960",
-    "title": "Middle Full-stack (React / Node.js) Developer",
-    "company": "Proovia.IT",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/middle-full-stack-react-nodejs-developer/90960",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/developer-of-self-service-terminals/125845",
     "source": "rabota.md"
   },
   {
@@ -599,32 +642,6 @@
     "company": "DAAC digital.",
     "location": "Кишинев",
     "url": "https://www.rabota.md/ru/locuri-de-munca/front-end-react-developer/131784",
-    "source": "rabota.md"
-  },
-  {
-    "id": "117340",
-    "title": "Senior IOS Developer (SwiftUI)",
-    "company": "Brilic Media",
-    "salary": "3 000 – 3 700 евро",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/senior-ios-developer-swiftui/117340",
-    "source": "rabota.md"
-  },
-  {
-    "id": "121183",
-    "title": "Unity C# Developer | 15 000 - 45 000",
-    "company": "ArtDock",
-    "salary": "15 000 – 45 000 леев",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/unity-c-developer-15-000-45-000/121183",
-    "source": "rabota.md"
-  },
-  {
-    "id": "130328",
-    "title": "Android Developer Direcția digital bank Departamentul tehnologii informaționale",
-    "company": "Moldindconbank",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/android-developer-directia-digital-bank-departamentul-tehnologii-informationale/130328",
     "source": "rabota.md"
   },
   {
@@ -641,23 +658,6 @@
     "company": "Advance Suprem IT",
     "location": "Кишинев",
     "url": "https://www.rabota.md/ru/locuri-de-munca/front-end-developer/130931",
-    "source": "rabota.md"
-  },
-  {
-    "id": "129413",
-    "title": "Back-End Developer (Node.js / AWS / Azure)​",
-    "company": "Orange Moldova",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/back-end-developer-nodejs-aws-azure/129413",
-    "source": "rabota.md"
-  },
-  {
-    "id": "130734",
-    "title": "Senior Flutter Developer",
-    "company": "Ecofinance",
-    "salary": "3 000 – 3 500 евро",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/senior-flutter-developer/130734",
     "source": "rabota.md"
   },
   {
