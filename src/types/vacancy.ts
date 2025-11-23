@@ -12,7 +12,6 @@ export interface Vacancy {
   url: string;
   publishedAt?: Date;
   source: 'rabota.md' | 'other';
-  raw?: Record<string, unknown>; // для хранения сырых данных с сайта
 }
 
 export interface ParseResult {
@@ -25,9 +24,7 @@ export interface ParseResult {
 export interface ParserConfig {
   baseUrl: string;
   searchQuery?: string;
-  category?: string;
-  location?: string;
-  maxPages?: number;
+  maxPages?: number; // для будущей пагинации
   delay?: number; // задержка между запросами в мс
 }
 

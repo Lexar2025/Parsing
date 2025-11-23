@@ -1,12 +1,12 @@
 /**
  * Парсер для сайта rabota.md
+ * Версия с поддержкой пагинации
  */
 
 import axios, { AxiosInstance } from 'axios';
-import * as cheerio from 'cheerio';
 import { JSDOM } from 'jsdom';
 import { Parser, ParserConfig, ParseResult, Vacancy } from '../types/vacancy.js';
-import { safeText, log } from '../utils/helpers.js';
+import { log, pause } from '../utils/helpers.js';
 
 export class RabotaMdParser implements Parser {
   private axiosInstance: AxiosInstance;
@@ -26,165 +26,243 @@ export class RabotaMdParser implements Parser {
   }
 
   /**
-   * Поиск ссылки на профессию по названию
-   */
-  private findProfessionLink($: cheerio.CheerioAPI, searchQuery: string): string | null {
-    const $containers = $('#main .content-container');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let $container: cheerio.Cheerio<any> | null = null;
-    $containers.each((_, el) => {
-      const $el = $(el);
-      if (
-        $el.hasClass('px-3') &&
-        $el.hasClass('lg:px-0') &&
-        $el.hasClass('pt-5') &&
-        $el.hasClass('sm:pt-6')
-      ) {
-        $container = $el;
-      }
-    });
-    if (!$container || $container.length === 0) {
-      log('Контейнер с профессиями не найден!');
-      return null;
-    }
-    let foundLink: string | null = null;
-    $container.find('a.professionsItem').each((_, el) => {
-      const $a = $(el);
-      const title = safeText($a.find('div.text-black'));
-      if (title.trim().toLowerCase() === searchQuery.trim().toLowerCase()) {
-        const href = $a.attr('href');
-        if (href) {
-          foundLink = href.startsWith('http') ? href : `${this.baseUrl}${href}`;
-          return false; // break each
-        }
-      }
-      return undefined;
-    });
-    return foundLink;
-  }
-
-  /**
-   * Поиск ссылки на профессию по названию через jsdom
-   */
-  private findProfessionLinkJsdom(html: string, searchQuery: string): string | null {
-    const dom = new JSDOM(html);
-    const document = dom.window.document;
-    // Ищем все контейнеры с базовым классом
-    const containers = document.querySelectorAll('#main .content-container');
-    let container: Element | null = null;
-    containers.forEach((el) => {
-      const cl = el.classList;
-      if (
-        cl.contains('px-3') &&
-        cl.contains('lg:px-0') &&
-        cl.contains('pt-5') &&
-        cl.contains('sm:pt-6')
-      ) {
-        container = el;
-      }
-    });
-    if (!container) {
-      log('Контейнер с профессиями не найден!');
-      return null;
-    }
-    const links = container.querySelectorAll('a.professionsItem');
-    let foundLink: string | null = null;
-    links.forEach((a) => {
-      const titleDiv = a.querySelector('div.text-black');
-      const title = titleDiv?.textContent?.trim().toLowerCase() || '';
-      if (title === searchQuery.trim().toLowerCase()) {
-        const href = a.getAttribute('href');
-        if (href) {
-          foundLink = href.startsWith('http') ? href : `${this.baseUrl}${href}`;
-        }
-      }
-    });
-    return foundLink;
-  }
-
-  /**
-   * Парсинг списка вакансий на странице профессии через jsdom
-   */
-  private async parseVacancyCards(url: string): Promise<void> {
-    const html = await this.fetchPage(url);
-    const dom = new JSDOM(html);
-    const document = dom.window.document;
-    const container = document.querySelector('.b_info10');
-    if (!container) {
-      log('Контейнер с вакансиями не найден!');
-      return;
-    }
-    const cards = container.querySelectorAll('.vacancyCardItem');
-    log(`Найдено карточек вакансий: ${cards.length}`);
-    cards.forEach((card, idx) => {
-      // Находим ссылку и название вакансии
-      const titleLink = card.querySelector('a.vacancyShowPopup'); // ссылка на детальную вакансию
-      const title = titleLink?.querySelector('span')?.textContent?.trim() || ''; // название вакансии
-      const url = titleLink?.getAttribute('href') || ''; // url вакансии
-
-      // Находим блок с информацией о компании, локации и зарплате
-      const infoBlock = card.querySelector('.text-black.flex.items-center.gap-x-6.flex-wrap.gap-y-1.mb-2');
-
-      // Компания: ищем <a> внутри infoBlock, затем <span>
-      const company = infoBlock?.querySelector('a span')?.textContent?.trim() || '';
-
-      // Локация: ищем <div> внутри infoBlock, где svg[use*="_location"], затем <span> внутри этого div
-      let location = '';
-      if (infoBlock) {
-        const locationDivs = infoBlock.querySelectorAll('div.flex.items-center.gap-2');
-        locationDivs.forEach(div => {
-          const svg = div.querySelector('svg');
-          if (svg && svg.querySelector('use') && svg.querySelector('use')?.getAttribute('href')?.includes('_location')) {
-            const span = div.querySelector('span');
-            if (span) location = span.textContent?.trim() || '';
-          }
-        });
-      }
-
-      // Зарплата: ищем <div> внутри infoBlock, где svg[use*="_salary"], затем <span> внутри этого div
-      let salary = '';
-      if (infoBlock) {
-        const salaryDivs = infoBlock.querySelectorAll('div.flex.items-center.gap-2');
-        salaryDivs.forEach(div => {
-          const svg = div.querySelector('svg');
-          if (svg && svg.querySelector('use') && svg.querySelector('use')?.getAttribute('href')?.includes('_salary')) {
-            const span = div.querySelector('span');
-            if (span) salary = span.textContent?.trim() || '';
-          }
-        });
-      }
-
-      // Выводим результат в лог
-      log(`\n--- Вакансия ${idx + 1} ---`);
-      log(`Название: ${title}`);
-      log(`Компания: ${company}`);
-      log(`Локация: ${location}`);
-      log(`Зарплата: ${salary}`);
-      log(`URL: ${url}`);
-    });
-  }
-
-  /**
-   * Основной метод: ищет ссылку на профессию и парсит вакансии
+   * Основной метод парсинга с поддержкой пагинации
    */
   async parse(config: ParserConfig): Promise<ParseResult> {
     try {
-      const url = this.buildSearchUrl(config);
-      log(`Начинаю парсинг: ${url}`);
-      const html = await this.fetchPage(url);
-      const professionLink = this.findProfessionLinkJsdom(html, config.searchQuery || '');
+      log(`Начинаю поиск профессии: ${config.searchQuery}\n`);
+
+      // Шаг 1: Получаем главную страницу поиска
+      const searchUrl = this.buildSearchUrl(config);
+      const searchHtml = await this.fetchPage(searchUrl);
+
+      // Шаг 2: Ищем ссылку на профессию
+      const professionLink = this.findProfessionLink(searchHtml, config.searchQuery || '');
+
       if (!professionLink) {
-        log('Ссылка на профессию не найдена!');
-        return { vacancies: [], totalFound: 0, page: 1, hasNextPage: false };
+        log(`Профессия "${config.searchQuery}" не найдена`);
+        return {
+          vacancies: [],
+          totalFound: 0,
+          page: 1,
+          hasNextPage: false,
+        };
       }
-      log(`Найдена ссылка на профессию: ${professionLink}`);
-      // Парсим карточки вакансий на странице профессии
-      await this.parseVacancyCards(professionLink);
-      return { vacancies: [], totalFound: 0, page: 1, hasNextPage: false };
+
+      log(`Найдена ссылка на профессию: ${professionLink}\n`);
+
+      // Шаг 3: Парсим все страницы с вакансиями
+      const allVacancies = await this.parseAllPages(professionLink, config.maxPages || 3);
+
+      log(`\n${'='.repeat(60)}`);
+      log(`📊 ИТОГО: Найдено ${allVacancies.length} вакансий`);
+      log('='.repeat(60));
+
+      return {
+        vacancies: allVacancies,
+        totalFound: allVacancies.length,
+        page: 1,
+        hasNextPage: false,
+      };
     } catch (error) {
-      log('Ошибка при парсинге:', error);
+      log('❌ Ошибка при парсинге:', error);
       throw error;
     }
+  }
+
+  /**
+   * Парсинг всех страниц с вакансиями
+   */
+  private async parseAllPages(professionUrl: string, maxPages: number): Promise<Vacancy[]> {
+    const allVacancies: Vacancy[] = [];
+    let currentPage = 1;
+
+    while (currentPage <= maxPages) {
+      log(`\n📄 Парсинг страницы ${currentPage}/${maxPages}...`);
+
+      // Формируем URL для текущей страницы
+      const pageUrl = currentPage === 1 ? professionUrl : `${professionUrl}/${currentPage}`;
+
+      // Парсим вакансии со страницы
+      const vacancies = await this.parseVacanciesFromPage(pageUrl);
+
+      if (vacancies.length === 0) {
+        log(`Страница ${currentPage} пуста, прекращаем парсинг`);
+        break;
+      }
+
+      allVacancies.push(...vacancies);
+      log(`✅ Страница ${currentPage}: найдено ${vacancies.length} вакансий`);
+
+      // Проверяем, есть ли следующая страница
+      if (currentPage < maxPages) {
+        const hasNext = await this.checkNextPage(pageUrl);
+        if (!hasNext) {
+          log(`Больше страниц нет, завершаем парсинг`);
+          break;
+        }
+
+        // Задержка между запросами
+        await pause(1000);
+      }
+
+      currentPage++;
+    }
+
+    return allVacancies;
+  }
+
+  /**
+   * Проверка наличия следующей страницы
+   */
+  private async checkNextPage(currentPageUrl: string): Promise<boolean> {
+    try {
+      const html = await this.fetchPage(currentPageUrl);
+      const dom = new JSDOM(html);
+      const document = dom.window.document;
+
+      // Проверяем наличие пагинации и кнопки "следующая"
+      const nextButton = document.querySelector('a[rel="next"]');
+      return nextButton !== null;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Поиск ссылки на профессию по названию (без лишних логов)
+   */
+  private findProfessionLink(html: string, searchQuery: string): string | null {
+    const dom = new JSDOM(html);
+    const document = dom.window.document;
+
+    const containers = document.querySelectorAll('#main .content-container');
+
+    if (containers.length === 0) {
+      return null;
+    }
+
+    let targetContainer: Element | null = null;
+
+    containers.forEach((container) => {
+      const classList = container.classList;
+      if (
+        classList.contains('px-3') &&
+        classList.contains('lg:px-0') &&
+        classList.contains('pt-5') &&
+        classList.contains('sm:pt-6')
+      ) {
+        targetContainer = container;
+      }
+    });
+
+    if (!targetContainer) {
+      return null;
+    }
+
+    const professionLinks = targetContainer.querySelectorAll('a.professionsItem');
+
+    if (professionLinks.length === 0) {
+      return null;
+    }
+
+    const searchLower = searchQuery.trim().toLowerCase();
+
+    for (const link of professionLinks) {
+      const titleElement = link.querySelector('div.text-black');
+      const title = titleElement?.textContent?.trim().toLowerCase() || '';
+
+      if (title === searchLower) {
+        const href = link.getAttribute('href');
+        return href ? this.normalizeUrl(href) : null;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Парсинг вакансий с одной страницы (без детальных логов)
+   */
+  private async parseVacanciesFromPage(url: string): Promise<Vacancy[]> {
+    const html = await this.fetchPage(url);
+    const dom = new JSDOM(html);
+    const document = dom.window.document;
+
+    const container = document.querySelector('.b_info10');
+
+    if (!container) {
+      return [];
+    }
+
+    const cards = container.querySelectorAll('.vacancyCardItem');
+    const vacancies: Vacancy[] = [];
+
+    cards.forEach((card) => {
+      try {
+        const vacancy = this.extractVacancyFromCard(card);
+        if (vacancy) {
+          vacancies.push(vacancy);
+        }
+      } catch {
+        // Тихо пропускаем ошибки парсинга отдельных карточек
+      }
+    });
+
+    return vacancies;
+  }
+
+  /**
+   * Извлечение данных вакансии из карточки (без логов)
+   */
+  private extractVacancyFromCard(card: Element): Vacancy | null {
+    const titleLink = card.querySelector('a.vacancyShowPopup');
+    const titleElement = titleLink?.querySelector('span');
+    const title = titleElement?.textContent?.trim() || '';
+    const url = titleLink?.getAttribute('href') || '';
+
+    if (!title || !url) {
+      return null;
+    }
+
+    const infoBlock = card.querySelector('.text-black.flex.items-center');
+    const companyElement = infoBlock?.querySelector('a span');
+    const company = companyElement?.textContent?.trim() || undefined;
+
+    const location = this.extractInfoByIcon(infoBlock, '_location');
+    const salary = this.extractInfoByIcon(infoBlock, '_salary');
+
+    return {
+      id: this.extractIdFromUrl(url),
+      title,
+      company,
+      salary,
+      location,
+      url: this.normalizeUrl(url),
+      source: 'rabota.md',
+    };
+  }
+
+  /**
+   * Извлечение информации по SVG иконке
+   */
+  private extractInfoByIcon(infoBlock: Element | null, iconName: string): string | undefined {
+    if (!infoBlock) return undefined;
+
+    const divs = infoBlock.querySelectorAll('div.flex.items-center');
+
+    for (const div of divs) {
+      const svg = div.querySelector('svg use');
+      const href = svg?.getAttribute('href') || '';
+
+      if (href.includes(iconName)) {
+        const span = div.querySelector('span');
+        const text = span?.textContent?.trim();
+        return text || undefined;
+      }
+    }
+
+    return undefined;
   }
 
   /**
@@ -197,18 +275,8 @@ export class RabotaMdParser implements Parser {
       params.append('search', config.searchQuery);
     }
 
-    if (config.category) {
-      params.append('category', config.category);
-    }
-
-    if (config.location) {
-      params.append('location', config.location);
-    }
-
     const queryString = params.toString();
-    return queryString
-      ? `${this.baseUrl}/ru/jobs?${queryString}`
-      : `${this.baseUrl}/ru/jobs`;
+    return queryString ? `${this.baseUrl}/ru/jobs?${queryString}` : `${this.baseUrl}/ru/jobs`;
   }
 
   /**
@@ -220,17 +288,32 @@ export class RabotaMdParser implements Parser {
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        log(`Ошибка HTTP: ${error.message}`);
+        log(`❌ Ошибка HTTP: ${error.message}`);
       }
       throw error;
     }
   }
 
   /**
-   * Заглушка для parseVacancyDetails (требуется интерфейсом)
+   * Нормализация URL
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async parseVacancyDetails(_url: string): Promise<Vacancy> {
-    throw new Error('Метод parseVacancyDetails не реализован на этом этапе.');
+  private normalizeUrl(url: string): string {
+    return url.startsWith('http') ? url : `${this.baseUrl}${url}`;
+  }
+
+  /**
+   * Извлечение ID из URL
+   */
+  private extractIdFromUrl(url: string): string {
+    const match = url.match(/\/(\d+)/);
+    return match ? match[1] : url;
+  }
+
+  /**
+   * Парсинг детальной страницы вакансии (пока не реализовано)
+   */
+  async parseVacancyDetails(url: string): Promise<Vacancy> {
+    log(`parseVacancyDetails вызван для ${url}, но пока не реализован`);
+    throw new Error('Метод parseVacancyDetails пока не реализован');
   }
 }
