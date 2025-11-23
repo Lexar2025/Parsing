@@ -1,6 +1,6 @@
 /**
  * Парсер для сайта rabota.md
- * Версия с поддержкой пагинации
+ * Версия с упрощенной пагинацией
  */
 
 import axios, { AxiosInstance } from 'axios';
@@ -52,7 +52,11 @@ export class RabotaMdParser implements Parser {
       log(`Найдена ссылка на профессию: ${professionLink}\n`);
 
       // Шаг 3: Парсим все страницы с вакансиями
-      const allVacancies = await this.parseAllPages(professionLink, config.maxPages || 3);
+      const allVacancies = await this.parseAllPages(
+        professionLink,
+        config.maxPages || 10,
+        config.delay || 1000,
+      );
 
       log(`\n${'='.repeat(60)}`);
       log(`📊 ИТОГО: Найдено ${allVacancies.length} вакансий`);
@@ -72,65 +76,65 @@ export class RabotaMdParser implements Parser {
 
   /**
    * Парсинг всех страниц с вакансиями
+   * URL формируется как: базовый_url, базовый_url/2, базовый_url/3 и т.д.
    */
-  private async parseAllPages(professionUrl: string, maxPages: number): Promise<Vacancy[]> {
+  private async parseAllPages(
+    professionUrl: string,
+    maxPages: number,
+    delay: number,
+  ): Promise<Vacancy[]> {
     const allVacancies: Vacancy[] = [];
     let currentPage = 1;
+    let emptyPagesCount = 0;
 
-    while (currentPage <= maxPages) {
-      log(`\n📄 Парсинг страницы ${currentPage}/${maxPages}...`);
+    while (currentPage <= maxPages && emptyPagesCount < 2) {
+      log(`📄 Парсинг страницы ${currentPage}...`);
 
       // Формируем URL для текущей страницы
+      // Страница 1: baseUrl (без /1)
+      // Страница 2: baseUrl/2
+      // Страница 3: baseUrl/3 и т.д.
       const pageUrl = currentPage === 1 ? professionUrl : `${professionUrl}/${currentPage}`;
 
-      // Парсим вакансии со страницы
-      const vacancies = await this.parseVacanciesFromPage(pageUrl);
+      log(`   URL: ${pageUrl}`);
 
-      if (vacancies.length === 0) {
-        log(`Страница ${currentPage} пуста, прекращаем парсинг`);
-        break;
-      }
+      try {
+        // Парсим вакансии со страницы
+        const vacancies = await this.parseVacanciesFromPage(pageUrl);
 
-      allVacancies.push(...vacancies);
-      log(`✅ Страница ${currentPage}: найдено ${vacancies.length} вакансий`);
+        if (vacancies.length === 0) {
+          emptyPagesCount++;
+          log(`   ⚠️  Страница ${currentPage} пуста (пустых подряд: ${emptyPagesCount})`);
 
-      // Проверяем, есть ли следующая страница
-      if (currentPage < maxPages) {
-        const hasNext = await this.checkNextPage(pageUrl);
-        if (!hasNext) {
-          log(`Больше страниц нет, завершаем парсинг`);
-          break;
+          // Если 2 страницы подряд пустые - точно конец
+          if (emptyPagesCount >= 2) {
+            log(`   ⛔ Две пустые страницы подряд - завершаем парсинг`);
+            break;
+          }
+        } else {
+          emptyPagesCount = 0; // Сбрасываем счетчик пустых страниц
+          allVacancies.push(...vacancies);
+          log(`   ✅ Найдено ${vacancies.length} вакансий (всего: ${allVacancies.length})`);
         }
 
         // Задержка между запросами
-        await pause(1000);
-      }
+        if (currentPage < maxPages) {
+          await pause(delay);
+        }
 
-      currentPage++;
+        currentPage++;
+      } catch (error) {
+        log(`   ❌ Ошибка при парсинге страницы ${currentPage}:`, error);
+        // Продолжаем даже при ошибке
+        currentPage++;
+      }
     }
 
     return allVacancies;
   }
 
   /**
-   * Проверка наличия следующей страницы
-   */
-  private async checkNextPage(currentPageUrl: string): Promise<boolean> {
-    try {
-      const html = await this.fetchPage(currentPageUrl);
-      const dom = new JSDOM(html);
-      const document = dom.window.document;
-
-      // Проверяем наличие пагинации и кнопки "следующая"
-      const nextButton = document.querySelector('a[rel="next"]');
-      return nextButton !== null;
-    } catch {
-      return false;
-    }
-  }
-
-  /**
-   * Поиск ссылки на профессию по названию (без лишних логов)
+   * Поиск ссылки на профессию по названию
    */
   private findProfessionLink(html: string, searchQuery: string): string | null {
     const dom = new JSDOM(html);
@@ -182,7 +186,7 @@ export class RabotaMdParser implements Parser {
   }
 
   /**
-   * Парсинг вакансий с одной страницы (без детальных логов)
+   * Парсинг вакансий с одной страницы
    */
   private async parseVacanciesFromPage(url: string): Promise<Vacancy[]> {
     const html = await this.fetchPage(url);
@@ -213,7 +217,7 @@ export class RabotaMdParser implements Parser {
   }
 
   /**
-   * Извлечение данных вакансии из карточки (без логов)
+   * Извлечение данных вакансии из карточки
    */
   private extractVacancyFromCard(card: Element): Vacancy | null {
     const titleLink = card.querySelector('a.vacancyShowPopup');
