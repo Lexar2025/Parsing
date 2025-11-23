@@ -402,67 +402,53 @@ export class RabotaMdParser implements Parser {
    * Парсинг детальной страницы вакансии
    * Возвращаем Partial<Vacancy> (только доп. поля)
    */
-  async parseVacancyDetails(url: string): Promise<Partial<Vacancy>> {
-    const html = await this.fetchPage(url);
-    const dom = new JSDOM(html);
-    const document = dom.window.document;
+async parseVacancyDetails(url: string): Promise<Partial<Vacancy>> {
+  const html = await this.fetchPage(url);
+  const dom = new JSDOM(html);
+  const document = dom.window.document;
 
-    const details: Partial<Vacancy> & Record<string, string> = {};
+  const details: Partial<Vacancy> = {};
 
-    // Ищем все блоки, содержащие label/value (не полагаясь на порядок классов)
-    const candidateBlocks = Array.from(document.querySelectorAll('div'))
-      .filter(div => {
-        // быстрый фильтр: блок должен содержать label (text-gray-400) и value (text-gray-700)
-        return div.querySelector('.text-gray-400') && div.querySelector('.text-gray-700');
-      });
+  // Находим ВСЕ label .text-gray-400 и к ним подбираем value .text-gray-700
+  const labelNodes = document.querySelectorAll('.text-gray-400');
 
-    candidateBlocks.forEach(block => {
-      const labelEl = block.querySelector('.text-gray-400');
-      const valueEl = block.querySelector('.text-gray-700');
+  labelNodes.forEach(labelNode => {
+    const label = labelNode.textContent?.trim().replace(':', '') || '';
+    const valueNode = labelNode.parentElement?.querySelector('.text-gray-700');
+    const value = valueNode?.textContent?.trim();
 
-      const label = labelEl?.textContent?.trim();
-      const value = valueEl?.textContent?.trim();
+    if (!label || !value) return;
 
-      if (!label || !value) return;
+    switch (label) {
+      case 'Город':
+        details.location = value;
+        break;
 
-      const cleanLabel = label.replace(':', '').trim();
+      case 'Образование':
+        details.education = value;
+        break;
 
-      switch (cleanLabel) {
-        case 'Город':
-          details.location = value;
-          break;
-        case 'Образование':
-          details.education = value;
-          break;
-        case 'Опыт работы':
-          details.experience = value;
-          break;
-        case 'Зарплата':
-          details.salary = value;
-          break;
-        case 'График работы':
-          details.schedule = value;
-          break;
-        case 'Место работы':
-          details.workPlace = value;
-          break;
-        default:
-          // игнорируем остальные лейблы
-          break;
-      }
-    });
+      case 'Опыт работы':
+        details.experience = value;
+        break;
 
-    // Дополнительно попробуем получить дату актуализации (если надо)
-    const dateEl = document.querySelector('div .text-[15px].sm\\:text-sm.text-gray-700.lowercase, .text-[15px].sm\\:text-sm.text-gray-700');
-    if (dateEl?.textContent) {
-      const rawDate = dateEl.textContent.trim();
-      // Попробуем распарсить дату (формат обычно: "23 ноября 2025")
-      // Не делаем жёсткого парсинга, просто сохраняем как строку в publishedAtRaw
-      details['publishedAtRaw'] = rawDate;
+      case 'Зарплата':
+        details.salary = value;
+        break;
+
+      case 'График работы':
+        details.schedule = value;
+        break;
+
+      case 'Место работы':
+        details.workPlace = value;
+        break;
     }
+  });
 
-    return details;
-  }
+  return details;
+}
+
 
   /**
    * Утилита: md5 hash
