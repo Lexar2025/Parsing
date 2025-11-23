@@ -145,25 +145,10 @@ export class RabotaMdParser implements Parser {
     const dom = new JSDOM(html);
     const document = dom.window.document;
 
-    const containers = document.querySelectorAll('#main .content-container');
-
-    if (containers.length === 0) {
-      return null;
-    }
-
-    let targetContainer: Element | null = null;
-
-    containers.forEach((container) => {
-      const classList = container.classList;
-      if (
-        classList.contains('px-3') &&
-        classList.contains('lg:px-0') &&
-        classList.contains('pt-5') &&
-        classList.contains('sm:pt-6')
-      ) {
-        targetContainer = container;
-      }
-    });
+    // Упрощённый поиск контейнера профессий через прямой селектор
+    const targetContainer = document.querySelector(
+      '#main .content-container.px-3.lg\\:px-0.pt-5.sm\\:pt-6'
+ );
 
     if (!targetContainer) {
       return null;
