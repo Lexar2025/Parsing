@@ -15,7 +15,7 @@ export interface Vacancy {
   experience?: string;
   schedule?: string;
   workPlace?: string;
-  source: 'rabota.md' | 'other';
+  source: 'rabota.md' | '999.md' | 'other';
 }
 
 export interface ParseResult {
