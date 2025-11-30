@@ -26,7 +26,7 @@ export const PARSER_CONFIGS: Record<string, SiteConfig> = {
   '999.md': {
     name: '999.md',
     baseUrl: 'https://999.md',
-    defaultCategory: 'Загрузчик',
+    defaultCategory: 'Грузчик',
     maxPages: 10,
     delay: 1500,
     concurrency: 3,

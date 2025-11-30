@@ -28,6 +28,8 @@
     "start": "node build/src/main.js",
     "start:999": "node build/src/test999.js",
     "parse": "node build/src/parse.js",
+    "debug:999": "node build/src/debug999.js",
+    "test:graphql": "node build/src/testGraphQL.js",
     "clean": "rimraf coverage build tmp",
     "prebuild": "npm run lint",
     "build": "tsc -p tsconfig.json",
@@ -43,10 +45,12 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
+    "@types/puppeteer": "^5.4.7",
     "axios": "^1.6.7",
     "cheerio": "^1.0.0-rc.12",
     "jsdom": "^23.0.0",
     "p-limit": "^7.2.0",
+    "puppeteer": "^24.31.0",
     "tslib": "~2.8"
   },
   "volta": {

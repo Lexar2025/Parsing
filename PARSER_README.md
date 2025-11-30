@@ -48,7 +48,7 @@ npm run parse <сайт> [категория]
 npm run parse rabota.md программист
 
 # Парсинг грузчиков на 999.md
-npm run parse 999.md Загрузчик
+npm run parse 999.md Грузчик
 
 # Справка по доступным сайтам
 npm run parse --help
@@ -90,7 +90,7 @@ export const PARSER_CONFIGS: Record<string, SiteConfig> = {
   '999.md': {
     name: '999.md',
     baseUrl: 'https://999.md',
-    defaultCategory: 'Загрузчик',
+    defaultCategory: 'Грузчик',
     maxPages: 10,
     delay: 1500,
     concurrency: 3,

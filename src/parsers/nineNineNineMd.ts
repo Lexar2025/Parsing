@@ -52,7 +52,7 @@ export class NineNineNineMdParser implements Parser {
       log(`Начинаю поиск вакансий на 999.md: ${config.searchQuery || 'все категории'}\n`);
 
       // Шаг 1: Получаем главную страницу раздела работа
-      const searchUrl = this.buildSearchUrl(config);
+      const searchUrl = this.buildSearchUrl();
       const searchHtml = await this.fetchPage(searchUrl);
 
       // Шаг 2: Ищем ссылку на нужную категорию
@@ -307,7 +307,7 @@ export class NineNineNineMdParser implements Parser {
   /**
    * Построение URL для поиска
    */
-  private buildSearchUrl(config: ParserConfig): string {
+  private buildSearchUrl(): string {
     // Для 999.md используем раздел работа
     // Сначала загружаем страницу категорий, потом ищем нужную подкатегорию
     return `${this.baseUrl}/ru/category/work`;
@@ -396,6 +396,7 @@ export class NineNineNineMdParser implements Parser {
    * Парсинг детальной страницы вакансии
    * TODO: реализовать парсинг деталей
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async parseVacancyDetails(url: string): Promise<Partial<Vacancy>> {
     // Пока возвращаем пустой объект
     // Детальный парсинг реализуем на следующем этапе

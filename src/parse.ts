@@ -5,7 +5,8 @@
 
 import { RabotaMdParser } from './parsers/rabotaMd.js';
 import { NineNineNineMdParser } from './parsers/nineNineNineMd.js';
-import { ParserConfig, Parser } from './types/vacancy.js';
+import { NineNineNineMdGraphQLParser } from './parsers/nineNineNineMdGraphQL.js';
+import { ParserConfig, Parser, Vacancy } from './types/vacancy.js';
 import { getParserConfig, getAvailableParsers } from './config/parsers.js';
 import * as fs from 'fs';
 
@@ -17,6 +18,10 @@ function getParser(site: string): Parser {
     case 'rabota.md':
       return new RabotaMdParser();
     case '999.md':
+      // Используем GraphQL парсер
+      return new NineNineNineMdGraphQLParser();
+    case '999.md-html':
+      // Старый HTML парсер (не работает из-за Next.js)
       return new NineNineNineMdParser();
     default:
       throw new Error(`Unknown parser: ${site}`);
@@ -26,7 +31,7 @@ function getParser(site: string): Parser {
 /**
  * Сохранить результаты в файл
  */
-function saveResults(site: string, vacancies: any[]): string {
+function saveResults(site: string, vacancies: Vacancy[]): string {
   const filename = `vacancies_${site.replace('.', '_')}.json`;
   const resultsJson = JSON.stringify(vacancies, null, 2);
   fs.writeFileSync(filename, resultsJson, 'utf-8');
@@ -36,7 +41,7 @@ function saveResults(site: string, vacancies: any[]): string {
 /**
  * Вывести статистику
  */
-function printStatistics(vacancies: any[]): void {
+function printStatistics(vacancies: Vacancy[]): void {
   console.log('\n' + '='.repeat(60));
   console.log('📊 СТАТИСТИКА');
   console.log('='.repeat(60));
@@ -108,12 +113,12 @@ async function main(): Promise<void> {
     console.log('  npm run parse <site> [category]\n');
     console.log('Доступные сайты:');
     getAvailableParsers().forEach((site) => {
-      const config = getParserConfig(site as any);
+      const config = getParserConfig(site as '999.md' | 'rabota.md');
       console.log(`  - ${site} (по умолчанию: ${config.defaultCategory || 'все'})`);
     });
     console.log('\nПримеры:');
     console.log('  npm run parse rabota.md программист');
-    console.log('  npm run parse 999.md Загрузчик');
+    console.log('  npm run parse 999.md Грузчик');
     process.exit(0);
   }
 
@@ -133,7 +138,7 @@ async function main(): Promise<void> {
 
   try {
     // Получаем конфигурацию для сайта
-    const siteConfig = getParserConfig(site as any);
+    const siteConfig = getParserConfig(site as '999.md' | 'rabota.md');
 
     // Создаем экземпляр парсера
     const parser = getParser(site);
