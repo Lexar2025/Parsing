@@ -5,7 +5,6 @@
 
 import { RabotaMdParser } from './parsers/rabotaMd.js';
 import { NineNineNineMdParser } from './parsers/nineNineNineMd.js';
-import { NineNineNineMdGraphQLParser } from './parsers/nineNineNineMdGraphQL.js';
 import { ParserConfig, Parser, Vacancy } from './types/vacancy.js';
 import { getParserConfig, getAvailableParsers } from './config/parsers.js';
 import * as fs from 'fs';
@@ -18,10 +17,6 @@ function getParser(site: string): Parser {
     case 'rabota.md':
       return new RabotaMdParser();
     case '999.md':
-      // Используем GraphQL парсер
-      return new NineNineNineMdGraphQLParser();
-    case '999.md-html':
-      // Старый HTML парсер (не работает из-за Next.js)
       return new NineNineNineMdParser();
     default:
       throw new Error(`Unknown parser: ${site}`);
