@@ -1,13 +1,14 @@
 /**
  * Парсер для сайта 999.md (раздел работа)
  * Версия с Puppeteer для обработки динамического контента Next.js
+ * + Удаление дубликатов по ID
+ * + Увеличенные таймауты
  */
 
 import puppeteer, { Browser, Page } from 'puppeteer';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import crypto from 'crypto';
-import pLimit from 'p-limit';
 import { Parser, ParserConfig, ParseResult, Vacancy } from '../types/vacancy.js';
 import { log, pause } from '../utils/helpers.js';
 
@@ -101,13 +102,20 @@ export class NineNineNineMdParser implements Parser {
         config.delay || 1500,
       );
 
+      // Шаг 4: Удаляем дубликаты по ID
+      const uniqueVacancies = this.removeDuplicates(allVacancies);
+
       log(`\n${'='.repeat(60)}`);
       log(`📊 ИТОГО: Найдено ${allVacancies.length} вакансий`);
+      log(`✅ Уникальных: ${uniqueVacancies.length} вакансий`);
+      if (allVacancies.length > uniqueVacancies.length) {
+        log(`🗑️  Удалено дубликатов: ${allVacancies.length - uniqueVacancies.length}`);
+      }
       log('='.repeat(60));
 
       return {
-        vacancies: allVacancies,
-        totalFound: allVacancies.length,
+        vacancies: uniqueVacancies,
+        totalFound: uniqueVacancies.length,
         page: 1,
         hasNextPage: false,
       };
@@ -120,6 +128,23 @@ export class NineNineNineMdParser implements Parser {
   }
 
   /**
+   * Удаление дубликатов по ID
+   */
+  private removeDuplicates(vacancies: Vacancy[]): Vacancy[] {
+    const seen = new Set<string>();
+    const unique: Vacancy[] = [];
+
+    for (const vacancy of vacancies) {
+      if (!seen.has(vacancy.id)) {
+        seen.add(vacancy.id);
+        unique.push(vacancy);
+      }
+    }
+
+    return unique;
+  }
+
+  /**
    * Поиск ссылки на категорию вакансий
    */
   private async findCategoryLink(searchUrl: string, searchQuery: string): Promise<string | null> {
@@ -129,10 +154,10 @@ export class NineNineNineMdParser implements Parser {
 
     try {
       await this.setupPage(page);
-      await page.goto(searchUrl, { waitUntil: 'networkidle2', timeout: 30000 });
+      await page.goto(searchUrl, { waitUntil: 'networkidle2', timeout: 40000 });
 
       // Ждём загрузки подкатегорий
-      await page.waitForSelector('a[data-subcategory]', { timeout: 10000 });
+      await page.waitForSelector('a[data-subcategory]', { timeout: 15000 });
 
       // Получаем все подкатегории
       const categories = await page.$$eval('a[data-subcategory]', (links) =>
@@ -209,17 +234,19 @@ export class NineNineNineMdParser implements Parser {
       } catch (error) {
         log(`   ❌ Ошибка при парсинге страницы ${currentPage}:`, error);
         emptyPagesCount++;
+        
+        // Если таймаут, пробуем еще раз с увеличенной задержкой
+        if (error instanceof Error && error.name === 'TimeoutError') {
+          log(`   ⏳ Увеличиваю задержку и пробую еще раз...`);
+          await pause(delay * 2);
+        }
+        
         currentPage++;
       }
     }
 
-    // Парсинг деталей вакансий (если требуется)
-    if (allVacancies.length === 0) {
-      return allVacancies;
-    }
-
     // Убедимся, что папка кэша существует
-    if (this.options.cacheEnabled) {
+    if (this.options.cacheEnabled && allVacancies.length > 0) {
       try {
         await fs.mkdir(this.options.cacheDir, { recursive: true });
       } catch {
@@ -240,17 +267,22 @@ export class NineNineNineMdParser implements Parser {
 
     try {
       await this.setupPage(page);
-      await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+      
+      // Увеличенный таймаут для медленных страниц
+      await page.goto(url, { waitUntil: 'networkidle2', timeout: 40000 });
 
       // Ждём загрузки контейнера с вакансиями
-      await page.waitForSelector('.styles_adlist__3YsgA', { timeout: 10000 });
+      await page.waitForSelector('.styles_adlist__3YsgA', { timeout: 15000 });
 
       // Ждём загрузки карточек вакансий (даём дополнительное время на JS)
       await page.waitForSelector('article.AdVacancies_wrapper__oZp_b', {
-        timeout: 5000,
+        timeout: 10000,
       }).catch(() => {
         // Карточек может не быть на странице
       });
+
+      // Дополнительная задержка для загрузки всех карточек
+      await pause(1000);
 
       // Извлекаем данные вакансий
       const vacancies = await page.$$eval('article.AdVacancies_wrapper__oZp_b', (cards) =>
@@ -329,6 +361,7 @@ export class NineNineNineMdParser implements Parser {
    */
   private addJobOfferFilter(categoryUrl: string): string {
     const url = new URL(categoryUrl, this.baseUrl);
+    // appl=1 означает "предлагаю работу"
     url.searchParams.set('appl', '1');
     return url.toString();
   }
