@@ -28,6 +28,7 @@
     "start": "node build/src/main.js",
     "start:999": "node build/src/test999.js",
     "parse": "node build/src/parse.js",
+    "manage": "node build/src/manageVacancies.js",
     "test:puppeteer": "node build/src/testPuppeteer.js",
     "clean": "rimraf coverage build tmp",
     "build": "tsc -p tsconfig.json",

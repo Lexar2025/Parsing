@@ -24,6 +24,10 @@ export interface Vacancy {
   languages?: string[]; // Языки
   contactPerson?: string; // Контактное лицо
   region?: string; // Регион (полный адрес)
+  // Поля для отслеживания актуальности
+  firstSeenAt?: Date | string; // Когда впервые найдена
+  lastSeenAt?: Date | string; // Когда найдена в последний раз
+  isActive?: boolean; // Активна ли сейчас
 }
 
 export interface ParseResult {

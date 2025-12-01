@@ -7,6 +7,7 @@ import { RabotaMdParser } from './parsers/rabotaMd.js';
 import { NineNineNineMdParser } from './parsers/nineNineNineMd.js';
 import { ParserConfig, Parser, Vacancy } from './types/vacancy.js';
 import { getParserConfig, getAvailableParsers } from './config/parsers.js';
+import { VacancyManager, daysAgo } from './utils/vacancyManager.js';
 import * as fs from 'fs';
 
 /**
@@ -24,38 +25,60 @@ function getParser(site: string): Parser {
 }
 
 /**
- * Сохранить результаты в файл
+ * Сохранить результаты в файл с учетом актуальности
  */
-function saveResults(site: string, vacancies: Vacancy[]): string {
+async function saveResults(
+  site: string,
+  newVacancies: Vacancy[],
+  manager: VacancyManager,
+): Promise<string> {
   const filename = `vacancies_${site.replace('.', '_')}.json`;
-  const resultsJson = JSON.stringify(vacancies, null, 2);
-  fs.writeFileSync(filename, resultsJson, 'utf-8');
+
+  // Загружаем существующие вакансии
+  const existing = await manager.loadExisting(filename);
+
+  // Объединяем с новыми
+  const merged = manager.mergeVacancies(existing, newVacancies);
+
+  // Сохраняем
+  await manager.save(filename, merged);
+
   return filename;
 }
 
 /**
- * Вывести статистику
+ * Вывести статистику с учетом актуальности
  */
-function printStatistics(vacancies: Vacancy[]): void {
+function printStatistics(vacancies: Vacancy[], manager: VacancyManager): void {
   console.log('\n' + '='.repeat(60));
   console.log('📊 СТАТИСТИКА');
   console.log('='.repeat(60));
 
-  // Статистика по источникам
-  const sourceStats = new Map<string, number>();
-  vacancies.forEach((v) => {
-    const source = v.source || 'unknown';
-    sourceStats.set(source, (sourceStats.get(source) || 0) + 1);
-  });
+  // Общая статистика актуальности
+  const stats = manager.getStats(vacancies);
+  console.log('\n📈 Общая статистика:');
+  console.log(`   Всего в базе: ${stats.total}`);
+  console.log(`   ✅ Активных: ${stats.active}`);
+  console.log(`   ❌ Неактивных: ${stats.inactive}`);
+  console.log(`   🆕 Новых (за 24ч): ${stats.new}`);
+  if (stats.oldInactive > 0) {
+    console.log(
+      `   🗑️  Будет удалено старых: ${stats.oldInactive} (неактивны > ${manager['options'].inactiveThresholdDays} дней)`,
+    );
+  }
 
+  // Статистика по источникам
   console.log('\n📍 По источникам:');
-  Array.from(sourceStats.entries()).forEach(([source, count]) => {
+  Object.entries(stats.bySource).forEach(([source, count]) => {
     console.log(`   ${source}: ${count}`);
   });
 
+  // Только для активных вакансий
+  const activeVacancies = vacancies.filter((v) => v.isActive);
+
   // Статистика по локациям (если есть)
   const locationStats = new Map<string, number>();
-  vacancies.forEach((v) => {
+  activeVacancies.forEach((v) => {
     if (v.location) {
       const loc = v.location;
       locationStats.set(loc, (locationStats.get(loc) || 0) + 1);
@@ -63,7 +86,7 @@ function printStatistics(vacancies: Vacancy[]): void {
   });
 
   if (locationStats.size > 0) {
-    console.log('\n📍 По локациям:');
+    console.log('\n📍 По локациям (активные):');
     Array.from(locationStats.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10)
@@ -73,21 +96,21 @@ function printStatistics(vacancies: Vacancy[]): void {
   }
 
   // Статистика по зарплатам
-  const withSalary = vacancies.filter((v) => v.salary).length;
+  const withSalary = activeVacancies.filter((v) => v.salary).length;
   if (withSalary > 0) {
-    console.log(`\n💰 С указанной зарплатой: ${withSalary} из ${vacancies.length}`);
+    console.log(`\n💰 С указанной зарплатой: ${withSalary} из ${activeVacancies.length}`);
   }
 
   // Статистика по графику работы
   const scheduleStats = new Map<string, number>();
-  vacancies.forEach((v) => {
+  activeVacancies.forEach((v) => {
     if (v.schedule) {
       scheduleStats.set(v.schedule, (scheduleStats.get(v.schedule) || 0) + 1);
     }
   });
 
   if (scheduleStats.size > 0) {
-    console.log('\n📅 По графику работы:');
+    console.log('\n📅 По графику работы (активные):');
     Array.from(scheduleStats.entries())
       .sort((a, b) => b[1] - a[1])
       .forEach(([schedule, count]) => {
@@ -153,6 +176,12 @@ async function main(): Promise<void> {
 
     const startTime = Date.now();
 
+    // Создаем менеджер вакансий
+    const manager = new VacancyManager({
+      inactiveThresholdDays: 7, // Удалять неактивные старше 7 дней
+      autoCleanup: true, // Автоматически удалять при сохранении
+    });
+
     // Парсим вакансии
     const result = await parser.parse(config);
 
@@ -164,27 +193,42 @@ async function main(): Promise<void> {
     console.log('='.repeat(60));
     console.log(`⏱️  Время выполнения: ${duration} сек`);
     console.log(`📋 Всего найдено вакансий: ${result.totalFound}`);
+    console.log(`🆕 Новых в этом парсинге: ${result.totalFound}`);
     console.log(`📄 Страниц обработано: ${config.maxPages}`);
 
-    // Дополнительная статистика
-    printStatistics(result.vacancies);
+    // Сохраняем результаты с учетом актуальности
+    const filename = await saveResults(site, result.vacancies, manager);
 
-    // Сохраняем результаты
-    const filename = saveResults(site, result.vacancies);
+    // Загружаем финальный результат для статистики
+    const finalVacancies = await manager.loadExisting(filename);
+
+    // Дополнительная статистика
+    printStatistics(finalVacancies, manager);
+
     console.log(`\n✅ Результаты сохранены в файл: ${filename}`);
 
-    // Выводим примеры вакансий
+    // Выводим примеры АКТИВНЫХ вакансий
+    const activeVacancies = finalVacancies.filter((v) => v.isActive);
     console.log('\n' + '='.repeat(60));
-    console.log('📋 ПРИМЕРЫ ВАКАНСИЙ (первые 5):');
+    console.log('📋 ПРИМЕРЫ АКТИВНЫХ ВАКАНСИЙ (первые 5):');
     console.log('='.repeat(60) + '\n');
 
-    result.vacancies.slice(0, 5).forEach((vacancy, index) => {
+    activeVacancies.slice(0, 5).forEach((vacancy, index) => {
       console.log(`${index + 1}. ${vacancy.title}`);
       if (vacancy.company) console.log(`   🏢 ${vacancy.company}`);
       if (vacancy.location) console.log(`   📍 ${vacancy.location}`);
       if (vacancy.salary) console.log(`   💰 ${vacancy.salary}`);
       if (vacancy.schedule) console.log(`   📅 ${vacancy.schedule}`);
       if (vacancy.experience) console.log(`   💼 ${vacancy.experience}`);
+      
+      // Показываем когда была найдена
+      const daysOld = daysAgo(vacancy.firstSeenAt);
+      if (daysOld === 0) {
+        console.log(`   🆕 Новая вакансия`);
+      } else if (daysOld < 7) {
+        console.log(`   📅 ${daysOld} дн. назад`);
+      }
+      
       console.log(`   🔗 ${vacancy.url}`);
       console.log('');
     });
