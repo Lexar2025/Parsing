@@ -16,6 +16,14 @@ export interface Vacancy {
   schedule?: string;
   workPlace?: string;
   source: 'rabota.md' | '999.md' | 'other';
+  // Дополнительные поля для 999.md
+  author?: string; // Автор (Физ. или Юр. лицо)
+  seasonal?: boolean; // Сезонная работа
+  employmentType?: string; // Тип занятости
+  companyType?: string; // Тип компании
+  languages?: string[]; // Языки
+  contactPerson?: string; // Контактное лицо
+  region?: string; // Регион (полный адрес)
 }
 
 export interface ParseResult {

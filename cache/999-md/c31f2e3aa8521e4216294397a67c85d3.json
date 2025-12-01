@@ -1,0 +1,17 @@
+{
+  "author": "Физическое лицо",
+  "education": "Высшее",
+  "experience": "Более 5 лет",
+  "salary": "от 150 до 200 MDL",
+  "schedule": "Не полный день",
+  "seasonal": false,
+  "employmentType": "Разовое задание",
+  "companyType": "Другое",
+  "contactPerson": "Niku",
+  "languages": [
+    "Румынский",
+    "Русский"
+  ],
+  "region": "Кишинёв мун., Кишинёв",
+  "location": "Кишинёв мун., Кишинёв"
+}

@@ -1,0 +1,16 @@
+{
+  "author": "Физическое лицо",
+  "education": "Среднее профессиональное",
+  "experience": "Не имеет значения",
+  "schedule": "Не полный день",
+  "seasonal": true,
+  "employmentType": "Разовое задание",
+  "companyType": "Другое",
+  "contactPerson": "Sectorul Botanica",
+  "languages": [
+    "Румынский",
+    "Русский"
+  ],
+  "region": "Кишинёв мун., Кишинёв",
+  "location": "Кишинёв мун., Кишинёв"
+}

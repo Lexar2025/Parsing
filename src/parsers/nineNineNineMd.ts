@@ -1,14 +1,13 @@
 /**
  * Парсер для сайта 999.md (раздел работа)
- * Версия с Puppeteer для обработки динамического контента Next.js
- * + Удаление дубликатов по ID
- * + Увеличенные таймауты
+ * Версия с Puppeteer + детальный парсинг + кэширование
  */
 
 import puppeteer, { Browser, Page } from 'puppeteer';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import crypto from 'crypto';
+import pLimit from 'p-limit';
 import { Parser, ParserConfig, ParseResult, Vacancy } from '../types/vacancy.js';
 import { log, pause } from '../utils/helpers.js';
 
@@ -18,6 +17,7 @@ type ParserOptions = {
   cacheDir?: string;
   cacheTTLSeconds?: number;
   headless?: boolean;
+  parseDetails?: boolean; // Парсить ли детали каждой вакансии
 };
 
 export class NineNineNineMdParser implements Parser {
@@ -32,6 +32,7 @@ export class NineNineNineMdParser implements Parser {
       cacheDir: opts?.cacheDir ?? path.resolve(process.cwd(), 'cache', '999-md'),
       cacheTTLSeconds: opts?.cacheTTLSeconds ?? 60 * 60 * 24, // 24 часа
       headless: opts?.headless ?? true,
+      parseDetails: opts?.parseDetails ?? true,
     };
   }
 
@@ -113,9 +114,17 @@ export class NineNineNineMdParser implements Parser {
       }
       log('='.repeat(60));
 
+      // Шаг 5: Парсим детали вакансий (если включено)
+      let finalVacancies = uniqueVacancies;
+      if (this.options.parseDetails && uniqueVacancies.length > 0) {
+        log(`\n🔍 Начинаю парсинг деталей для ${uniqueVacancies.length} вакансий...\n`);
+        finalVacancies = await this.parseVacanciesDetails(uniqueVacancies);
+        log(`\n✅ Детальный парсинг завершен\n`);
+      }
+
       return {
-        vacancies: uniqueVacancies,
-        totalFound: uniqueVacancies.length,
+        vacancies: finalVacancies,
+        totalFound: finalVacancies.length,
         page: 1,
         hasNextPage: false,
       };
@@ -124,6 +133,196 @@ export class NineNineNineMdParser implements Parser {
       throw error;
     } finally {
       await this.close();
+    }
+  }
+
+  /**
+   * Парсинг деталей для массива вакансий с кэшированием
+   */
+  private async parseVacanciesDetails(vacancies: Vacancy[]): Promise<Vacancy[]> {
+    // Убедимся, что папка кэша существует
+    if (this.options.cacheEnabled) {
+      try {
+        await fs.mkdir(this.options.cacheDir, { recursive: true });
+      } catch {
+        log('⚠️ Не удалось создать директорию кэша:', this.options.cacheDir);
+      }
+    }
+
+    const limit = pLimit(this.options.concurrency);
+    let processed = 0;
+
+    const detailed = await Promise.all(
+      vacancies.map((v) =>
+        limit(async () => {
+          try {
+            const extra = await this.parseVacancyDetailsWithCache(v.url);
+            processed++;
+            
+            // Прогресс каждые 10 вакансий
+            if (processed % 10 === 0 || processed === vacancies.length) {
+              log(`   Обработано: ${processed}/${vacancies.length}`);
+            }
+            
+            return { ...v, ...extra };
+          } catch (err) {
+            log(`⚠️ Ошибка деталей для ${v.url}:`, err);
+            return v;
+          }
+        }),
+      ),
+    );
+
+    return detailed;
+  }
+
+  /**
+   * Парсинг деталей вакансии с кэшированием
+   */
+  private async parseVacancyDetailsWithCache(url: string): Promise<Partial<Vacancy>> {
+    if (!this.options.cacheEnabled) {
+      return this.parseVacancyDetails(url);
+    }
+
+    const key = this.hash(url);
+    const filePath = path.join(this.options.cacheDir, `${key}.json`);
+
+    try {
+      const stat = await fs.stat(filePath).catch(() => null);
+      if (stat) {
+        const now = Date.now();
+        const mtime = stat.mtime.getTime();
+        const ageSeconds = (now - mtime) / 1000;
+
+        if (ageSeconds < this.options.cacheTTLSeconds) {
+          // Кэш свежий, читаем
+          const raw = await fs.readFile(filePath, 'utf-8');
+          const parsed = JSON.parse(raw) as Partial<Vacancy>;
+          return parsed;
+        }
+      }
+    } catch {
+      // Игнорируем ошибки чтения кэша
+    }
+
+    // Кэша нет или устарел - парсим
+    const details = await this.parseVacancyDetails(url);
+
+    // Сохраняем в кэш
+    try {
+      await fs.writeFile(filePath, JSON.stringify(details, null, 2), 'utf-8');
+    } catch {
+      log('⚠️ Не удалось записать кэш:', filePath);
+    }
+
+    return details;
+  }
+
+  /**
+   * Парсинг детальной страницы вакансии
+   */
+  async parseVacancyDetails(url: string): Promise<Partial<Vacancy>> {
+    if (!this.browser) {
+      await this.initBrowser();
+    }
+
+    if (!this.browser) throw new Error('Браузер не инициализирован');
+
+    const page = await this.browser.newPage();
+
+    try {
+      await this.setupPage(page);
+      await page.goto(url, { waitUntil: 'networkidle2', timeout: 40000 });
+
+      // Ждем загрузки контейнера с деталями
+      await page.waitForSelector('.styles_features__Ws32g', { timeout: 15000 });
+
+      // Дополнительная задержка для загрузки всех элементов
+      await pause(500);
+
+      // Извлекаем данные
+      const details = await page.evaluate(() => {
+        const result: Partial<Vacancy> = {};
+
+        // Функция для извлечения значения по ключу
+        const getFeatureValue = (key: string): string | undefined => {
+          const features = document.querySelectorAll('.styles_group__feature__5ZWJy');
+          for (const feature of features) {
+            const keyEl = feature.querySelector('.styles_group__key__uRhnQ');
+            const valueEl = feature.querySelector('.styles_group__value__XN7OI');
+            
+            if (keyEl?.textContent?.trim() === key && valueEl) {
+              return valueEl.textContent?.trim();
+            }
+          }
+          return undefined;
+        };
+
+        // Автор
+        result.author = getFeatureValue('Автор');
+
+        // Образование
+        result.education = getFeatureValue('Образование');
+
+        // Стаж работы
+        result.experience = getFeatureValue('Стаж работы');
+
+        // Зарплата
+        result.salary = getFeatureValue('Зарплата');
+
+        // График работы
+        result.schedule = getFeatureValue('График работы');
+
+        // Сезонная работа
+        const seasonalText = getFeatureValue('Сезонная работа');
+        result.seasonal = seasonalText === 'Да';
+
+        // Тип занятости
+        result.employmentType = getFeatureValue('Тип занятости');
+
+        // Тип компании
+        result.companyType = getFeatureValue('Тип компании');
+
+        // Контактное лицо
+        result.contactPerson = getFeatureValue('Контактное лицо');
+
+        // Название компании
+        result.company = getFeatureValue('Название компании');
+
+        // Языки
+        const languagesGroup = Array.from(document.querySelectorAll('.styles_group__aota8')).find(
+          (group) => group.querySelector('h2')?.textContent?.trim() === 'Знание языков',
+        );
+        
+        if (languagesGroup) {
+          const langFeatures = languagesGroup.querySelectorAll('.styles_group__feature__5ZWJy');
+          result.languages = Array.from(langFeatures)
+            .map((f) => f.querySelector('.styles_group__key__uRhnQ')?.textContent?.trim())
+            .filter((l): l is string => !!l);
+        }
+
+        // Регион/адрес
+        const addressEl = document.querySelector('.styles_address__text__duvKg');
+        if (addressEl) {
+          result.region = addressEl.textContent?.trim();
+          result.location = addressEl.textContent?.trim();
+        }
+
+        // Описание (если есть)
+        const descriptionEl = document.querySelector('.styles_adPage__description__qDkzc');
+        if (descriptionEl) {
+          result.description = descriptionEl.textContent?.trim();
+        }
+
+        return result;
+      });
+
+      return details;
+    } catch (error) {
+      log(`❌ Ошибка при парсинге деталей ${url}:`, error);
+      return {};
+    } finally {
+      await page.close();
     }
   }
 
@@ -192,6 +391,49 @@ export class NineNineNineMdParser implements Parser {
   }
 
   /**
+   * Определение общего количества страниц
+   */
+  private async getTotalPages(firstPageUrl: string): Promise<number> {
+    if (!this.browser) throw new Error('Браузер не инициализирован');
+
+    const page = await this.browser.newPage();
+
+    try {
+      await this.setupPage(page);
+      await page.goto(firstPageUrl, { waitUntil: 'networkidle2', timeout: 40000 });
+
+      // Ищем пагинацию
+      const totalPages = await page.evaluate(() => {
+        // Ищем все ссылки пагинации
+        const paginationLinks = document.querySelectorAll('.paginator a');
+        let maxPage = 1;
+
+        paginationLinks.forEach((link) => {
+          const href = link.getAttribute('href');
+          if (href) {
+            const match = href.match(/[?&]page=(\d+)/);
+            if (match) {
+              const pageNum = parseInt(match[1], 10);
+              if (pageNum > maxPage) {
+                maxPage = pageNum;
+              }
+            }
+          }
+        });
+
+        return maxPage;
+      });
+
+      return totalPages;
+    } catch (error) {
+      log('⚠️ Не удалось определить количество страниц, используем maxPages');
+      return 10; // По умолчанию
+    } finally {
+      await page.close();
+    }
+  }
+
+  /**
    * Парсинг всех страниц с вакансиями
    */
   private async parseAllPages(
@@ -200,11 +442,16 @@ export class NineNineNineMdParser implements Parser {
     delay: number,
   ): Promise<Vacancy[]> {
     const allVacancies: Vacancy[] = [];
-    let currentPage = 1;
-    let emptyPagesCount = 0;
+    
+    // Определяем реальное количество страниц
+    const totalPages = await this.getTotalPages(categoryUrl);
+    const pagesToParse = Math.min(totalPages, maxPages);
+    
+    log(`📊 Всего страниц на сайте: ${totalPages}`);
+    log(`📄 Будет обработано: ${pagesToParse} страниц\n`);
 
-    while (currentPage <= maxPages && emptyPagesCount < 2) {
-      log(`📄 Парсинг страницы ${currentPage}...`);
+    for (let currentPage = 1; currentPage <= pagesToParse; currentPage++) {
+      log(`📄 Парсинг страницы ${currentPage}/${pagesToParse}...`);
 
       const pageUrl = this.buildPageUrl(categoryUrl, currentPage);
       log(`   URL: ${pageUrl}`);
@@ -213,44 +460,34 @@ export class NineNineNineMdParser implements Parser {
         const vacancies = await this.parseVacanciesFromPage(pageUrl);
 
         if (vacancies.length === 0) {
-          emptyPagesCount++;
-          log(`   ⚠️  Страница ${currentPage} пуста (пустых подряд: ${emptyPagesCount})`);
-
-          if (emptyPagesCount >= 2) {
-            log(`   ⛔ Две пустые страницы подряд - завершаем парсинг`);
-            break;
-          }
+          log(`   ⚠️  Страница ${currentPage} пуста`);
         } else {
-          emptyPagesCount = 0;
           allVacancies.push(...vacancies);
           log(`   ✅ Найдено ${vacancies.length} вакансий (всего: ${allVacancies.length})`);
         }
 
-        if (currentPage < maxPages) {
+        if (currentPage < pagesToParse) {
           await pause(delay);
         }
-
-        currentPage++;
       } catch (error) {
         log(`   ❌ Ошибка при парсинге страницы ${currentPage}:`, error);
-        emptyPagesCount++;
-        
+
         // Если таймаут, пробуем еще раз с увеличенной задержкой
         if (error instanceof Error && error.name === 'TimeoutError') {
           log(`   ⏳ Увеличиваю задержку и пробую еще раз...`);
           await pause(delay * 2);
+          
+          // Повторная попытка
+          try {
+            const vacancies = await this.parseVacanciesFromPage(pageUrl);
+            if (vacancies.length > 0) {
+              allVacancies.push(...vacancies);
+              log(`   ✅ Повторная попытка успешна: ${vacancies.length} вакансий`);
+            }
+          } catch (retryError) {
+            log(`   ❌ Повторная попытка не удалась, пропускаем страницу`);
+          }
         }
-        
-        currentPage++;
-      }
-    }
-
-    // Убедимся, что папка кэша существует
-    if (this.options.cacheEnabled && allVacancies.length > 0) {
-      try {
-        await fs.mkdir(this.options.cacheDir, { recursive: true });
-      } catch {
-        log('⚠️ Не смог создать директорию кэша:', this.options.cacheDir);
       }
     }
 
@@ -267,7 +504,7 @@ export class NineNineNineMdParser implements Parser {
 
     try {
       await this.setupPage(page);
-      
+
       // Увеличенный таймаут для медленных страниц
       await page.goto(url, { waitUntil: 'networkidle2', timeout: 40000 });
 
@@ -275,51 +512,55 @@ export class NineNineNineMdParser implements Parser {
       await page.waitForSelector('.styles_adlist__3YsgA', { timeout: 15000 });
 
       // Ждём загрузки карточек вакансий (даём дополнительное время на JS)
-      await page.waitForSelector('article.AdVacancies_wrapper__oZp_b', {
-        timeout: 10000,
-      }).catch(() => {
-        // Карточек может не быть на странице
-      });
+      await page
+        .waitForSelector('article.AdVacancies_wrapper__oZp_b', {
+          timeout: 10000,
+        })
+        .catch(() => {
+          // Карточек может не быть на странице
+        });
 
       // Дополнительная задержка для загрузки всех карточек
       await pause(1000);
 
       // Извлекаем данные вакансий
       const vacancies = await page.$$eval('article.AdVacancies_wrapper__oZp_b', (cards) =>
-        cards.map((card) => {
-          try {
-            // Заголовок и ссылка
-            const titleLink = card.querySelector('h5.AdVacancies_title__link__V9IOY a');
-            const title = titleLink?.textContent?.trim() || '';
-            const url = titleLink?.getAttribute('href') || '';
+        cards
+          .map((card) => {
+            try {
+              // Заголовок и ссылка
+              const titleLink = card.querySelector('h5.AdVacancies_title__link__V9IOY a');
+              const title = titleLink?.textContent?.trim() || '';
+              const url = titleLink?.getAttribute('href') || '';
 
-            if (!title || !url) return null;
+              if (!title || !url) return null;
 
-            // Характеристики вакансии
-            const features = card.querySelectorAll('.AdVacancies_features__item__IBTIr');
+              // Характеристики вакансии
+              const features = card.querySelectorAll('.AdVacancies_features__item__IBTIr');
 
-            // Обычно: [график работы, опыт работы, образование]
-            const schedule = features[0]?.textContent?.trim() || undefined;
-            const experience = features[1]?.textContent?.trim() || undefined;
-            const education = features[2]?.textContent?.trim() || undefined;
+              // Обычно: [график работы, опыт работы, образование]
+              const schedule = features[0]?.textContent?.trim() || undefined;
+              const experience = features[1]?.textContent?.trim() || undefined;
+              const education = features[2]?.textContent?.trim() || undefined;
 
-            // Извлекаем ID из URL
-            const idMatch = url.match(/\/(\d+)/);
-            const id = idMatch ? idMatch[1] : url;
+              // Извлекаем ID из URL
+              const idMatch = url.match(/\/(\d+)/);
+              const id = idMatch ? idMatch[1] : url;
 
-            return {
-              id,
-              title,
-              url: url.startsWith('http') ? url : `https://999.md${url}`,
-              schedule,
-              experience,
-              education,
-              source: '999.md',
-            };
-          } catch {
-            return null;
-          }
-        }).filter((v): v is Vacancy => v !== null),
+              return {
+                id,
+                title,
+                url: url.startsWith('http') ? url : `https://999.md${url}`,
+                schedule,
+                experience,
+                education,
+                source: '999.md',
+              };
+            } catch {
+              return null;
+            }
+          })
+          .filter((v): v is NonNullable<typeof v> => v !== null) as Vacancy[],
       );
 
       return vacancies;
@@ -361,8 +602,19 @@ export class NineNineNineMdParser implements Parser {
    */
   private addJobOfferFilter(categoryUrl: string): string {
     const url = new URL(categoryUrl, this.baseUrl);
-    // appl=1 означает "предлагаю работу"
+    
+    // Удаляем все параметры и добавляем только нужные
+    url.search = '';
+    
+    // appl=1 означает "предлагаю работу" (это основной фильтр)
     url.searchParams.set('appl', '1');
+    
+    // ef - дополнительные фильтры (обязательны для корректной работы)
+    url.searchParams.set('ef', '16,50,9394,56,66');
+    
+    // o_16_1=983 - сортировка по релевантности
+    url.searchParams.set('o_16_1', '983');
+    
     return url.toString();
   }
 
@@ -371,17 +623,6 @@ export class NineNineNineMdParser implements Parser {
    */
   private normalizeUrl(url: string): string {
     return url.startsWith('http') ? url : `${this.baseUrl}${url}`;
-  }
-
-  /**
-   * Парсинг детальной страницы вакансии
-   * TODO: реализовать парсинг деталей через Puppeteer
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async parseVacancyDetails(url: string): Promise<Partial<Vacancy>> {
-    // Пока возвращаем пустой объект
-    // Детальный парсинг реализуем на следующем этапе
-    return {};
   }
 
   /**

@@ -1,0 +1,18 @@
+{
+  "author": "Физическое лицо",
+  "education": "Высшее",
+  "experience": "Более 5 лет",
+  "salary": "Ставка 1 MDL",
+  "schedule": "Гибкий",
+  "seasonal": false,
+  "employmentType": "Частичная занятость",
+  "companyType": "Другое",
+  "contactPerson": "Niku",
+  "languages": [
+    "Румынский",
+    "Русский",
+    "Английский"
+  ],
+  "region": "Кишинёв мун., Кишинёв, Центр",
+  "location": "Кишинёв мун., Кишинёв, Центр"
+}
