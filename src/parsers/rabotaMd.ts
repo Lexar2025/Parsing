@@ -1,6 +1,6 @@
 /**
  * Парсер для сайта rabota.md
- * Версия с упрощенной пагинацией + парсинг деталей + p-limit + файловый кэш
+ * Версия с проверкой дубликатов ID + парсинг деталей + кэш + VacancyManager
  */
 
 import axios, { AxiosInstance } from 'axios';
@@ -13,10 +13,11 @@ import { Parser, ParserConfig, ParseResult, Vacancy } from '../types/vacancy.js'
 import { log, pause } from '../utils/helpers.js';
 
 type ParserOptions = {
-  concurrency?: number; // кол-во одновременных запросов при парсинге деталей
+  concurrency?: number;
   cacheEnabled?: boolean;
   cacheDir?: string;
-  cacheTTLSeconds?: number; // время жизни кэша в секундах
+  cacheTTLSeconds?: number;
+  parseDetails?: boolean;
 };
 
 export class RabotaMdParser implements Parser {
@@ -29,7 +30,8 @@ export class RabotaMdParser implements Parser {
       concurrency: opts?.concurrency ?? 3,
       cacheEnabled: opts?.cacheEnabled ?? true,
       cacheDir: opts?.cacheDir ?? path.resolve(process.cwd(), 'cache', 'rabota-md'),
-      cacheTTLSeconds: opts?.cacheTTLSeconds ?? 60 * 60 * 24, // 24 часа
+      cacheTTLSeconds: opts?.cacheTTLSeconds ?? 60 * 60 * 24,
+      parseDetails: opts?.parseDetails ?? true,
     };
 
     this.axiosInstance = axios.create({
@@ -44,18 +46,13 @@ export class RabotaMdParser implements Parser {
     });
   }
 
-  /**
-   * Основной метод парсинга с поддержкой пагинации
-   */
   async parse(config: ParserConfig): Promise<ParseResult> {
     try {
       log(`Начинаю поиск профессии: ${config.searchQuery}\n`);
 
-      // Шаг 1: Получаем главную страницу поиска
       const searchUrl = this.buildSearchUrl(config);
       const searchHtml = await this.fetchPage(searchUrl);
 
-      // Шаг 2: Ищем ссылку на профессию
       const professionLink = this.findProfessionLink(searchHtml, config.searchQuery || '');
 
       if (!professionLink) {
@@ -70,20 +67,34 @@ export class RabotaMdParser implements Parser {
 
       log(`Найдена ссылка на профессию: ${professionLink}\n`);
 
-      // Шаг 3: Парсим все страницы с вакансиями
       const allVacancies = await this.parseAllPages(
         professionLink,
         config.maxPages || 10,
         config.delay || 1000,
       );
 
+      // Удаляем дубликаты по ID
+      const uniqueVacancies = this.removeDuplicates(allVacancies);
+
       log(`\n${'='.repeat(60)}`);
       log(`📊 ИТОГО: Найдено ${allVacancies.length} вакансий`);
+      log(`✅ Уникальных: ${uniqueVacancies.length} вакансий`);
+      if (allVacancies.length > uniqueVacancies.length) {
+        log(`🗑️  Удалено дубликатов: ${allVacancies.length - uniqueVacancies.length}`);
+      }
       log('='.repeat(60));
 
+      // Парсинг деталей вакансий (если включено)
+      let finalVacancies = uniqueVacancies;
+      if (this.options.parseDetails && uniqueVacancies.length > 0) {
+        log(`\n🔍 Начинаю парсинг деталей для ${uniqueVacancies.length} вакансий...\n`);
+        finalVacancies = await this.parseVacanciesDetails(uniqueVacancies);
+        log(`\n✅ Детальный парсинг завершен\n`);
+      }
+
       return {
-        vacancies: allVacancies,
-        totalFound: allVacancies.length,
+        vacancies: finalVacancies,
+        totalFound: finalVacancies.length,
         page: 1,
         hasNextPage: false,
       };
@@ -94,8 +105,63 @@ export class RabotaMdParser implements Parser {
   }
 
   /**
+   * Удаление дубликатов по ID
+   */
+  private removeDuplicates(vacancies: Vacancy[]): Vacancy[] {
+    const seen = new Set<string>();
+    const unique: Vacancy[] = [];
+
+    for (const vacancy of vacancies) {
+      if (!seen.has(vacancy.id)) {
+        seen.add(vacancy.id);
+        unique.push(vacancy);
+      }
+    }
+
+    return unique;
+  }
+
+  /**
+   * Парсинг деталей для массива вакансий с кэшированием
+   */
+  private async parseVacanciesDetails(vacancies: Vacancy[]): Promise<Vacancy[]> {
+    if (this.options.cacheEnabled) {
+      try {
+        await fs.mkdir(this.options.cacheDir, { recursive: true });
+      } catch {
+        log('⚠️ Не удалось создать директорию кэша:', this.options.cacheDir);
+      }
+    }
+
+    const limit = pLimit(this.options.concurrency);
+    let processed = 0;
+
+    const detailed = await Promise.all(
+      vacancies.map((v) =>
+        limit(async () => {
+          try {
+            const extra = await this.parseVacancyDetailsWithCache(v.url);
+            processed++;
+
+            if (processed % 10 === 0 || processed === vacancies.length) {
+              log(`   Обработано: ${processed}/${vacancies.length}`);
+            }
+
+            return { ...v, ...extra };
+          } catch (err) {
+            log(`⚠️ Ошибка деталей для ${v.url}:`, err);
+            return v;
+          }
+        }),
+      ),
+    );
+
+    return detailed;
+  }
+
+  /**
    * Парсинг всех страниц с вакансиями
-   * URL формируется как: базовый_url, базовый_url/2, базовый_url/3 и т.д.
+   * С проверкой на дубликаты ID для определения конца
    */
   private async parseAllPages(
     professionUrl: string,
@@ -103,105 +169,106 @@ export class RabotaMdParser implements Parser {
     delay: number,
   ): Promise<Vacancy[]> {
     const allVacancies: Vacancy[] = [];
+    const seenIds = new Set<string>();
     let currentPage = 1;
-    let emptyPagesCount = 0;
+    let duplicatePagesCount = 0;
 
-    while (currentPage <= maxPages && emptyPagesCount < 2) {
-      log(`📄 Парсинг страницы ${currentPage}...`);
+    log(`📊 Начинаю парсинг страниц (макс: ${maxPages})\n`);
+
+    while (currentPage <= maxPages && duplicatePagesCount < 2) {
+      log(`📄 Парсинг страницы ${currentPage}/${maxPages}...`);
 
       // Формируем URL для текущей страницы
-      // Страница 1: baseUrl (без /1)
-      // Страница 2: baseUrl/2
-      // Страница 3: baseUrl/3 и т.д.
-      const pageUrl = currentPage === 1 ? professionUrl : `${professionUrl}/${currentPage}`;
-
+      const pageUrl = this.buildPageUrl(professionUrl, currentPage);
       log(`   URL: ${pageUrl}`);
 
       try {
-        // Парсим вакансии со страницы
         const vacancies = await this.parseVacanciesFromPage(pageUrl);
 
         if (vacancies.length === 0) {
-          emptyPagesCount++;
-          log(`   ⚠️  Страница ${currentPage} пуста (пустых подряд: ${emptyPagesCount})`);
-
-          // Если 2 страницы подряд пустые - точно конец
-          if (emptyPagesCount >= 2) {
+          log(`   ⚠️  Страница ${currentPage} пуста`);
+          duplicatePagesCount++;
+          
+          if (duplicatePagesCount >= 2) {
             log(`   ⛔ Две пустые страницы подряд - завершаем парсинг`);
             break;
           }
         } else {
-          emptyPagesCount = 0; // Сбрасываем счетчик пустых страниц
-          allVacancies.push(...vacancies);
-          log(`   ✅ Найдено ${vacancies.length} вакансий (всего: ${allVacancies.length})`);
+          // Проверяем на дубликаты
+          let newVacanciesCount = 0;
+          let duplicatesCount = 0;
+
+          for (const vacancy of vacancies) {
+            if (!seenIds.has(vacancy.id)) {
+              seenIds.add(vacancy.id);
+              allVacancies.push(vacancy);
+              newVacanciesCount++;
+            } else {
+              duplicatesCount++;
+            }
+          }
+
+          log(`   ✅ Найдено: ${vacancies.length} (новых: ${newVacanciesCount}, дубликатов: ${duplicatesCount})`);
+          log(`   📊 Всего уникальных: ${allVacancies.length}`);
+
+          // Если ВСЕ вакансии на странице - дубликаты, значит это повтор последней страницы
+          if (newVacanciesCount === 0 && duplicatesCount > 0) {
+            duplicatePagesCount++;
+            log(`   ⚠️  Все вакансии - дубликаты (счетчик: ${duplicatePagesCount})`);
+
+            if (duplicatePagesCount >= 2) {
+              log(`   ⛔ Две страницы подряд с дубликатами - завершаем парсинг`);
+              break;
+            }
+          } else {
+            duplicatePagesCount = 0; // Сбрасываем счетчик если нашли новые
+          }
         }
 
-        // Задержка между запросами
         if (currentPage < maxPages) {
           await pause(delay);
         }
 
         currentPage++;
       } catch (error) {
-        // Если ошибка 404 — останавливаем парсинг
-        if (error && typeof error === 'object' && 'response' in error && error.response?.status === 404) {
-          log(`   ⛔ Получен 404 — страница не существует, завершаем парсинг.`);
+        if (
+          error &&
+          typeof error === 'object' &&
+          'response' in error &&
+          (error as { response?: { status?: number } }).response?.status === 404
+        ) {
+          log(`   ⛔ Получен 404 - страница не существует, завершаем парсинг`);
           break;
         }
         log(`   ❌ Ошибка при парсинге страницы ${currentPage}:`, error);
-        // Продолжаем даже при ошибке
         currentPage++;
       }
     }
 
-    // ============ ДОБАВЛЯЕМ ПАРСИНГ ДЕТАЛЕЙ ============
-
-    if (allVacancies.length === 0) {
-      return allVacancies;
-    }
-
-    // Убедимся, что папка кэша существует (если включен кэш)
-    if (this.options.cacheEnabled) {
-      try {
-        await fs.mkdir(this.options.cacheDir, { recursive: true });
-      } catch {
-        log('⚠️ Не смог создать директорию кэша:', this.options.cacheDir);
-      }
-    }
-
-    const limit = pLimit(this.options.concurrency);
-
-    log('\n🔍 Начинаю загрузку детальной информации по вакансиям...\n');
-
-    const detailed = await Promise.all(
-      allVacancies.map(v =>
-        limit(async () => {
-          try {
-            const extra = await this.parseVacancyDetailsWithCache(v.url);
-            return { ...v, ...extra };
-          } catch (err) {
-            log(`⚠️ Ошибка деталей для ${v.url}`, err);
-            return v;
-          }
-        })
-      )
-    );
-
-    log(`\n✅ Детальная информация загружена: ${detailed.length} вакансий`);
-
-    return detailed;
+    return allVacancies;
   }
 
   /**
-   * Поиск ссылки на профессию по названию
+   * Построение URL для страницы с пагинацией
+   * Новый формат: /profession, /profession/page-2, /profession/page-3
    */
+  private buildPageUrl(professionUrl: string, page: number): string {
+    if (page === 1) {
+      return professionUrl;
+    }
+    
+    // Убираем trailing slash если есть
+    const cleanUrl = professionUrl.endsWith('/') ? professionUrl.slice(0, -1) : professionUrl;
+    
+    return `${cleanUrl}/page-${page}`;
+  }
+
   private findProfessionLink(html: string, searchQuery: string): string | null {
     const dom = new JSDOM(html);
     const document = dom.window.document;
 
-    // Упрощённый поиск контейнера профессий через прямой селектор
     const targetContainer = document.querySelector(
-      '#main .content-container.px-3.lg\\:px-0.pt-5.sm\\:pt-6'
+      '#main .content-container.px-3.lg\\:px-0.pt-5.sm\\:pt-6',
     );
 
     if (!targetContainer) {
@@ -229,9 +296,6 @@ export class RabotaMdParser implements Parser {
     return null;
   }
 
-  /**
-   * Парсинг вакансий с одной страницы
-   */
   private async parseVacanciesFromPage(url: string): Promise<Vacancy[]> {
     const html = await this.fetchPage(url);
     const dom = new JSDOM(html);
@@ -253,16 +317,13 @@ export class RabotaMdParser implements Parser {
           vacancies.push(vacancy);
         }
       } catch {
-        // Тихо пропускаем ошибки парсинга отдельных карточек
+        // Тихо пропускаем ошибки
       }
     });
 
     return vacancies;
   }
 
-  /**
-   * Извлечение данных вакансии из карточки
-   */
   private extractVacancyFromCard(card: Element): Vacancy | null {
     const titleLink = card.querySelector('a.vacancyShowPopup');
     const titleElement = titleLink?.querySelector('span');
@@ -291,9 +352,6 @@ export class RabotaMdParser implements Parser {
     };
   }
 
-  /**
-   * Извлечение информации по SVG иконке (используется для карточек)
-   */
   private extractInfoByIcon(infoBlock: Element | null, iconName: string): string | undefined {
     if (!infoBlock) return undefined;
 
@@ -313,9 +371,6 @@ export class RabotaMdParser implements Parser {
     return undefined;
   }
 
-  /**
-   * Построение URL для поиска
-   */
   private buildSearchUrl(config: ParserConfig): string {
     const params = new URLSearchParams();
 
@@ -327,9 +382,6 @@ export class RabotaMdParser implements Parser {
     return queryString ? `${this.baseUrl}/ru/jobs?${queryString}` : `${this.baseUrl}/ru/jobs`;
   }
 
-  /**
-   * Загрузка HTML страницы
-   */
   private async fetchPage(url: string): Promise<string> {
     try {
       const response = await this.axiosInstance.get(url);
@@ -342,24 +394,15 @@ export class RabotaMdParser implements Parser {
     }
   }
 
-  /**
-   * Нормализация URL
-   */
   private normalizeUrl(url: string): string {
     return url.startsWith('http') ? url : `${this.baseUrl}${url}`;
   }
 
-  /**
-   * Извлечение ID из URL
-   */
   private extractIdFromUrl(url: string): string {
     const match = url.match(/\/(\d+)/);
     return match ? match[1] : url;
   }
 
-  /**
-   * Вспомогательная обёртка: парсит детали с учётом кэша
-   */
   private async parseVacancyDetailsWithCache(url: string): Promise<Partial<Vacancy>> {
     if (!this.options.cacheEnabled) {
       return this.parseVacancyDetails(url);
@@ -368,7 +411,6 @@ export class RabotaMdParser implements Parser {
     const key = this.hash(url);
     const filePath = path.join(this.options.cacheDir, `${key}.json`);
 
-    // Попробуем прочитать из кэша
     try {
       const stat = await fs.stat(filePath).catch(() => null);
       if (stat) {
@@ -383,10 +425,9 @@ export class RabotaMdParser implements Parser {
         }
       }
     } catch {
-      // Игнорируем ошибки чтения кэша
+      // Игнорируем
     }
 
-    // Если кэша нет или он устарел — парсим и сохраняем
     const details = await this.parseVacancyDetails(url);
 
     try {
@@ -398,61 +439,47 @@ export class RabotaMdParser implements Parser {
     return details;
   }
 
-  /**
-   * Парсинг детальной страницы вакансии
-   * Возвращаем Partial<Vacancy> (только доп. поля)
-   */
-async parseVacancyDetails(url: string): Promise<Partial<Vacancy>> {
-  const html = await this.fetchPage(url);
-  const dom = new JSDOM(html);
-  const document = dom.window.document;
+  async parseVacancyDetails(url: string): Promise<Partial<Vacancy>> {
+    const html = await this.fetchPage(url);
+    const dom = new JSDOM(html);
+    const document = dom.window.document;
 
-  const details: Partial<Vacancy> = {};
+    const details: Partial<Vacancy> = {};
 
-  // Находим ВСЕ label .text-gray-400 и к ним подбираем value .text-gray-700
-  const labelNodes = document.querySelectorAll('.text-gray-400');
+    const labelNodes = document.querySelectorAll('.text-gray-400');
 
-  labelNodes.forEach(labelNode => {
-    const label = labelNode.textContent?.trim().replace(':', '') || '';
-    const valueNode = labelNode.parentElement?.querySelector('.text-gray-700');
-    const value = valueNode?.textContent?.trim();
+    labelNodes.forEach((labelNode) => {
+      const label = labelNode.textContent?.trim().replace(':', '') || '';
+      const valueNode = labelNode.parentElement?.querySelector('.text-gray-700');
+      const value = valueNode?.textContent?.trim();
 
-    if (!label || !value) return;
+      if (!label || !value) return;
 
-    switch (label) {
-      case 'Город':
-        details.location = value;
-        break;
+      switch (label) {
+        case 'Город':
+          details.location = value;
+          break;
+        case 'Образование':
+          details.education = value;
+          break;
+        case 'Опыт работы':
+          details.experience = value;
+          break;
+        case 'Зарплата':
+          details.salary = value;
+          break;
+        case 'График работы':
+          details.schedule = value;
+          break;
+        case 'Место работы':
+          details.workPlace = value;
+          break;
+      }
+    });
 
-      case 'Образование':
-        details.education = value;
-        break;
+    return details;
+  }
 
-      case 'Опыт работы':
-        details.experience = value;
-        break;
-
-      case 'Зарплата':
-        details.salary = value;
-        break;
-
-      case 'График работы':
-        details.schedule = value;
-        break;
-
-      case 'Место работы':
-        details.workPlace = value;
-        break;
-    }
-  });
-
-  return details;
-}
-
-
-  /**
-   * Утилита: md5 hash
-   */
   private hash(input: string): string {
     return crypto.createHash('md5').update(input).digest('hex');
   }
