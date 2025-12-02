@@ -1,0 +1,16 @@
+{
+  "author": "Физическое лицо",
+  "education": "Высшее",
+  "experience": "Более 5 лет",
+  "schedule": "Гибкий",
+  "seasonal": false,
+  "employmentType": "Полная занятость",
+  "contactPerson": "Cursuri",
+  "languages": [
+    "Румынский",
+    "Русский",
+    "Английский"
+  ],
+  "region": "Кишинёв мун., Кишинёв, Рышкановка",
+  "location": "Кишинёв мун., Кишинёв, Рышкановка"
+}

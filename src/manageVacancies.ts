@@ -3,7 +3,7 @@
  * Позволяет просматривать, очищать и управлять сохраненными вакансиями
  */
 
-import { VacancyManager, formatDate, daysAgo } from './utils/vacancyManager.js';
+import { VacancyManager, daysAgo } from './utils/vacancyManager.js';
 import * as fs from 'fs';
 
 async function main(): Promise<void> {

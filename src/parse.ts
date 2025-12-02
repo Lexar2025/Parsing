@@ -8,7 +8,6 @@ import { NineNineNineMdParser } from './parsers/nineNineNineMd.js';
 import { ParserConfig, Parser, Vacancy } from './types/vacancy.js';
 import { getParserConfig, getAvailableParsers } from './config/parsers.js';
 import { VacancyManager, daysAgo } from './utils/vacancyManager.js';
-import * as fs from 'fs';
 
 /**
  * Получить экземпляр парсера по имени сайта

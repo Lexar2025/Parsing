@@ -92,7 +92,6 @@ export class VacancyManager {
    */
   cleanupInactive(vacancies: Vacancy[]): Vacancy[] {
     const now = new Date();
-    const thresholdMs = this.options.inactiveThresholdDays * 24 * 60 * 60 * 1000;
 
     return vacancies.filter(vacancy => {
       // Оставляем активные
