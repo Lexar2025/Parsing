@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>999.md Parser Flow</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1200px;
+        }
+        h1 {
+            text-align: center;
+            color: #f5576c;
+            margin-bottom: 40px;
+            font-size: 32px;
+        }
+        .flow {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .step {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 25px;
+            border-radius: 15px;
+            color: white;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+            transition: transform 0.3s ease;
+        }
+        .step:hover {
+            transform: translateX(10px);
+        }
+        .step-number {
+            position: absolute;
+            left: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #4facfe;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 4px 10px rgba(79, 172, 254, 0.4);
+        }
+        .step-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-left: 30px;
+        }
+        .step-desc {
+            padding-left: 30px;
+            line-height: 1.6;
+            opacity: 0.95;
+        }
+        .arrow {
+            text-align: center;
+            font-size: 30px;
+            color: #f5576c;
+            margin: -10px 0;
+        }
+        .sub-steps {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+            padding-left: 30px;
+        }
+        .sub-step {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        .code {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+        .highlight {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        .browser {
+            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+        }
+        .success {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+        }
+        .puppeteer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Схема работы парсера 999.md (Puppeteer)</h1>
+        
+        <div class="flow">
+            <div class="step browser">
+                <div class="step-number">0</div>
+                <div class="step-title">🚀 Запуск Headless браузера</div>
+                <div class="step-desc">
+                    Инициализация Puppeteer (Chrome без интерфейса)
+                    <div class="code">
+                        puppeteer.launch({<br>
+                        &nbsp;&nbsp;headless: true,<br>
+                        &nbsp;&nbsp;args: ['--no-sandbox', '--disable-setuid-sandbox']<br>
+                        })
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-title">📋 Загрузка главной страницы категорий</div>
+                <div class="step-desc">
+                    Открытие раздела "Работа" на 999.md
+                    <div class="code">
+                        page.goto('https://999.md/ru/category/work')<br>
+                        waitUntil: 'networkidle2'
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-title">🎯 Поиск категории вакансий</div>
+                <div class="step-desc">
+                    Извлечение всех подкатегорий через селектор
+                    <div class="code">
+                        document.querySelectorAll('a[data-subcategory]')<br>
+                        Поиск по тексту: "Грузчик" → /ru/list/work/loader
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="step highlight">
+                <div class="step-number">3</div>
+                <div class="step-title">🔧 Применение фильтров</div>
+                <div class="step-desc">
+                    Добавление параметров к URL:
+                    <div class="sub-steps">
+                        <div class="sub-step">
+                            <strong>appl=1</strong><br>
+                            Предлагаю работу
+                        </div>
+                        <div class="sub-step">
+                            <strong>ef=16,50,9394,56,66</strong><br>
+                            Доп. фильтры
+                        </div>
+                        <div class="sub-step">
+                            <strong>o_16_1=983</strong><br>
+                            Сортировка
+                        </div>
+                        <div class="sub-step">
+                            <strong>page=N</strong><br>
+                            Пагинация
+                        </div>
+                    </div>
+                    <div class="code" style="margin-top: 15px;">
+                        Итоговый URL:<br>
+                        /ru/list/work/loader?appl=1&ef=16,50,9394,56,66&o_16_1=983
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="step puppeteer">
+                <div class="step-number">4</div>
+                <div class="step-title">📊 Определение количества страниц</div>
+                <div class="step-desc">
+                    Puppeteer загружает первую страницу и читает пагинатор
+                    <div class="code">
+                        document.querySelectorAll('.paginator a')<br>
+                        Извлечение максимального номера страницы<br>
+                        → Реальных страниц: 2 (не 10!)
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="step puppeteer">
+                <div class="step-number">5</div>
+                <div class="step-title">📄 Парсинг страниц с вакансиями</div>
+                <div class="step-desc">
+                    Цикл по реальному количеству страниц:
+                    <div class="sub-steps">
+                        <div class="sub-step">
+                            <strong>Загрузка страницы:</strong><br>
+                            page.goto(url)
+                        </div>
+                        <div class="sub-step">
+                            <strong>Ожидание контента:</strong><br>
+                            waitForSelector('.styles_adlist__3YsgA')
+                        </div>
+                        <div class="sub-step">
+                            <strong>Ожидание JS:</strong><br>
+                            pause(1000ms)
+                        </div>
+                        <div class="sub-step">
+                            <strong>Извлечение карточек:</strong><br>
+                            article.AdVacancies_wrapper__oZp_b
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="step">
+                <div class="step-number">6</div>
+                <div class="step-title">📦 Извлечение базовых данных</div>
+                <div class="step-desc">
+                    Парсинг карточек прямо в браузере через page.$$eval():
+                    <div class="sub-steps">
+                        <div class="sub-step">Title<br>URL</div>
+                        <div class="sub-step">Schedule<br>Experience</div>
+                        <div class="sub-step">Education<br>ID</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="step">
+                <div class="step-number">7</div>
+                <div class="step-title">🗑️ Удаление дубликатов</div>
+                <div class="step-desc">
+                    Проверка уникальности по ID после сбора всех страниц
+                    <div class="code">
+                        Set{id1, id2, id3...}<br>
+                        Было: 231 → Уникальных: 111 → Дубликатов: 120
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="step puppeteer">
+                <div class="step-number">8</div>
+                <div class="step-title">🔍 Детальный парсинг вакансий</div>
+                <div class="step-desc">
+                    Параллельная загрузка деталей (concurrency: 3):
+                    <div class="sub-steps">
+                        <div class="sub-step">
+                            <strong>Проверка кэша:</strong><br>
+                            MD5(url) → cache/999-md/
+                        </div>
+                        <div class="sub-step">
+                            <strong>Если кэш устарел:</strong><br>
+                            Новая вкладка browser
+                        </div>
+                        <div class="sub-step">
+                            <strong>Загрузка страницы:</strong><br>
+                            page.goto(vacancyUrl)
+                        </div>
+                        <div class="sub-step">
+                            <strong>Парсинг деталей:</strong><br>
+                            .styles_features__Ws32g
+                        </div>
+                    </div>
+                    <div class="code" style="margin-top: 15px;">
+                        Извлекается: Автор, Зарплата, Тип компании, Языки,<br>
+                        Контактное лицо, Компания, Регион/Адрес, Сезонная работа
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="step browser">
+                <div class="step-number">9</div>
+                <div class="step-title">🔒 Закрытие браузера</div>
+                <div class="step-desc">
+                    Освобождение ресурсов после завершения парсинга
+                    <div class="code">await browser.close()</div>
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="step success">
+                <div class="step-number">10</div>
+                <div class="step-title">💾 VacancyManager - Управление актуальностью</div>
+                <div class="step-desc">
+                    <div class="sub-steps">
+                        <div class="sub-step">
+                            <strong>Загрузка старых:</strong><br>
+                            vacancies_999_md.json
+                        </div>
+                        <div class="sub-step">
+                            <strong>Слияние данных:</strong><br>
+                            Обновление timestamps
+                        </div>
+                        <div class="sub-step">
+                            <strong>Пометка неактивных:</strong><br>
+                            isActive = false
+                        </div>
+                        <div class="sub-step">
+                            <strong>Автоочистка:</strong><br>
+                            Удаление >7 дней
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="step success">
+                <div class="step-number">✓</div>
+                <div class="step-title">✅ Результат</div>
+                <div class="step-desc">
+                    <strong>Актуальная база вакансий 999.md с полной информацией</strong><br>
+                    Включая детали, доступные только через JavaScript рендеринг
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rabota.md Parser Flow</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1200px;
+        }
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 40px;
+            font-size: 32px;
+        }
+        .flow {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .step {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px;
+            border-radius: 15px;
+            color: white;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: transform 0.3s ease;
+        }
+        .step:hover {
+            transform: translateX(10px);
+        }
+        .step-number {
+            position: absolute;
+            left: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #ff6b6b;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.4);
+        }
+        .step-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-left: 30px;
+        }
+        .step-desc {
+            padding-left: 30px;
+            line-height: 1.6;
+            opacity: 0.95;
+        }
+        .arrow {
+            text-align: center;
+            font-size: 30px;
+            color: #667eea;
+            margin: -10px 0;
+        }
+        .sub-steps {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+            padding-left: 30px;
+        }
+        .sub-step {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        .code {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+        .highlight {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Схема работы парсера Rabota.md</h1>
+        
+        <div class="flow">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-title">📋 Поиск профессии</div>
+                <div class="step-desc">
+                    Отправка HTTP запроса на главную страницу поиска
+                    <div class="code">GET https://rabota.md/ru/jobs?search=программист</div>
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-title">🎯 Поиск ссылки на профессию</div>
+                <div class="step-desc">
+                    Парсинг HTML через JSDOM, поиск элемента <code>a.professionsItem</code> с нужным названием
+                    <div class="code">Найдено: /ru/profession/programmist</div>
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="step highlight">
+                <div class="step-number">3</div>
+                <div class="step-title">📄 Пагинация с проверкой дубликатов</div>
+                <div class="step-desc">
+                    Парсинг страниц с умным определением конца:
+                    <div class="sub-steps">
+                        <div class="sub-step">
+                            <strong>Страница 1:</strong><br>
+                            /profession
+                        </div>
+                        <div class="sub-step">
+                            <strong>Страница 2+:</strong><br>
+                            /profession/page-2<br>
+                            /profession/page-3
+                        </div>
+                        <div class="sub-step">
+                            <strong>Отслеживание ID:</strong><br>
+                            Set{id1, id2, id3...}
+                        </div>
+                        <div class="sub-step">
+                            <strong>Проверка дубликатов:</strong><br>
+                            Если все ID повторяются → конец
+                        </div>
+                    </div>
+                    <div class="code" style="margin-top: 15px;">
+                        ✅ Новых: 20, дубликатов: 0 → продолжить<br>
+                        ⚠️ Новых: 0, дубликатов: 20 → счетчик +1<br>
+                        ⛔ 2 страницы подряд с дубликатами → стоп
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-title">📦 Извлечение данных из карточек</div>
+                <div class="step-desc">
+                    Парсинг элементов <code>.vacancyCardItem</code>:
+                    <div class="sub-steps">
+                        <div class="sub-step">Title<br>Company</div>
+                        <div class="sub-step">Salary<br>Location</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="step">
+                <div class="step-number">5</div>
+                <div class="step-title">🔍 Детальный парсинг вакансий</div>
+                <div class="step-desc">
+                    Параллельный парсинг деталей (concurrency: 3):
+                    <div class="sub-steps">
+                        <div class="sub-step">
+                            <strong>Проверка кэша:</strong><br>
+                            MD5(url) → cache/rabota-md/
+                        </div>
+                        <div class="sub-step">
+                            <strong>Если кэш устарел:</strong><br>
+                            HTTP запрос + парсинг
+                        </div>
+                    </div>
+                    <div class="code" style="margin-top: 15px;">
+                        Извлекаются: Образование, Опыт работы, График, Место работы
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="step">
+                <div class="step-number">6</div>
+                <div class="step-title">🗑️ Удаление дубликатов</div>
+                <div class="step-desc">
+                    Финальная проверка уникальности по ID
+                    <div class="code">
+                        Было: 200 → Уникальных: 180 → Удалено: 20 дубликатов
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="step success">
+                <div class="step-number">7</div>
+                <div class="step-title">💾 VacancyManager - Управление актуальностью</div>
+                <div class="step-desc">
+                    <div class="sub-steps">
+                        <div class="sub-step">
+                            <strong>Загрузка старых:</strong><br>
+                            Чтение JSON файла
+                        </div>
+                        <div class="sub-step">
+                            <strong>Слияние:</strong><br>
+                            Обновление lastSeenAt
+                        </div>
+                        <div class="sub-step">
+                            <strong>Пометка неактивных:</strong><br>
+                            isActive = false
+                        </div>
+                        <div class="sub-step">
+                            <strong>Автоочистка:</strong><br>
+                            Удаление >7 дней
+                        </div>
+                    </div>
+                    <div class="code" style="margin-top: 15px;">
+                        Сохранение → vacancies_rabota_md.json
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="step success">
+                <div class="step-number">✓</div>
+                <div class="step-title">✅ Результат</div>
+                <div class="step-desc">
+                    <strong>Актуальная база вакансий с отслеживанием жизненного цикла</strong><br>
+                    Готова к использованию в боте, веб-интерфейсе или API
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
