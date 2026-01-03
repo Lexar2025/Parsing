@@ -20,7 +20,11 @@ function getParser(site: string): Parser {
     case '999.md':
       return new NineNineNineMdParser();
     case 'makler.md':
-      return new MaklerMdParser();
+      return new MaklerMdParser({
+        headless: false,      // false = видно браузер для отладки
+        parseDetails: false,  // Не парсить детали (они не нужны)
+        cacheEnabled: true,
+      });
     default:
       throw new Error(`Unknown parser: ${site}`);
   }

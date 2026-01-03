@@ -1,10 +1,11 @@
 /**
  * Парсер для сайта makler.md (Transnistria)
- * HTTP парсинг с поддержкой фильтров по профессиям
+ * Puppeteer + Stealth для обхода Cloudflare защиты
  */
 
-import axios, { AxiosInstance } from 'axios';
-import { JSDOM } from 'jsdom';
+import puppeteer from 'puppeteer-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import { Browser, Page } from 'puppeteer';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import crypto from 'crypto';
@@ -12,7 +13,11 @@ import pLimit from 'p-limit';
 import { Parser, ParserConfig, ParseResult, Vacancy } from '../types/vacancy.js';
 import { log, pause } from '../utils/helpers.js';
 
+// Используем Stealth plugin для обхода Cloudflare
+puppeteer.use(StealthPlugin());
+
 type ParserOptions = {
+  headless?: boolean;
   concurrency?: number;
   cacheEnabled?: boolean;
   cacheDir?: string;
@@ -98,62 +103,33 @@ export const MAKLER_PROFESSIONS: Record<string, number> = {
   'Фотографы': 2931,
 };
 
-/**
- * Дополнительные фильтры
- * field_344[] - тип работы
- */
-export const MAKLER_WORK_TYPES: Record<string, number> = {
-  'Удалённая работа': 4619,
-};
-
 export class MaklerMdParser implements Parser {
-  private axiosInstance: AxiosInstance;
+  private browser: Browser | null = null;
   private readonly baseUrl = 'https://makler.md';
   private options: Required<ParserOptions>;
 
   constructor(opts?: ParserOptions) {
     this.options = {
+      headless: opts?.headless ?? true,
       concurrency: opts?.concurrency ?? 3,
       cacheEnabled: opts?.cacheEnabled ?? true,
       cacheDir: opts?.cacheDir ?? path.resolve(process.cwd(), 'cache', 'makler-md'),
       cacheTTLSeconds: opts?.cacheTTLSeconds ?? 60 * 60 * 24,
       parseDetails: opts?.parseDetails ?? true,
     };
-
-    this.axiosInstance = axios.create({
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        Accept:
-          'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-        'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Connection': 'keep-alive',
-        'Upgrade-Insecure-Requests': '1',
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'none',
-        'Sec-Fetch-User': '?1',
-        'Cache-Control': 'max-age=0',
-        'DNT': '1',
-      },
-      timeout: 15000,
-      maxRedirects: 5,
-      validateStatus: (status) => status < 500,
-    });
   }
 
   async parse(config: ParserConfig): Promise<ParseResult> {
     try {
       log(`Начинаю поиск профессии: ${config.searchQuery || 'все'}\n`);
-      
-      // Начальная задержка для имитации человека
-      await pause(500 + Math.random() * 500);
+
+      // Запускаем браузер
+      await this.launchBrowser();
 
       const allVacancies = await this.parseAllPages(
         config.searchQuery || '',
         config.maxPages || 10,
-        config.delay || 1000,
+        config.delay || 2000,
       );
 
       // Удаляем дубликаты по ID
@@ -175,6 +151,9 @@ export class MaklerMdParser implements Parser {
         log(`\n✅ Детальный парсинг завершен\n`);
       }
 
+      // Закрываем браузер
+      await this.closeBrowser();
+
       return {
         vacancies: finalVacancies,
         totalFound: finalVacancies.length,
@@ -183,7 +162,40 @@ export class MaklerMdParser implements Parser {
       };
     } catch (error) {
       log('❌ Ошибка при парсинге:', error);
+      await this.closeBrowser();
       throw error;
+    }
+  }
+
+  /**
+   * Запуск браузера с настройками для обхода детекции
+   */
+  private async launchBrowser(): Promise<void> {
+    if (this.browser) return;
+
+    log('🚀 Запуск браузера...');
+    this.browser = await puppeteer.launch({
+      headless: this.options.headless,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-blink-features=AutomationControlled',
+        '--disable-web-security',
+        '--disable-features=IsolateOrigins,site-per-process',
+      ],
+    });
+    log('✅ Браузер запущен');
+  }
+
+  /**
+   * Закрытие браузера
+   */
+  private async closeBrowser(): Promise<void> {
+    if (this.browser) {
+      await this.browser.close();
+      this.browser = null;
+      log('🔒 Браузер закрыт');
     }
   }
 
@@ -205,7 +217,272 @@ export class MaklerMdParser implements Parser {
   }
 
   /**
-   * Парсинг деталей для массива вакансий с кэшированием
+   * Парсинг всех страниц с вакансиями
+   */
+  private async parseAllPages(
+    profession: string,
+    maxPages: number,
+    delay: number,
+  ): Promise<Vacancy[]> {
+    const allVacancies: Vacancy[] = [];
+    const seenIds = new Set<string>();
+    let currentPage = 0;
+    let emptyPagesCount = 0;
+
+    log(`📊 Начинаю парсинг страниц (макс: ${maxPages})\n`);
+
+    while (currentPage < maxPages && emptyPagesCount < 2) {
+      log(`📄 Парсинг страницы ${currentPage + 1}/${maxPages}...`);
+
+      const pageUrl = this.buildPageUrl(profession, currentPage);
+      log(`   URL: ${pageUrl}`);
+
+      try {
+        const vacancies = await this.parseVacanciesFromPage(pageUrl);
+
+        if (vacancies.length === 0) {
+          log(`   ⚠️  Страница ${currentPage + 1} пуста`);
+          emptyPagesCount++;
+
+          if (emptyPagesCount >= 2) {
+            log(`   ⛔ Две пустые страницы подряд - завершаем парсинг`);
+            break;
+          }
+        } else {
+          emptyPagesCount = 0;
+
+          let newVacanciesCount = 0;
+          let duplicatesCount = 0;
+
+          for (const vacancy of vacancies) {
+            if (!seenIds.has(vacancy.id)) {
+              seenIds.add(vacancy.id);
+              allVacancies.push(vacancy);
+              newVacanciesCount++;
+            } else {
+              duplicatesCount++;
+            }
+          }
+
+          log(
+            `   ✅ Найдено: ${vacancies.length} (новых: ${newVacanciesCount}, дубликатов: ${duplicatesCount})`,
+          );
+          log(`   📊 Всего уникальных: ${allVacancies.length}`);
+        }
+
+        if (currentPage < maxPages - 1) {
+          const randomDelay = delay + Math.random() * 1000;
+          log(`   ⏳ Пауза ${Math.round(randomDelay)}мс перед следующей страницей...`);
+          await pause(randomDelay);
+        }
+
+        currentPage++;
+      } catch (error) {
+        log(`   ❌ Ошибка при парсинге страницы ${currentPage + 1}:`, error);
+        currentPage++;
+      }
+    }
+
+    return allVacancies;
+  }
+
+  /**
+   * Построение URL для страницы с фильтрами
+   * Используем list=false как в рабочем примере
+   */
+  private buildPageUrl(profession: string, page: number): string {
+    let url = `${this.baseUrl}/transnistria/job/job-offers?list`;
+
+    // Добавляем фильтр профессии если указана
+    if (profession) {
+      const professionId = this.findProfessionId(profession);
+      if (professionId !== null) {
+        url += `&field_446[]=${professionId}`;
+      }
+    }
+
+    // Добавляем list=false (из рабочего примера)
+    url += '&list=false';
+
+    // Добавляем номер страницы
+    if (page > 0) {
+      url += `&page=${page}`;
+    }
+
+    return url;
+  }
+
+  /**
+   * Поиск ID профессии по названию
+   */
+  private findProfessionId(profession: string): number | null {
+    const professionLower = profession.toLowerCase().trim();
+
+    for (const [key, value] of Object.entries(MAKLER_PROFESSIONS)) {
+      if (key.toLowerCase() === professionLower) {
+        return value;
+      }
+    }
+
+    // Пробуем частичное совпадение
+    for (const [key, value] of Object.entries(MAKLER_PROFESSIONS)) {
+      if (key.toLowerCase().includes(professionLower) || professionLower.includes(key.toLowerCase())) {
+        log(`   ℹ️  Найдено совпадение: "${profession}" -> "${key}"`);
+        return value;
+      }
+    }
+
+    log(`   ⚠️  Профессия "${profession}" не найдена в словаре, парсим все вакансии`);
+    return null;
+  }
+
+  /**
+   * Парсинг вакансий со страницы с имитацией человеческой активности
+   */
+  private async parseVacanciesFromPage(url: string): Promise<Vacancy[]> {
+    if (!this.browser) {
+      throw new Error('Браузер не запущен');
+    }
+
+    const page = await this.browser.newPage();
+
+    try {
+      // Устанавливаем viewport
+      await page.setViewport({ width: 1920, height: 1080 });
+
+      // Переход на страницу
+      await page.goto(url, {
+        waitUntil: 'networkidle2',
+        timeout: 60000,
+      });
+
+      // ВАЖНО: Имитируем человеческую активность для обхода Cloudflare
+      // Проверяем, загрузились ли вакансии
+      let articlesCount = await page.$$eval('article', (articles) => articles.length);
+
+      if (articlesCount === 0) {
+        log(`   ⚠️  Вакансии не видны, имитируем активность...`);
+
+        // Двигаем мышкой в случайные точки
+        await page.mouse.move(100, 100);
+        await pause(200);
+        await page.mouse.move(500, 300);
+        await pause(200);
+
+        // Делаем клик в безопасное место (в body)
+        await page.mouse.click(400, 400);
+        
+        // Ждем пока Cloudflare нас "пропустит"
+        await pause(5000);
+
+        // Проверяем еще раз
+        articlesCount = await page.$$eval('article', (articles) => articles.length);
+        
+        if (articlesCount === 0) {
+          log(`   ⚠️  Вакансии все еще не видны после активности`);
+        } else {
+          log(`   ✅ После активности найдено ${articlesCount} вакансий`);
+        }
+      }
+
+      // Парсим вакансии
+      const vacancies = await page.$$eval('article', (articles) => {
+        return articles.map((article) => {
+          try {
+            // Время публикации
+            const timeElement = article.querySelector('.ls-detail_time');
+            const timeText = timeElement?.textContent?.trim();
+
+            // Заголовок и ссылка
+            const titleLink = article.querySelector('.ls-detail_antTitle a.ls-detail_anUrl');
+            const title = titleLink?.textContent?.trim() || '';
+            const url = titleLink?.getAttribute('href') || '';
+
+            if (!title || !url) {
+              return null;
+            }
+
+            // Описание
+            const descElement = article.querySelector('.subfir');
+            const description = descElement?.textContent?.trim() || undefined;
+
+            // Локация и телефон
+            const infoBlock = article.querySelector('.ls-detail_anData');
+            const location = infoBlock?.querySelector('#pointer_icon')?.textContent?.trim() || undefined;
+            const phone = infoBlock?.querySelector('.phone_icon')?.textContent?.trim() || undefined;
+
+            // Извлекаем ID из URL
+            const idMatch = url.match(/\/an\/(\d+)/);
+            const id = idMatch ? idMatch[1] : url;
+
+            return {
+              id,
+              title,
+              description,
+              location,
+              url: url.startsWith('http') ? url : `https://makler.md${url}`,
+              publishedAt: timeText,
+              contactPerson: phone,
+              source: 'makler.md',
+            };
+          } catch {
+            return null;
+          }
+        }).filter(Boolean);
+      });
+
+      await page.close();
+
+      // Обрабатываем даты
+      return vacancies.map((v: any) => ({
+        ...v,
+        publishedAt: this.parseDate(v.publishedAt),
+      })) as Vacancy[];
+
+    } catch (error) {
+      await page.close();
+      throw error;
+    }
+  }
+
+  /**
+   * Парсинг даты из формата "03 Января 05:58"
+   */
+  private parseDate(dateStr: string | undefined): Date | undefined {
+    if (!dateStr) return undefined;
+
+    try {
+      const months: Record<string, number> = {
+        'января': 0, 'февраля': 1, 'марта': 2, 'апреля': 3,
+        'мая': 4, 'июня': 5, 'июля': 6, 'августа': 7,
+        'сентября': 8, 'октября': 9, 'ноября': 10, 'декабря': 11,
+      };
+
+      const match = dateStr.match(/(\d+)\s+(\w+)\s+(\d+):(\d+)/i);
+      if (match) {
+        const day = parseInt(match[1]);
+        const month = months[match[2].toLowerCase()];
+        const hour = parseInt(match[3]);
+        const minute = parseInt(match[4]);
+
+        const now = new Date();
+        const date = new Date(now.getFullYear(), month, day, hour, minute);
+
+        if (date > now) {
+          date.setFullYear(now.getFullYear() - 1);
+        }
+
+        return date;
+      }
+    } catch {
+      // Игнорируем ошибки парсинга
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Парсинг деталей для массива вакансий
    */
   private async parseVacanciesDetails(vacancies: Vacancy[]): Promise<Vacancy[]> {
     if (this.options.cacheEnabled) {
@@ -243,239 +520,31 @@ export class MaklerMdParser implements Parser {
   }
 
   /**
-   * Парсинг всех страниц с вакансиями
-   */
-  private async parseAllPages(
-    profession: string,
-    maxPages: number,
-    delay: number,
-  ): Promise<Vacancy[]> {
-    const allVacancies: Vacancy[] = [];
-    const seenIds = new Set<string>();
-    let currentPage = 0; // makler.md использует 0-based индексацию
-    let emptyPagesCount = 0;
-
-    log(`📊 Начинаю парсинг страниц (макс: ${maxPages})\n`);
-
-    while (currentPage < maxPages && emptyPagesCount < 2) {
-      log(`📄 Парсинг страницы ${currentPage + 1}/${maxPages}...`);
-
-      const pageUrl = this.buildPageUrl(profession, currentPage);
-      log(`   URL: ${pageUrl}`);
-
-      try {
-        const vacancies = await this.parseVacanciesFromPage(pageUrl);
-
-        if (vacancies.length === 0) {
-          log(`   ⚠️  Страница ${currentPage + 1} пуста`);
-          emptyPagesCount++;
-
-          if (emptyPagesCount >= 2) {
-            log(`   ⛔ Две пустые страницы подряд - завершаем парсинг`);
-            break;
-          }
-        } else {
-          emptyPagesCount = 0; // Сбрасываем счетчик
-
-          // Проверяем на дубликаты
-          let newVacanciesCount = 0;
-          let duplicatesCount = 0;
-
-          for (const vacancy of vacancies) {
-            if (!seenIds.has(vacancy.id)) {
-              seenIds.add(vacancy.id);
-              allVacancies.push(vacancy);
-              newVacanciesCount++;
-            } else {
-              duplicatesCount++;
-            }
-          }
-
-          log(
-            `   ✅ Найдено: ${vacancies.length} (новых: ${newVacanciesCount}, дубликатов: ${duplicatesCount})`,
-          );
-          log(`   📊 Всего уникальных: ${allVacancies.length}`);
-        }
-
-        // Всегда делаем паузу между страницами для избежания блокировки
-        if (currentPage < maxPages - 1) {
-          const randomDelay = delay + Math.random() * 1000; // Добавляем случайность
-          log(`   ⏳ Пауза ${Math.round(randomDelay)}мс перед следующей страницей...`);
-          await pause(randomDelay);
-        }
-
-        currentPage++;
-      } catch (error) {
-        log(`   ❌ Ошибка при парсинге страницы ${currentPage + 1}:`, error);
-        currentPage++;
-      }
-    }
-
-    return allVacancies;
-  }
-
-  /**
-   * Построение URL для страницы с фильтрами
-   */
-  private buildPageUrl(profession: string, page: number): string {
-    let url = `${this.baseUrl}/transnistria/job/job-offers?list&list=detail`;
-
-    // Добавляем фильтр профессии если указана
-    if (profession) {
-      const professionId = this.findProfessionId(profession);
-      if (professionId !== null) {
-        url += `&field_446[]=${professionId}`;
-      }
-    }
-
-    // Добавляем номер страницы
-    if (page > 0) {
-      url += `&page=${page}`;
-    }
-
-    return url;
-  }
-
-  /**
-   * Поиск ID профессии по названию (нечувствительно к регистру)
-   */
-  private findProfessionId(profession: string): number | null {
-    const professionLower = profession.toLowerCase().trim();
-
-    for (const [key, value] of Object.entries(MAKLER_PROFESSIONS)) {
-      if (key.toLowerCase() === professionLower) {
-        return value;
-      }
-    }
-
-    // Пробуем частичное совпадение
-    for (const [key, value] of Object.entries(MAKLER_PROFESSIONS)) {
-      if (key.toLowerCase().includes(professionLower) || professionLower.includes(key.toLowerCase())) {
-        log(`   ℹ️  Найдено совпадение: "${profession}" -> "${key}"`);
-        return value;
-      }
-    }
-
-    log(`   ⚠️  Профессия "${profession}" не найдена в словаре, парсим все вакансии`);
-    return null;
-  }
-
-  /**
-   * Парсинг вакансий со страницы
-   */
-  private async parseVacanciesFromPage(url: string): Promise<Vacancy[]> {
-    const html = await this.fetchPage(url);
-    const dom = new JSDOM(html);
-    const document = dom.window.document;
-
-    // Ищем все article элементы с вакансиями
-    const articles = document.querySelectorAll('article');
-    const vacancies: Vacancy[] = [];
-
-    articles.forEach((article) => {
-      try {
-        const vacancy = this.extractVacancyFromArticle(article);
-        if (vacancy) {
-          vacancies.push(vacancy);
-        }
-      } catch {
-        // Тихо пропускаем ошибки
-      }
-    });
-
-    return vacancies;
-  }
-
-  /**
-   * Извлечение данных вакансии из article элемента
-   */
-  private extractVacancyFromArticle(article: Element): Vacancy | null {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    // Время публикации
-    const timeElement = article.querySelector('.ls-detail_time');
-    const timeText = timeElement?.textContent?.trim();
-
-    // Заголовок и ссылка
-    const titleLink = article.querySelector('.ls-detail_antTitle a.ls-detail_anUrl');
-    const title = titleLink?.textContent?.trim() || '';
-    const url = titleLink?.getAttribute('href') || '';
-
-    if (!title || !url) {
-      return null;
-    }
-
-    // Описание
-    const descElement = article.querySelector('.subfir');
-    const description = descElement?.textContent?.trim() || undefined;
-
-    // Локация и телефон
-    const infoBlock = article.querySelector('.ls-detail_anData');
-    const location = infoBlock?.querySelector('#pointer_icon')?.textContent?.trim() || undefined;
-    const phone = infoBlock?.querySelector('.phone_icon')?.textContent?.trim() || undefined;
-
-    return {
-      id: this.extractIdFromUrl(url),
-      title,
-      description,
-      location,
-      url: this.normalizeUrl(url),
-      publishedAt: this.parseDate(timeText),
-      contactPerson: phone, // Используем поле contactPerson для телефона
-      source: 'makler.md',
-    };
-  }
-
-  /**
-   * Парсинг даты из формата "03 Января 05:58"
-   */
-  private parseDate(dateStr: string | undefined): Date | undefined {
-    if (!dateStr) return undefined;
-
-    try {
-      const months: Record<string, number> = {
-        'января': 0, 'февраля': 1, 'марта': 2, 'апреля': 3,
-        'мая': 4, 'июня': 5, 'июля': 6, 'августа': 7,
-        'сентября': 8, 'октября': 9, 'ноября': 10, 'декабря': 11,
-      };
-
-      // Формат: "03 Января 05:58"
-      const match = dateStr.match(/(\d+)\s+(\w+)\s+(\d+):(\d+)/i);
-      if (match) {
-        const day = parseInt(match[1]);
-        const month = months[match[2].toLowerCase()];
-        const hour = parseInt(match[3]);
-        const minute = parseInt(match[4]);
-
-        const now = new Date();
-        const date = new Date(now.getFullYear(), month, day, hour, minute);
-
-        // Если дата в будущем, значит это прошлый год
-        if (date > now) {
-          date.setFullYear(now.getFullYear() - 1);
-        }
-
-        return date;
-      }
-    } catch {
-      // Игнорируем ошибки парсинга
-    }
-
-    return undefined;
-  }
-
-  /**
-   * Парсинг деталей вакансии со страницы
+   * Парсинг деталей вакансии
    */
   async parseVacancyDetails(url: string): Promise<Partial<Vacancy>> {
-    const html = await this.fetchPage(url);
-    const dom = new JSDOM(html);
-    const document = dom.window.document;
+    if (!this.browser) {
+      await this.launchBrowser();
+    }
 
+    const page = await this.browser!.newPage();
     const details: Partial<Vacancy> = {};
 
-    // Можно добавить дополнительные поля с детальной страницы
-    // Пока возвращаем пустой объект, так как основные данные уже есть
-    
+    try {
+      await page.goto(url, {
+        waitUntil: 'networkidle2',
+        timeout: 30000,
+      });
+
+      // Можно добавить парсинг дополнительных полей с детальной страницы
+      // Пока оставляем пустым, так как основные данные уже есть
+
+      await page.close();
+    } catch (error) {
+      await page.close();
+      throw error;
+    }
+
     return details;
   }
 
@@ -516,71 +585,6 @@ export class MaklerMdParser implements Parser {
     }
 
     return details;
-  }
-
-  /**
-   * Получение HTML страницы с retry логикой
-   */
-  private async fetchPage(url: string, retries = 3): Promise<string> {
-    for (let attempt = 1; attempt <= retries; attempt++) {
-      try {
-        // Добавляем случайную задержку перед запросом
-        if (attempt > 1) {
-          const delay = Math.random() * 2000 + 1000; // 1-3 сек
-          await pause(delay);
-        }
-
-        const response = await this.axiosInstance.get(url, {
-          headers: {
-            'Referer': this.baseUrl,
-            'Origin': this.baseUrl,
-          },
-        });
-
-        // Проверяем статус код
-        if (response.status === 418) {
-          log(`   ⚠️  Получен статус 418 (попытка ${attempt}/${retries})`);
-          if (attempt === retries) {
-            throw new Error('Сайт заблокировал запросы (HTTP 418)');
-          }
-          continue;
-        }
-
-        return response.data;
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          const status = error.response?.status;
-          
-          if (status === 418 && attempt < retries) {
-            log(`   ⚠️  HTTP 418 - попытка ${attempt}/${retries}`);
-            continue;
-          }
-          
-          log(`❌ Ошибка HTTP: ${error.message}`);
-        }
-        
-        if (attempt === retries) {
-          throw error;
-        }
-      }
-    }
-    
-    throw new Error('Не удалось загрузить страницу после всех попыток');
-  }
-
-  /**
-   * Нормализация URL
-   */
-  private normalizeUrl(url: string): string {
-    return url.startsWith('http') ? url : `${this.baseUrl}${url}`;
-  }
-
-  /**
-   * Извлечение ID из URL
-   */
-  private extractIdFromUrl(url: string): string {
-    const match = url.match(/\/an\/(\d+)/);
-    return match ? match[1] : url;
   }
 
   /**
