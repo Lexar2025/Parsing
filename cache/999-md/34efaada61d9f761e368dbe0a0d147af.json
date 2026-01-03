@@ -1,15 +1,14 @@
 {
+  "author": "Юридическое лицо",
   "education": "Не требуется или не указано",
   "experience": "Не имеет значения",
-  "salary": "12000 MDL",
+  "salary": "от 11000 до 12000 MDL",
   "schedule": "Полный день",
   "seasonal": false,
   "employmentType": "Полная занятость",
   "companyType": "Торговые и дистрибьюторские компании",
-  "contactPerson": "Ion",
-  "languages": [
-    "Румынский"
-  ],
-  "region": "Кишинёв мун., Кишинёв",
-  "location": "Кишинёв мун., Кишинёв"
+  "contactPerson": "Gheorghe",
+  "company": "SRL Serviabil",
+  "region": "Кишинёв мун., Кишинёв, Чокана, str. Uzinelor, 84",
+  "location": "Кишинёв мун., Кишинёв, Чокана, str. Uzinelor, 84"
 }

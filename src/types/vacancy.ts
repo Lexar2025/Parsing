@@ -15,7 +15,7 @@ export interface Vacancy {
   experience?: string;
   schedule?: string;
   workPlace?: string;
-  source: 'rabota.md' | '999.md' | 'other';
+  source: 'rabota.md' | '999.md' | 'makler.md' | 'other';
   // Дополнительные поля для 999.md
   author?: string; // Автор (Физ. или Юр. лицо)
   seasonal?: boolean; // Сезонная работа

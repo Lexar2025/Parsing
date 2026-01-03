@@ -5,6 +5,7 @@
 
 import { RabotaMdParser } from './parsers/rabotaMd.js';
 import { NineNineNineMdParser } from './parsers/nineNineNineMd.js';
+import { MaklerMdParser } from './parsers/maklerMd.js';
 import { ParserConfig, Parser, Vacancy } from './types/vacancy.js';
 import { getParserConfig, getAvailableParsers } from './config/parsers.js';
 import { VacancyManager, daysAgo } from './utils/vacancyManager.js';
@@ -18,6 +19,8 @@ function getParser(site: string): Parser {
       return new RabotaMdParser();
     case '999.md':
       return new NineNineNineMdParser();
+    case 'makler.md':
+      return new MaklerMdParser();
     default:
       throw new Error(`Unknown parser: ${site}`);
   }
@@ -155,7 +158,7 @@ async function main(): Promise<void> {
 
   try {
     // Получаем конфигурацию для сайта
-    const siteConfig = getParserConfig(site as '999.md' | 'rabota.md');
+    const siteConfig = getParserConfig(site as '999.md' | 'rabota.md' | 'makler.md');
 
     // Создаем экземпляр парсера
     const parser = getParser(site);

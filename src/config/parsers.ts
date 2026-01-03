@@ -32,6 +32,15 @@ export const PARSER_CONFIGS: Record<string, SiteConfig> = {
     concurrency: 3,
     cacheEnabled: true,
   },
+  'makler.md': {
+    name: 'Makler.md',
+    baseUrl: 'https://makler.md',
+    defaultCategory: 'Программисты',
+    maxPages: 10,
+    delay: 1000,
+    concurrency: 3,
+    cacheEnabled: true,
+  },
 };
 
 /**

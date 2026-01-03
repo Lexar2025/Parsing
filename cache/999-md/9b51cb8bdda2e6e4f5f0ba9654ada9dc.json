@@ -1,15 +1,11 @@
 {
+  "author": "Физическое лицо",
   "education": "Не требуется или не указано",
-  "experience": "Не имеет значения",
-  "salary": "12000 MDL",
+  "experience": "Нет опыта",
   "schedule": "Полный день",
   "seasonal": false,
   "employmentType": "Полная занятость",
-  "companyType": "Торговые и дистрибьюторские компании",
-  "contactPerson": "Ion",
-  "languages": [
-    "Румынский"
-  ],
+  "contactPerson": "Александр",
   "region": "Кишинёв мун., Кишинёв",
   "location": "Кишинёв мун., Кишинёв"
 }

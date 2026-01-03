@@ -12,7 +12,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -28,7 +28,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -44,23 +44,23 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
     "id": "113022",
-    "title": "Программист PHP CodeIgniter / Laravel",
+    "title": "Программист PHP Laravel",
     "company": "Bomba",
     "salary": "Не указана",
     "location": "Кишинев, Центр",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/programmist-php-codeigniter-laravel/113022",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/programmist-php-laravel/113022",
     "source": "rabota.md",
     "education": "Не имеет значение",
     "experience": "От 2 лет",
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -76,40 +76,8 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
-  },
-  {
-    "id": "47748",
-    "title": "Программист стажер 1C",
-    "company": "Vipasoft SRL",
-    "salary": "6 000 – 10 000 леев",
-    "location": "Кишинев, Рышкановка\n                                                    \n                                str-la Studenților 2/4",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/programmist-stazher-1c/47748",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "Можно без опыта",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-01T22:14:04.476Z",
-    "isActive": false
-  },
-  {
-    "id": "48759",
-    "title": "Программист 1С",
-    "company": "Vipasoft SRL",
-    "salary": "20 000 – 40 000 леев",
-    "location": "Кишинев, Старая Почта\n                                                    \n                                str-la Studenților 2/4",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/programmist-1s/48759",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "От 2 лет",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-01T22:14:04.476Z",
-    "isActive": false
   },
   {
     "id": "757",
@@ -124,7 +92,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -140,7 +108,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -156,7 +124,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -172,7 +140,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -188,23 +156,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "96008",
-    "title": "Программист 1С 7.7, 1С 8 в г. Кишинев",
-    "company": "JLC Group",
-    "salary": "Не указана",
-    "location": "Кишинев, Ботаника\n                                                    \n                                str. Sarmizegetusa 90",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/programmist-1s-77-1s-8-v-g-kishinev/96008",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "С опытом",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -220,7 +172,7 @@
     "schedule": "Гибкий график",
     "workPlace": "Удалённо",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -236,7 +188,7 @@
     "schedule": "Частичная занятость",
     "workPlace": "Удалённо",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -252,23 +204,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "69324",
-    "title": "Программист 1С / Programator 1C",
-    "company": "Telemarket.md",
-    "salary": "15 000 – 25 000 леев",
-    "location": "Кишинев, Чеканы\n                                                    \n                                str. Uzinelor 4/2",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/programmist-1s-programator-1c/69324",
-    "source": "rabota.md",
-    "education": "Высшее",
-    "experience": "С опытом",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -284,8 +220,8 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-01T22:14:04.476Z",
-    "isActive": false
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
   },
   {
     "id": "64376",
@@ -300,23 +236,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "131987",
-    "title": "Programator WordPress, Symfony, PHP",
-    "company": "Code Flow",
-    "salary": "10 000 – 30 000 леев",
-    "location": "Кишинев, Удалённо",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/programator-wordpress-symfony-php/131987",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "От 3 лет",
-    "schedule": "Свободный график",
-    "workPlace": "Удалённо",
-    "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -332,7 +252,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -348,40 +268,8 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
-  },
-  {
-    "id": "47908",
-    "title": "Programator stagiar 1C",
-    "company": "Vipasoft SRL",
-    "salary": "6 000 – 10 000 леев",
-    "location": "Кишинев, Старая Почта\n                                                    \n                                str-la Studenților 2/4",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/programator-stagiar-1c/47908",
-    "source": "rabota.md",
-    "education": "Высшее",
-    "experience": "Можно без опыта",
-    "schedule": "Частичная занятость",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-01T22:14:04.476Z",
-    "isActive": false
-  },
-  {
-    "id": "48798",
-    "title": "Programator 1C",
-    "company": "Vipasoft SRL",
-    "salary": "20 000 – 40 000 леев",
-    "location": "Кишинев, Рышкановка\n                                                    \n                                str-la Studenților 2/4",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/programator-1c/48798",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "От 2 лет",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-01T22:14:04.476Z",
-    "isActive": false
   },
   {
     "id": "4347",
@@ -396,7 +284,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -412,7 +300,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -428,23 +316,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "107380",
-    "title": "Programator 1C",
-    "company": "VITAFOR",
-    "salary": "Не указана",
-    "location": "Кишинев, Ботаника\n                                                    \n                                str. Valea Bicului 5/3",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/programator-1c/107380",
-    "source": "rabota.md",
-    "education": "Высшее",
-    "experience": "С опытом",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -460,7 +332,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -476,7 +348,7 @@
     "schedule": "Полный день",
     "workPlace": "Удалённо",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -492,7 +364,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -508,7 +380,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -524,7 +396,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -540,7 +412,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -556,7 +428,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -572,7 +444,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -588,7 +460,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -604,7 +476,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -620,23 +492,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "130346",
-    "title": "Senior Java Developer",
-    "company": "Computaris",
-    "salary": "Не указана",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/senior-java-developer/130346",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "Более 5 лет",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:07:14.773Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -652,71 +508,23 @@
     "schedule": "Полный день",
     "workPlace": "Гибрид (Дом/Офис)",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
     "id": "128776",
-    "title": "Middle Full Stack Developer - Remote",
+    "title": "Middle Front End Developer - Remote",
     "company": "GR8 Tech",
     "salary": "Не указана",
     "location": "Удалённо",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/middle-full-stack-developer-remote/128776",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/middle-front-end-developer-remote/128776",
     "source": "rabota.md",
     "education": "Не имеет значение",
     "experience": "От 3 лет",
     "schedule": "Полный день",
     "workPlace": "Удалённо",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "130524",
-    "title": "Senior Front-End Developer for CRM Team - Remote",
-    "company": "GR8 Tech",
-    "salary": "Не указана",
-    "location": "Удалённо",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/senior-front-end-developer-for-crm-team-remote/130524",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "Более 5 лет",
-    "schedule": "Полный день",
-    "workPlace": "Удалённо",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "131150",
-    "title": "Middle .Net Developer for Payments Team - Remote",
-    "company": "GR8 Tech",
-    "salary": "Не указана",
-    "location": "Удалённо",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/middle-net-developer-for-payments-team-remote/131150",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "От 3 лет",
-    "schedule": "Полный день",
-    "workPlace": "Удалённо",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-01T22:14:04.476Z",
-    "isActive": false
-  },
-  {
-    "id": "131253",
-    "title": "Senior .Net Developer for Unified Feed Team - Remote",
-    "company": "GR8 Tech",
-    "salary": "Не указана",
-    "location": "Удалённо",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/senior-net-developer-for-unified-feed-team-remote/131253",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "С опытом",
-    "schedule": "Полный день",
-    "workPlace": "Удалённо",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -732,7 +540,7 @@
     "schedule": "Полный день",
     "workPlace": "Удалённо",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -748,23 +556,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "131985",
-    "title": "Фронтенд-разработчик (React) — Part time с возможным переходом на Full time",
-    "company": "Frateca.com",
-    "salary": "Не указана",
-    "location": "Удалённо",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/frontend-razrabotchik-react-part-time-s-vozmozhnym-perehodom-na-full-time/131985",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "С опытом",
-    "schedule": "Частичная занятость",
-    "workPlace": "Удалённо",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -780,7 +572,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -796,7 +588,7 @@
     "schedule": "Гибкий график",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -812,7 +604,7 @@
     "schedule": "Полный день",
     "workPlace": "Гибрид (Дом/Офис)",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -828,7 +620,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -844,7 +636,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -860,23 +652,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "128539",
-    "title": "Middle Java Developer",
-    "company": "Microinvest",
-    "salary": "Не указана",
-    "location": "Кишинев, Рышкановка\n                                                    \n                                bd. Renașterii Naționale 12",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/middle-java-developer/128539",
-    "source": "rabota.md",
-    "education": "Высшее",
-    "experience": "От 2 лет",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -892,7 +668,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -908,7 +684,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -924,55 +700,7 @@
     "schedule": "Гибкий график",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "71087",
-    "title": "PL/SQL Developer",
-    "company": "S&T Mold",
-    "salary": "Не указана",
-    "location": "Кишинев, Скулянка",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/pl-sql-developer/71087",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "От 1 года",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "112621",
-    "title": "Front End Developer (React / Next.js) de la 1000 Euro",
-    "company": "Linkair",
-    "salary": "1 000 евро",
-    "location": "Кишинев, Центр\n                                                    \n                                str. 31 August 1989 64",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/front-end-developer-react-nextjs-de-la-1000-euro/112621",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "От 1 года",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "116174",
-    "title": "Node.js Developer de la 1500 Eur",
-    "company": "Linkair",
-    "salary": "1 500 евро",
-    "location": "Кишинев, Центр\n                                                    \n                                str. 31 August 1989 64",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/nodejs-developer-de-la-1500-eur/116174",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "С опытом",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -988,7 +716,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1004,7 +732,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1020,7 +748,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1036,39 +764,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "131798",
-    "title": "Front-end (React) Developer",
-    "company": "BackstageIT",
-    "salary": "Не указана",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/front-end-react-developer/131798",
-    "source": "rabota.md",
-    "education": "Высшее",
-    "experience": "От 4 лет",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "131853",
-    "title": "Full-stack (.NET) Developer",
-    "company": "BackstageIT",
-    "salary": "Не указана",
-    "location": "Кишинев, Центр\n                                                    \n                                str. Columna 102",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/full-stack-net-developer/131853",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "От 3 лет",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1084,7 +780,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1100,55 +796,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "58970",
-    "title": "Senior Full-stack (React / Node.js) Developer",
-    "company": "Proovia.IT",
-    "salary": "Не указана",
-    "location": "Кишинев, Центр\n                                                    \n                                str. Lev Tolstoi 63/1",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/senior-full-stack-react-nodejs-developer/58970",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "От 1 года",
-    "schedule": "Гибкий график",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "90960",
-    "title": "Middle Full-stack (React / Node.js) Developer",
-    "company": "Proovia.IT",
-    "salary": "Не указана",
-    "location": "Кишинев, Центр\n                                                    \n                                str. Lev Tolstoi 63/1",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/middle-full-stack-react-nodejs-developer/90960",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "От 2 лет",
-    "schedule": "Гибкий график",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "121183",
-    "title": "Unity C# Developer | 15 000 - 45 000",
-    "company": "ArtDock",
-    "salary": "15 000 – 45 000 леев",
-    "location": "Кишинев, Рышкановка\n                                                    \n                                str. Kiev 16/1",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/unity-c-developer-15-000-45-000/121183",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "От 2 лет",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1164,7 +812,7 @@
     "schedule": "Частичная занятость",
     "workPlace": "Удалённо",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1180,7 +828,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1196,7 +844,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1212,7 +860,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1228,7 +876,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1244,7 +892,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1260,39 +908,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "130328",
-    "title": "Android Developer Direcția digital bank Departamentul tehnologii informaționale",
-    "company": "Moldindconbank",
-    "salary": "Не указана",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/android-developer-directia-digital-bank-departamentul-tehnologii-informationale/130328",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "От 3 лет",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "118657",
-    "title": "Frontend Developer (Angular)",
-    "company": "Urchin Systems",
-    "salary": "Не указана",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/frontend-developer-angular/118657",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "Более 5 лет",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1308,39 +924,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "126289",
-    "title": "Python FullStack Developer (middle/senior) - Chișinău",
-    "company": "OCN MK Kredit Company SRL",
-    "salary": "Не указана",
-    "location": "Кишинев, Скулянка\n                                                    \n                                str. Calea Ieșilor 17/2",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/python-fullstack-developer-middle-senior-chisinau/126289",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "С опытом",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "72624",
-    "title": "Junior Front-end Developer",
-    "company": "Hot Software",
-    "salary": "Не указана",
-    "location": "Кишинев, Центр\n                                                    \n                                bd. Dimitrie Cantemir 5/4",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/junior-front-end-developer/72624",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "От 1 года",
-    "schedule": "Полный день",
-    "workPlace": "Гибрид (Дом/Офис)",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1356,23 +940,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "130752",
-    "title": "Back-End Developer (C#)",
-    "company": "Route One Group",
-    "salary": "Не указана",
-    "location": "Кишинев, Центр",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/back-end-developer-c/130752",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "С опытом",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1388,23 +956,7 @@
     "schedule": "Полный день",
     "workPlace": "Гибрид (Дом/Офис)",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "77676",
-    "title": "PHP Developer",
-    "company": "Coherent Solutions",
-    "salary": "Не указана",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/php-developer/77676",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "От 4 лет",
-    "schedule": "Полный день",
-    "workPlace": "Удалённо",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1420,7 +972,7 @@
     "schedule": "Полный день",
     "workPlace": "Гибрид (Дом/Офис)",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1436,55 +988,7 @@
     "schedule": "Полный день",
     "workPlace": "Гибрид (Дом/Офис)",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "79994",
-    "title": "Angular Developer",
-    "company": "Coherent Solutions",
-    "salary": "Не указана",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/angular-developer/79994",
-    "source": "rabota.md",
-    "education": "Высшее",
-    "experience": "От 4 лет",
-    "schedule": "Полный день",
-    "workPlace": "Гибрид (Дом/Офис)",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "131779",
-    "title": "Python Developer (Junior)",
-    "company": "Coherent Solutions",
-    "salary": "Не указана",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/python-developer-junior/131779",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "От 3 лет",
-    "schedule": "Полный день",
-    "workPlace": "Гибрид (Дом/Офис)",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "131589",
-    "title": "Business Developer (Бухарест)",
-    "company": "Assist Match",
-    "salary": "Не указана",
-    "location": "За границей",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/business-developer-buharest/131589",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "От 2 лет",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1500,7 +1004,7 @@
     "schedule": "Свободный график",
     "workPlace": "Удалённо",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1516,7 +1020,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1532,23 +1036,7 @@
     "schedule": "Полный день",
     "workPlace": "Гибрид (Дом/Офис)",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "131646",
-    "title": "Java Developer",
-    "company": "Stefanini",
-    "salary": "Не указана",
-    "location": "Кишинев, Центр",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/java-developer/131646",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "Более 5 лет",
-    "schedule": "Полный день",
-    "workPlace": "Гибрид (Дом/Офис)",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1564,7 +1052,7 @@
     "schedule": "Гибкий график",
     "workPlace": "Удалённо",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1580,7 +1068,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1596,7 +1084,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1612,7 +1100,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1628,7 +1116,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1644,7 +1132,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1660,135 +1148,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "131399",
-    "title": "Backend Developer",
-    "company": "Take IT",
-    "salary": "Не указана",
-    "location": "Кишинев, Чеканы\n                                                    \n                                str. Uzinelor 171/3",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/backend-developer/131399",
-    "source": "rabota.md",
-    "education": "Высшее",
-    "experience": "От 3 лет",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "131406",
-    "title": "Frontend Developer",
-    "company": "Take IT",
-    "salary": "Не указана",
-    "location": "Кишинев, Чеканы\n                                                    \n                                str. Uzinelor 171/3",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/frontend-developer/131406",
-    "source": "rabota.md",
-    "education": "Высшее",
-    "experience": "От 3 лет",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "131407",
-    "title": "Full Stack Developer",
-    "company": "Take IT",
-    "salary": "Не указана",
-    "location": "Кишинев, Чеканы\n                                                    \n                                str. Uzinelor 171/3",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/full-stack-developer/131407",
-    "source": "rabota.md",
-    "education": "Высшее",
-    "experience": "От 3 лет",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "117330",
-    "title": "Web Developer",
-    "company": "Exclusive Business Class",
-    "salary": "Не указана",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/web-developer/117330",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "Более 5 лет",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-01T22:14:04.476Z",
-    "isActive": false
-  },
-  {
-    "id": "117331",
-    "title": "Programmer",
-    "company": "Exclusive Business Class",
-    "salary": "Не указана",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/programmer/117331",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "От 1 года",
-    "schedule": "Частичная занятость",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-01T22:14:04.476Z",
-    "isActive": false
-  },
-  {
-    "id": "66715",
-    "title": "Vue.js Developer",
-    "company": "Tara Interactive",
-    "salary": "Не указана",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/vuejs-developer/66715",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "От 1 года",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "76805",
-    "title": "Full Stack Developer",
-    "company": "Tara Interactive",
-    "salary": "Не указана",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/full-stack-developer/76805",
-    "source": "rabota.md",
-    "education": "Высшее",
-    "experience": "От 2 лет",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "106624",
-    "title": "GoLang Programmer",
-    "company": "Tara Interactive",
-    "salary": "Не указана",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/golang-programmer/106624",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "От 1 года",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1804,7 +1164,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1820,7 +1180,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1836,7 +1196,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1852,7 +1212,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1868,71 +1228,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "85909",
-    "title": "Internship Software Developer Embedded Linux",
-    "company": "IAW",
-    "salary": "1 000 евро",
-    "location": "За границей, Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/internship-software-developer-embedded-linux/85909",
-    "source": "rabota.md",
-    "education": "Высшее",
-    "experience": "Можно без опыта",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "113677",
-    "title": "Internship Hardware Developer",
-    "company": "IAW",
-    "salary": "1 000 евро",
-    "location": "За границей, Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/internship-hardware-developer/113677",
-    "source": "rabota.md",
-    "education": "Высшее",
-    "experience": "Можно без опыта",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "130930",
-    "title": "Front-end разработчик (HTML / CSS / JavaScript)",
-    "company": "Advance Suprem IT",
-    "salary": "Не указана",
-    "location": "Кишинев, Рышкановка",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/front-end-razrabotchik-html-css-javascript/130930",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "С опытом",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "130931",
-    "title": "Front-end Developer",
-    "company": "Advance Suprem IT",
-    "salary": "Не указана",
-    "location": "Кишинев, Рышкановка",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/front-end-developer/130931",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "С опытом",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1948,7 +1244,7 @@
     "schedule": "Гибкий график",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1964,7 +1260,7 @@
     "schedule": "Гибкий график",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1980,7 +1276,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -1996,7 +1292,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2012,40 +1308,24 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
     "id": "110238",
-    "title": "Developer (Ruby, SketchUp API, VR, AI)",
+    "title": "Developer (Sketchup API, VR, AI)",
     "company": "Art People",
     "salary": "1 500 евро",
     "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/developer-ruby-sketchup-api-vr-ai/110238",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/developer-sketchup-api-vr-ai/110238",
     "source": "rabota.md",
     "education": "Высшее",
     "experience": "От 3 лет",
     "schedule": "Частичная занятость",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
-  },
-  {
-    "id": "75509",
-    "title": "Backend PHP Developer (Symfony / Laravel)",
-    "company": "CreativSoft SRL",
-    "salary": "Не указана",
-    "location": "Кишинев, Рышкановка\n                                                    \n                                bd. Moscova 15/7",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/backend-php-developer-symfony-laravel/75509",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "От 3 лет",
-    "schedule": "Полный день",
-    "workPlace": "Гибрид (Дом/Офис)",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-01T22:14:04.476Z",
-    "isActive": false
   },
   {
     "id": "131956",
@@ -2060,7 +1340,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2076,55 +1356,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "129173",
-    "title": "Senior PHP Developer (1800-2500 USD)+",
-    "company": "Enwardo",
-    "salary": "1 800 – 2 500 долларов",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/senior-php-developer-1800-2500-usd/129173",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "Более 5 лет",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "131047",
-    "title": "Full Stack Developer (PHP+React.js+Node) 2500 USD +",
-    "company": "Enwardo",
-    "salary": "2 500 долларов",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/full-stack-developer-phpreactjsnode-2500-usd-/131047",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "С опытом",
-    "schedule": "Гибкий график",
-    "workPlace": "Гибрид (Дом/Офис)",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "129864",
-    "title": "Golang Developer",
-    "company": "Adtelligent",
-    "salary": "Не указана",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/golang-developer/129864",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "От 1 года",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2140,7 +1372,7 @@
     "schedule": "Полный день",
     "workPlace": "Гибрид (Дом/Офис)",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2156,7 +1388,7 @@
     "schedule": "Частичная занятость",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2172,7 +1404,7 @@
     "schedule": "Гибкий график",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2188,8 +1420,8 @@
     "schedule": "Гибкий график",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-01T22:14:04.476Z",
-    "isActive": false
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
   },
   {
     "id": "120295",
@@ -2204,23 +1436,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "121993",
-    "title": "Profesor de Programare pentru Copii - impact A&C",
-    "company": "impact Academies & Camps",
-    "salary": "Не указана",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/profesor-de-programare-pentru-copii-impact-ac/121993",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "Можно без опыта",
-    "schedule": "Гибкий график",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2236,23 +1452,7 @@
     "schedule": "Гибкий график",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "121995",
-    "title": "Profesor Full-time de Programare - impact A&C",
-    "company": "impact Academies & Camps",
-    "salary": "Не указана",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/profesor-full-time-de-programare-impact-ac/121995",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "Можно без опыта",
-    "schedule": "Гибкий график",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2268,23 +1468,7 @@
     "schedule": "Гибкий график",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "121504",
-    "title": "Unity Developer - Mid-Level",
-    "company": "TryMyGames",
-    "salary": "Не указана",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/unity-developer-mid-level/121504",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "От 2 лет",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2300,7 +1484,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2316,7 +1500,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2332,23 +1516,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "128918",
-    "title": "Промоутер",
-    "company": "KIBERone",
-    "salary": "Не указана",
-    "location": "Кишинев, Оргеев",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/promouter/128918",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "Можно без опыта",
-    "schedule": "Частичная занятость",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2362,7 +1530,7 @@
     "workPlace": "Удалённо",
     "education": "Высшее",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2376,7 +1544,7 @@
     "workPlace": "На территории работодателя",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2389,7 +1557,7 @@
     "workPlace": "На территории работодателя",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2403,7 +1571,7 @@
     "workPlace": "На территории работодателя",
     "education": "Высшее",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2417,21 +1585,7 @@
     "workPlace": "Удалённо",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "16039791",
-    "title": "Programator - Visual Basic 6",
-    "salary": "От 10 000 леев",
-    "location": "Удалённо",
-    "url": "https://www.rabota.md/ru/joburi/programator-visual-basic-6/16039791",
-    "source": "rabota.md",
-    "experience": "От 3 лет",
-    "workPlace": "Удалённо",
-    "education": "Не имеет значение",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2445,21 +1599,7 @@
     "workPlace": "На территории работодателя",
     "education": "Высшее",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "7743095",
-    "title": "Programator PHP / GoLang (2 ani +)",
-    "salary": "От 40 000 леев",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/joburi/programator-php-golang-2-ani-/7743095",
-    "source": "rabota.md",
-    "experience": "От 2 лет",
-    "workPlace": "Гибрид (Дом/Офис)",
-    "education": "Высшее",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2472,7 +1612,7 @@
     "workPlace": "Удалённо",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2486,7 +1626,7 @@
     "workPlace": "На территории работодателя",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2499,7 +1639,7 @@
     "workPlace": "Удалённо",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2513,13 +1653,12 @@
     "workPlace": "Удалённо",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
     "id": "16112298",
     "title": "Web mobile developer",
-    "salary": "1 600 – 2 000 долларов",
     "location": "Кишинев",
     "url": "https://www.rabota.md/ru/joburi/web-mobile-developer/16112298",
     "source": "rabota.md",
@@ -2527,13 +1666,13 @@
     "workPlace": "На территории работодателя",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
     "id": "16112294",
     "title": "Python Developer",
-    "salary": "1 500 – 2 000 долларов",
+    "salary": "От 30 000 леев",
     "location": "Кишинев",
     "url": "https://www.rabota.md/ru/joburi/python-developer/16112294",
     "source": "rabota.md",
@@ -2541,7 +1680,7 @@
     "workPlace": "На территории работодателя",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2554,7 +1693,7 @@
     "workPlace": "Удалённо",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2567,20 +1706,7 @@
     "workPlace": "Удалённо",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "16112272",
-    "title": "Middle React Js Developer",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/joburi/middle-react-js-developer/16112272",
-    "source": "rabota.md",
-    "experience": "От 2 лет",
-    "workPlace": "На территории работодателя",
-    "education": "Высшее",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2594,7 +1720,7 @@
     "workPlace": "На территории работодателя",
     "education": "Высшее",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2607,7 +1733,7 @@
     "workPlace": "На территории работодателя",
     "education": "Высшее",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2621,7 +1747,7 @@
     "workPlace": "На территории работодателя",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2634,20 +1760,7 @@
     "workPlace": "На территории работодателя",
     "education": "Высшее",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "16065594",
-    "title": "Middle Frontend Developer (React + TypeScript)",
-    "location": "Тирасполь",
-    "url": "https://www.rabota.md/ru/joburi/middle-frontend-developer-react-typescript/16065594",
-    "source": "rabota.md",
-    "experience": "От 3 лет",
-    "workPlace": "Гибрид (Дом/Офис)",
-    "education": "Не имеет значение",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2661,7 +1774,7 @@
     "workPlace": "На территории работодателя",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2674,47 +1787,7 @@
     "workPlace": "На территории работодателя",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "15821806",
-    "title": "Chief Technology Officer (CTO) / Senior Developer (Laravel + jQuery/SaaS + AI)",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/joburi/chief-technology-officer-cto-senior-developer-laravel-jquery-saas-ai/15821806",
-    "source": "rabota.md",
-    "experience": "Более 5 лет",
-    "workPlace": "Гибрид (Дом/Офис)",
-    "education": "Не имеет значение",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-01T22:14:04.476Z",
-    "isActive": false
-  },
-  {
-    "id": "15988585",
-    "title": "Full-stack PHP Developer",
-    "salary": "От 25 000 леев",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/joburi/full-stack-php-developer/15988585",
-    "source": "rabota.md",
-    "experience": "С опытом",
-    "workPlace": "Гибрид (Дом/Офис)",
-    "education": "Не имеет значение",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "16096668",
-    "title": "Junior Creatio Developer (No Experience Required)",
-    "location": "Удалённо",
-    "url": "https://www.rabota.md/ru/joburi/junior-creatio-developer-no-experience-required/16096668",
-    "source": "rabota.md",
-    "experience": "Можно без опыта",
-    "workPlace": "Удалённо",
-    "education": "Не имеет значение",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2728,7 +1801,7 @@
     "workPlace": "Удалённо",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2742,7 +1815,7 @@
     "workPlace": "На территории работодателя",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2756,7 +1829,7 @@
     "workPlace": "На территории работодателя",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2769,7 +1842,7 @@
     "workPlace": "Удалённо",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2783,7 +1856,7 @@
     "workPlace": "Удалённо",
     "education": "Высшее",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2797,7 +1870,7 @@
     "workPlace": "Удалённо",
     "education": "Высшее",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2810,7 +1883,7 @@
     "workPlace": "Разъездная работа",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2823,7 +1896,7 @@
     "workPlace": "Разъездная работа",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2836,7 +1909,7 @@
     "workPlace": "Разъездная работа",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2849,7 +1922,7 @@
     "workPlace": "Разъездная работа",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2862,7 +1935,7 @@
     "workPlace": "Гибрид (Дом/Офис)",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2876,7 +1949,7 @@
     "workPlace": "Удалённо",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2890,7 +1963,7 @@
     "workPlace": "Удалённо",
     "education": "Высшее",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2903,7 +1976,7 @@
     "workPlace": "На территории работодателя",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -2916,124 +1989,13 @@
     "workPlace": "Удалённо",
     "education": "Высшее",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "15512026",
-    "title": "Go Developer",
-    "salary": "5 000 – 7 000 евро",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/joburi/go-developer/15512026",
-    "source": "rabota.md",
-    "experience": "Более 5 лет",
-    "workPlace": "Удалённо",
-    "education": "Не имеет значение",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "15743735",
-    "title": "Junior WordPress Fullstack Developer",
-    "salary": "10 000 – 16 000 леев",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/joburi/junior-wordpress-fullstack-developer/15743735",
-    "source": "rabota.md",
-    "experience": "От 1 года",
-    "workPlace": "Удалённо",
-    "education": "Не имеет значение",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "15395714",
-    "title": "Full-Stack Developer",
-    "salary": "1 300 – 2 800 евро",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/joburi/full-stack-developer/15395714",
-    "source": "rabota.md",
-    "experience": "От 3 лет",
-    "workPlace": "Удалённо",
-    "education": "Не имеет значение",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "15675421",
-    "title": "Full-Stack Developer",
-    "salary": "2 000 – 5 000 евро",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/joburi/full-stack-developer/15675421",
-    "source": "rabota.md",
-    "experience": "С опытом",
-    "workPlace": "Удалённо",
-    "education": "Не имеет значение",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "15218615",
-    "title": "Middle .Net Developer",
-    "salary": "1 000 – 1 500 долларов",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/joburi/middle-net-developer/15218615",
-    "source": "rabota.md",
-    "experience": "От 2 лет",
-    "workPlace": "На территории работодателя",
-    "education": "Не имеет значение",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "15080519",
-    "title": "Flutter developer",
-    "salary": "1 000 – 2 000 долларов",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/joburi/flutter-developer/15080519",
-    "source": "rabota.md",
-    "experience": "От 2 лет",
-    "workPlace": "На территории работодателя",
-    "education": "Не имеет значение",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "11613005",
-    "title": "Angular front end developer",
-    "salary": "1 200 – 1 800 долларов",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/joburi/angular-front-end-developer/11613005",
-    "source": "rabota.md",
-    "experience": "От 2 лет",
-    "workPlace": "На территории работодателя",
-    "education": "Не имеет значение",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "15899320",
-    "title": "PHP, Laravel, Statamic Developer in Chisinau",
-    "location": "Кишинев",
-    "url": "https://www.rabota.md/ru/joburi/php-laravel-statamic-developer-in-chisinau/15899320",
-    "source": "rabota.md",
-    "experience": "Более 5 лет",
-    "workPlace": "На территории работодателя",
-    "education": "Не имеет значение",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
     "id": "15940367",
     "title": "Frontend developer (Mobile)",
-    "salary": "От 2 500 долларов",
+    "salary": "От 1 200 долларов",
     "location": "Кишинев",
     "url": "https://www.rabota.md/ru/joburi/frontend-developer-mobile/15940367",
     "source": "rabota.md",
@@ -3041,52 +2003,7 @@
     "workPlace": "На территории работодателя",
     "education": "Не имеет значение",
     "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "16048216",
-    "title": "IT Project Manager",
-    "location": "Удалённо",
-    "url": "https://www.rabota.md/ru/joburi/it-project-manager/16048216",
-    "source": "rabota.md",
-    "experience": "От 1 года",
-    "workPlace": "На территории работодателя",
-    "education": "Не имеет значение",
-    "firstSeenAt": "2025-12-01T22:14:04.476Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "132398",
-    "title": "Web mobile developer",
-    "company": "SAFE STEP CAPITAL",
-    "salary": "1 600 – 2 000 долларов",
-    "location": "Кишинев, Ботаника",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/web-mobile-developer/132398",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "От 2 лет",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-02T21:55:23.371Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
-    "isActive": true
-  },
-  {
-    "id": "132399",
-    "title": "Python Developer",
-    "company": "SAFE STEP CAPITAL",
-    "salary": "1 500 – 2 000 долларов",
-    "location": "Кишинев, Ботаника",
-    "url": "https://www.rabota.md/ru/locuri-de-munca/python-developer/132399",
-    "source": "rabota.md",
-    "education": "Не имеет значение",
-    "experience": "От 2 лет",
-    "schedule": "Полный день",
-    "workPlace": "На территории работодателя",
-    "firstSeenAt": "2025-12-02T21:55:23.371Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -3102,7 +2019,7 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-02T21:55:23.371Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   },
   {
@@ -3118,7 +2035,981 @@
     "schedule": "Полный день",
     "workPlace": "На территории работодателя",
     "firstSeenAt": "2025-12-02T21:55:23.371Z",
-    "lastSeenAt": "2025-12-02T22:01:38.133Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "118545",
+    "title": "Программист / Software Developer CASAMARE.md",
+    "company": "CASA MARE",
+    "salary": "25 000 – 30 000 леев",
+    "location": "Кишинев, Центр\n                                                    \n                                str. Mihai Eminescu 72",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/programmist-software-developer-casamaremd/118545",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "От 3 лет",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "63187",
+    "title": "PHP программист",
+    "company": "Bpay",
+    "salary": "Не указана",
+    "location": "Тирасполь, Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/php-programmist/63187",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "С опытом",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "133152",
+    "title": "Programator Android",
+    "company": "M373 SRL",
+    "salary": "1 500 – 2 000 евро",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/programator-android/133152",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "С опытом",
+    "schedule": "Гибкий график",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "117597",
+    "title": "Python Developer",
+    "company": "Hoick",
+    "salary": "Не указана",
+    "location": "Кишинев, Центр",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/python-developer/117597",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "От 1 года",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "132467",
+    "title": "Mobile Developer",
+    "company": "BackstageIT",
+    "salary": "Не указана",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/mobile-developer/132467",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "От 2 лет",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "132478",
+    "title": "Java Developer",
+    "company": "BackstageIT",
+    "salary": "Не указана",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/java-developer/132478",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "Более 5 лет",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "132540",
+    "title": "Senior Python Developer",
+    "company": "Inther Software Development",
+    "salary": "Не указана",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/senior-python-developer/132540",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "От 4 лет",
+    "schedule": "Гибкий график",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "132737",
+    "title": "Shopify Developer",
+    "company": "BackstageIT",
+    "salary": "Не указана",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/shopify-developer/132737",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "От 2 лет",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "132805",
+    "title": ".NET Back-End Developer (C#)",
+    "company": "Inther Software Development",
+    "salary": "Не указана",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/net-back-end-developer-c/132805",
+    "source": "rabota.md",
+    "education": "Среднее специальное",
+    "experience": "С опытом",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "132967",
+    "title": ".NET Developer",
+    "company": "BackstageIT",
+    "salary": "Не указана",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/net-developer/132967",
+    "source": "rabota.md",
+    "education": "Среднее специальное",
+    "experience": "От 3 лет",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "132972",
+    "title": "Senior Java/Kotlin Developer",
+    "company": "BackstageIT",
+    "salary": "Не указана",
+    "location": "Кишинев, Центр\n                                                    \n                                str. Columna 102",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/senior-java-kotlin-developer/132972",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "Более 5 лет",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "133168",
+    "title": "Android-разработчик",
+    "company": "M373 SRL",
+    "salary": "1 500 – 2 000 евро",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/android-razrabotchik/133168",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "С опытом",
+    "schedule": "Гибкий график",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "132711",
+    "title": "Unity C# Developer | 15 000 - 45 000",
+    "company": "ArtDock",
+    "salary": "15 000 – 45 000 леев",
+    "location": "Кишинев, Рышкановка\n                                                    \n                                str. Kiev 16/1",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/unity-c-developer-15-000-45-000/132711",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "От 1 года",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "133171",
+    "title": "Backend Developer (Node.js / NestJS / Turborepo)",
+    "company": "Enwardo",
+    "salary": "Не указана",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/backend-developer-nodejs-nestjs-turborepo/133171",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "С опытом",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "132553",
+    "title": "Creatio developer Direcția front system Departamentul tehnologii informaționale",
+    "company": "Moldindconbank",
+    "salary": "Не указана",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/creatio-developer-directia-front-system-departamentul-tehnologii-informationale/132553",
+    "source": "rabota.md",
+    "education": "Высшее",
+    "experience": "От 2 лет",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "133021",
+    "title": "Senior SharePoint Developer",
+    "company": "Amdaris",
+    "salary": "Не указана",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/senior-sharepoint-developer/133021",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "От 4 лет",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "132979",
+    "title": "Full-Stack Developer (nivel middle)",
+    "company": "Virtula",
+    "salary": "Не указана",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/full-stack-developer-nivel-middle/132979",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "От 2 лет",
+    "schedule": "Полный день",
+    "workPlace": "Гибрид (Дом/Офис)",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "123331",
+    "title": "Unreal Engine Developer",
+    "company": "CGI Lab Games",
+    "salary": "20 000 – 30 000 леев",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/unreal-engine-developer/123331",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "От 2 лет",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "123332",
+    "title": "Unity Developer",
+    "company": "CGI Lab Games",
+    "salary": "15 000 – 25 000 леев",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/unity-developer/123332",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "От 2 лет",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "133003",
+    "title": "IOS Developer",
+    "company": "CGI Lab Games",
+    "salary": "20 000 леев",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/ios-developer/133003",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "От 2 лет",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "132484",
+    "title": "Senior Java Developer - Remote",
+    "company": "GR8 Tech",
+    "salary": "Не указана",
+    "location": "Удалённо",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/senior-java-developer-remote/132484",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "С опытом",
+    "schedule": "Полный день",
+    "workPlace": "Удалённо",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "132485",
+    "title": "Middle Java Developer - Remote",
+    "company": "GR8 Tech",
+    "salary": "Не указана",
+    "location": "Удалённо",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/middle-java-developer-remote/132485",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "С опытом",
+    "schedule": "Полный день",
+    "workPlace": "Удалённо",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "132610",
+    "title": "Senior .Net Developer for Sport Team - Remote",
+    "company": "GR8 Tech",
+    "salary": "Не указана",
+    "location": "Удалённо",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/senior-net-developer-for-sport-team-remote/132610",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "С опытом",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "132645",
+    "title": "Middle iOS Developer for Sports Team - Remote",
+    "company": "GR8 Tech",
+    "salary": "Не указана",
+    "location": "Удалённо",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/middle-ios-developer-for-sports-team-remote/132645",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "От 3 лет",
+    "schedule": "Полный день",
+    "workPlace": "Удалённо",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "116109",
+    "title": "PHP Developer",
+    "company": "Ecofinance",
+    "salary": "57 500 леев",
+    "location": "Кишинев, Скулянка",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/php-developer/116109",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "От 3 лет",
+    "schedule": "Полный день",
+    "workPlace": "Гибрид (Дом/Офис)",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "114806",
+    "title": "Senior java developer",
+    "company": "hr solutions",
+    "salary": "40 000 – 50 000 леев",
+    "location": "Кишинев, Рышкановка",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/senior-java-developer/114806",
+    "source": "rabota.md",
+    "education": "Высшее",
+    "experience": "Можно без опыта",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "133051",
+    "title": "Full-stack Web-разработчик (IT-специалист)",
+    "company": "Sarks Agency",
+    "salary": "Не указана",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/full-stack-web-razrabotchik-it-specialist/133051",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "С опытом",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "132853",
+    "title": "Front-end developer .NET",
+    "company": "Paynet Services",
+    "salary": "Не указана",
+    "location": "Кишинев, Ботаника\n                                                    \n                                bd. Decebal 6",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/front-end-developer-net/132853",
+    "source": "rabota.md",
+    "education": "Высшее",
+    "experience": "С опытом",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "116129",
+    "title": "Flutter Developer",
+    "company": "Coherent Solutions",
+    "salary": "Не указана",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/flutter-developer/116129",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "От 4 лет",
+    "schedule": "Полный день",
+    "workPlace": "Удалённо",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "132762",
+    "title": "Senior PHP Developer (Laravel)",
+    "company": "Meta-Sistem S.R.L.",
+    "salary": "Не указана",
+    "location": "Удалённо",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/senior-php-developer-laravel/132762",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "Более 5 лет",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "133006",
+    "title": "Senior Software Developer",
+    "company": "Jivy Group",
+    "salary": "Не указана",
+    "location": "Кишинев, Центр\n                                                    \n                                str. Ciuflea 1A",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/senior-software-developer/133006",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "От 2 лет",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "132970",
+    "title": "Internship Software Developer Python, Angular (Typescript), Docker",
+    "company": "IAW",
+    "salary": "1 000 евро",
+    "location": "За границей, Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/internship-software-developer-python-angular-typescript-docker/132970",
+    "source": "rabota.md",
+    "education": "Высшее",
+    "experience": "Можно без опыта",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "132931",
+    "title": "Golang Developer",
+    "company": "Adtelligent",
+    "salary": "Не указана",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/golang-developer/132931",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "С опытом",
+    "schedule": "Полный день",
+    "workPlace": "Гибрид (Дом/Офис)",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "76545",
+    "title": "PHP Developer",
+    "company": "Bpay",
+    "salary": "20 000 – 50 000 леев",
+    "location": "Кишинев, Центр\n                                                    \n                                str. Mihai Viteazul 3",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/php-developer/76545",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "С опытом",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "124710",
+    "title": "PHP Developer (Statistics)",
+    "company": "Adtelligent",
+    "salary": "Не указана",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/php-developer-statistics/124710",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "От 2 лет",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "111774",
+    "title": "Веб дизайнер",
+    "company": "Digital Group",
+    "salary": "Не указана",
+    "location": "Кишинев, Центр",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/veb-dizayner/111774",
+    "source": "rabota.md",
+    "education": "Среднее специальное",
+    "experience": "От 1 года",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "120589",
+    "title": "Менеджер Веб-проектов",
+    "company": "CASA MARE",
+    "salary": "Не указана",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/menedzher-veb-proektov/120589",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "От 2 лет",
+    "schedule": "Полный день",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "61339",
+    "title": "Operator recepție Service Centru | Оператор  приёмной Сервисного Центрa",
+    "company": "ALO",
+    "salary": "12 000 леев",
+    "location": "Кишинев, Ботаника\n                                                    \n                                șos. Muncești 41",
+    "url": "https://www.rabota.md/ru/locuri-de-munca/operator-receptie-service-centru-operator-priemnoy-servisnogo-centra/61339",
+    "source": "rabota.md",
+    "education": "Не имеет значение",
+    "experience": "С опытом",
+    "schedule": "По сменному графику",
+    "workPlace": "На территории работодателя",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "10044344",
+    "title": "Программист",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/joburi/programmist/10044344",
+    "source": "rabota.md",
+    "experience": "Можно без опыта",
+    "workPlace": "На территории работодателя",
+    "education": "Не имеет значение",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "15882030",
+    "title": "Programator Android (Kotlin)",
+    "salary": "1 500 – 2 000 евро",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/joburi/programator-android-kotlin/15882030",
+    "source": "rabota.md",
+    "experience": "От 2 лет",
+    "workPlace": "Гибрид (Дом/Офис)",
+    "education": "Не имеет значение",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "12133134",
+    "title": "Inginer programator",
+    "location": "Бельцы",
+    "url": "https://www.rabota.md/ru/joburi/inginer-programator/12133134",
+    "source": "rabota.md",
+    "experience": "От 3 лет",
+    "workPlace": "На территории работодателя",
+    "education": "Высшее",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "16175372",
+    "title": "IT Full stack developer",
+    "salary": "1 000 – 1 100 евро",
+    "location": "Удалённо",
+    "url": "https://www.rabota.md/ru/joburi/it-full-stack-developer/16175372",
+    "source": "rabota.md",
+    "experience": "С опытом",
+    "workPlace": "Удалённо",
+    "education": "Не имеет значение",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "16179095",
+    "title": "Middle WordPress Fullstack Developer",
+    "salary": "18 000 – 22 000 леев",
+    "location": "Удалённо",
+    "url": "https://www.rabota.md/ru/joburi/middle-wordpress-fullstack-developer/16179095",
+    "source": "rabota.md",
+    "experience": "От 3 лет",
+    "workPlace": "Удалённо",
+    "education": "Не имеет значение",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "8402624",
+    "title": "Java developer",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/joburi/java-developer/8402624",
+    "source": "rabota.md",
+    "experience": "От 1 года",
+    "workPlace": "Гибрид (Дом/Офис)",
+    "education": "Не имеет значение",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "16182639",
+    "title": "IOS Developer – aplicație dezvoltată de la zero",
+    "salary": "16 000 – 22 000 леев",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/joburi/ios-developer-aplicatie-dezvoltata-de-la-zero/16182639",
+    "source": "rabota.md",
+    "experience": "От 1 года",
+    "workPlace": "На территории работодателя",
+    "education": "Не имеет значение",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "16175355",
+    "title": "Web Developer (Frontend / Full-Stack)",
+    "salary": "16 000 – 22 000 леев",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/joburi/web-developer-frontend-full-stack/16175355",
+    "source": "rabota.md",
+    "experience": "От 1 года",
+    "workPlace": "На территории работодателя",
+    "education": "Не имеет значение",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "16175354",
+    "title": "Mobile Application Developer (iOS / Android)",
+    "salary": "16 000 – 22 000 леев",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/joburi/mobile-application-developer-ios-android/16175354",
+    "source": "rabota.md",
+    "experience": "От 1 года",
+    "workPlace": "На территории работодателя",
+    "education": "Не имеет значение",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "16175359",
+    "title": "Разработчик PHP (Laravel)",
+    "salary": "500 – 1 000 долларов",
+    "location": "Удалённо",
+    "url": "https://www.rabota.md/ru/joburi/razrabotchik-php-laravel/16175359",
+    "source": "rabota.md",
+    "experience": "От 1 года",
+    "workPlace": "Удалённо",
+    "education": "Не имеет значение",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "16142840",
+    "title": "Frontend Developer (Laravel + Vue)",
+    "salary": "500 – 1 000 долларов",
+    "location": "Удалённо",
+    "url": "https://www.rabota.md/ru/joburi/frontend-developer-laravel-vue/16142840",
+    "source": "rabota.md",
+    "experience": "От 3 лет",
+    "workPlace": "Удалённо",
+    "education": "Не имеет значение",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "16127790",
+    "title": "Senior BI Developer (Contract)",
+    "salary": "22 – 30 долларов",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/joburi/senior-bi-developer-contract/16127790",
+    "source": "rabota.md",
+    "experience": "От 4 лет",
+    "workPlace": "Удалённо",
+    "education": "Не имеет значение",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "15743787",
+    "title": "FullStack Junior PHP Developer",
+    "salary": "От 800 евро",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/joburi/fullstack-junior-php-developer/15743787",
+    "source": "rabota.md",
+    "experience": "С опытом",
+    "workPlace": "На территории работодателя",
+    "education": "Студент",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "16096673",
+    "title": "PHP Developer (Mid-Level)",
+    "salary": "От 1 200 евро",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/joburi/php-developer-mid-level/16096673",
+    "source": "rabota.md",
+    "experience": "От 2 лет",
+    "workPlace": "На территории работодателя",
+    "education": "Высшее",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "16100976",
+    "title": "Front-End Developer (Jun–Mid Level)",
+    "salary": "От 800 евро",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/joburi/front-end-developer-junmid-level/16100976",
+    "source": "rabota.md",
+    "experience": "От 1 года",
+    "workPlace": "На территории работодателя",
+    "education": "Высшее",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "16161153",
+    "title": "Profesor de programare",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/joburi/profesor-de-programare/16161153",
+    "source": "rabota.md",
+    "experience": "От 1 года",
+    "workPlace": "На территории работодателя",
+    "education": "Не имеет значение",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "16161121",
+    "title": "Business Developer — 3D Product Design, Packaging & Visual Identity",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/joburi/business-developer-3d-product-design-packaging-visual-identity/16161121",
+    "source": "rabota.md",
+    "experience": "Можно без опыта",
+    "workPlace": "На территории работодателя",
+    "education": "Не имеет значение",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "16157216",
+    "title": "Lead Developer",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/joburi/lead-developer/16157216",
+    "source": "rabota.md",
+    "experience": "Можно без опыта",
+    "workPlace": "На территории работодателя",
+    "education": "Не имеет значение",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "16157193",
+    "title": "Profesor de programare",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/joburi/profesor-de-programare/16157193",
+    "source": "rabota.md",
+    "experience": "Можно без опыта",
+    "workPlace": "На территории работодателя",
+    "education": "Среднее специальное",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "16157187",
+    "title": "Full-Stack Developer",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/joburi/full-stack-developer/16157187",
+    "source": "rabota.md",
+    "experience": "От 3 лет",
+    "workPlace": "Удалённо",
+    "education": "Не имеет значение",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "14309976",
+    "title": "Начинающий PHP-разработчик / beginner PHP-developer",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/joburi/nachinayuschiy-php-razrabotchik-beginner-php-developer/14309976",
+    "source": "rabota.md",
+    "experience": "С опытом",
+    "workPlace": "На территории работодателя",
+    "education": "Не имеет значение",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "15275504",
+    "title": "PHP Developer",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/joburi/php-developer/15275504",
+    "source": "rabota.md",
+    "experience": "Можно без опыта",
+    "workPlace": "Удалённо",
+    "education": "Не имеет значение",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "16135044",
+    "title": "Node.js Developer",
+    "salary": "3 500 – 5 000 долларов",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/joburi/nodejs-developer/16135044",
+    "source": "rabota.md",
+    "experience": "Более 5 лет",
+    "workPlace": "Гибрид (Дом/Офис)",
+    "education": "Не имеет значение",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "16135029",
+    "title": "Profesor de programare pentru copii",
+    "salary": "От 10 000 леев",
+    "location": "Каушаны",
+    "url": "https://www.rabota.md/ru/joburi/profesor-de-programare-pentru-copii/16135029",
+    "source": "rabota.md",
+    "experience": "Можно без опыта",
+    "workPlace": "На территории работодателя",
+    "education": "Не имеет значение",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "16182649",
+    "title": "Delivery Manager",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/joburi/delivery-manager/16182649",
+    "source": "rabota.md",
+    "experience": "От 3 лет",
+    "workPlace": "Удалённо",
+    "education": "Не имеет значение",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "16175369",
+    "title": "Technical Project Manager",
+    "location": "Кишинев",
+    "url": "https://www.rabota.md/ru/joburi/technical-project-manager/16175369",
+    "source": "rabota.md",
+    "experience": "От 3 лет",
+    "workPlace": "Удалённо",
+    "education": "Высшее",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
+    "isActive": true
+  },
+  {
+    "id": "15060678",
+    "title": "Seo-специалист",
+    "salary": "300 – 400 долларов",
+    "location": "Удалённо",
+    "url": "https://www.rabota.md/ru/joburi/seo-specialist/15060678",
+    "source": "rabota.md",
+    "experience": "Можно без опыта",
+    "workPlace": "Удалённо",
+    "education": "Не имеет значение",
+    "firstSeenAt": "2026-01-03T11:37:34.628Z",
+    "lastSeenAt": "2026-01-03T11:37:34.628Z",
     "isActive": true
   }
 ]

@@ -1,15 +1,15 @@
 {
   "education": "Не требуется или не указано",
   "experience": "Не имеет значения",
-  "salary": "12000 MDL",
   "schedule": "Полный день",
-  "seasonal": false,
+  "seasonal": true,
   "employmentType": "Полная занятость",
   "companyType": "Торговые и дистрибьюторские компании",
-  "contactPerson": "Ion",
+  "contactPerson": "Eugen",
   "languages": [
-    "Румынский"
+    "Румынский",
+    "Русский"
   ],
-  "region": "Кишинёв мун., Кишинёв",
-  "location": "Кишинёв мун., Кишинёв"
+  "region": "Кишинёв мун., Кишинёв, Аэропорт",
+  "location": "Кишинёв мун., Кишинёв, Аэропорт"
 }
