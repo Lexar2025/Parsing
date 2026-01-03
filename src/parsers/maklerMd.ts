@@ -1,20 +1,15 @@
 /**
  * Парсер для сайта makler.md (Transnistria)
- * Puppeteer + Stealth для обхода Cloudflare защиты
+ * Puppeteer с настройками для обхода Cloudflare защиты
  */
 
-import puppeteer from 'puppeteer-extra';
-import StealthPlugin from 'puppeteer-extra-plugin-stealth';
-import { Browser, Page } from 'puppeteer';
+import puppeteer, { Browser, Page } from 'puppeteer';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import crypto from 'crypto';
 import pLimit from 'p-limit';
 import { Parser, ParserConfig, ParseResult, Vacancy } from '../types/vacancy.js';
 import { log, pause } from '../utils/helpers.js';
-
-// Используем Stealth plugin для обхода Cloudflare
-puppeteer.use(StealthPlugin());
 
 type ParserOptions = {
   headless?: boolean;
@@ -183,6 +178,7 @@ export class MaklerMdParser implements Parser {
         '--disable-blink-features=AutomationControlled',
         '--disable-web-security',
         '--disable-features=IsolateOrigins,site-per-process',
+        '--window-size=1920,1080',
       ],
     });
     log('✅ Браузер запущен');
@@ -197,6 +193,54 @@ export class MaklerMdParser implements Parser {
       this.browser = null;
       log('🔒 Браузер закрыт');
     }
+  }
+
+  /**
+   * Настройка страницы для обхода детекции
+   */
+  private async setupPage(page: Page): Promise<void> {
+    // Скрываем webdriver
+    await page.evaluateOnNewDocument(() => {
+      Object.defineProperty(navigator, 'webdriver', {
+        get: () => false,
+      });
+      
+      // Добавляем chrome объект
+      (window as any).chrome = {
+        runtime: {},
+      };
+      
+      // Переопределяем permissions
+      const originalQuery = (window.navigator as any).permissions.query;
+      (window.navigator as any).permissions.query = (parameters: any) =>
+        parameters.name === 'notifications'
+          ? Promise.resolve({ state: Notification.permission } as PermissionStatus)
+          : originalQuery(parameters);
+
+      // Добавляем плагины
+      Object.defineProperty(navigator, 'plugins', {
+        get: () => [1, 2, 3, 4, 5],
+      });
+
+      // Добавляем языки
+      Object.defineProperty(navigator, 'languages', {
+        get: () => ['ru-RU', 'ru', 'en-US', 'en'],
+      });
+    });
+
+    // Устанавливаем viewport
+    await page.setViewport({ width: 1920, height: 1080 });
+
+    // Устанавливаем user agent
+    await page.setUserAgent(
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    );
+
+    // Устанавливаем дополнительные заголовки
+    await page.setExtraHTTPHeaders({
+      'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+    });
   }
 
   /**
@@ -240,35 +284,34 @@ export class MaklerMdParser implements Parser {
       try {
         const vacancies = await this.parseVacanciesFromPage(pageUrl);
 
-        if (vacancies.length === 0) {
-          log(`   ⚠️  Страница ${currentPage + 1} пуста`);
-          emptyPagesCount++;
+        let newVacanciesCount = 0;
+        let duplicatesCount = 0;
 
+        for (const vacancy of vacancies) {
+          if (!seenIds.has(vacancy.id)) {
+            seenIds.add(vacancy.id);
+            allVacancies.push(vacancy);
+            newVacanciesCount++;
+          } else {
+            duplicatesCount++;
+          }
+        }
+
+        if (newVacanciesCount === 0) {
+          log(`   ⚠️  Нет новых вакансий на странице (все дубли)`);
+          emptyPagesCount++;
           if (emptyPagesCount >= 2) {
-            log(`   ⛔ Две пустые страницы подряд - завершаем парсинг`);
+            log(`   ⛔ Две страницы подряд без новых вакансий - завершаем парсинг`);
             break;
           }
         } else {
           emptyPagesCount = 0;
-
-          let newVacanciesCount = 0;
-          let duplicatesCount = 0;
-
-          for (const vacancy of vacancies) {
-            if (!seenIds.has(vacancy.id)) {
-              seenIds.add(vacancy.id);
-              allVacancies.push(vacancy);
-              newVacanciesCount++;
-            } else {
-              duplicatesCount++;
-            }
-          }
-
-          log(
-            `   ✅ Найдено: ${vacancies.length} (новых: ${newVacanciesCount}, дубликатов: ${duplicatesCount})`,
-          );
-          log(`   📊 Всего уникальных: ${allVacancies.length}`);
         }
+
+        log(
+          `   ✅ Найдено: ${vacancies.length} (новых: ${newVacanciesCount}, дубликатов: ${duplicatesCount})`,
+        );
+        log(`   📊 Всего уникальных: ${allVacancies.length}`);
 
         if (currentPage < maxPages - 1) {
           const randomDelay = delay + Math.random() * 1000;
@@ -301,12 +344,12 @@ export class MaklerMdParser implements Parser {
       }
     }
 
-    // Добавляем list=false (из рабочего примера)
-    url += '&list=false';
+    // Добавляем list=detail (из рабочего примера)
+    url += '&list=detail';
 
-    // Добавляем номер страницы
+    // ВАЖНО: page=2 для второй страницы, page=3 для третьей и т.д.
     if (page > 0) {
-      url += `&page=${page}`;
+      url += `&page=${page + 1}`;
     }
 
     return url;
@@ -347,14 +390,41 @@ export class MaklerMdParser implements Parser {
     const page = await this.browser.newPage();
 
     try {
-      // Устанавливаем viewport
-      await page.setViewport({ width: 1920, height: 1080 });
+      // Настраиваем страницу для обхода детекции
+      await this.setupPage(page);
 
       // Переход на страницу
+      log(`   🌐 Загрузка страницы...`);
       await page.goto(url, {
         waitUntil: 'networkidle2',
         timeout: 60000,
       });
+
+      // Ждем немного после загрузки
+      await pause(2000);
+
+      // Если после перехода url содержит attempt=, делаем повторный переход по исходному url
+      let currentUrl = page.url();
+      if (/attempt=\d+/.test(currentUrl)) {
+        log(`   ⚠️  Обнаружен временный URL (Cloudflare): ${currentUrl}`);
+        // Имитация активности
+        for (let i = 0; i < 5; i++) {
+          const x = Math.floor(Math.random() * 800) + 100;
+          const y = Math.floor(Math.random() * 600) + 100;
+          await page.mouse.move(x, y, { steps: 10 });
+          await pause(300);
+        }
+        await page.mouse.click(400, 400);
+        await pause(1000);
+        await page.evaluate(() => { window.scrollBy(0, 300); });
+        await pause(1000);
+        await page.evaluate(() => { window.scrollBy(0, -300); });
+        log(`   🔄 Повторный переход по исходному URL для снятия защиты...`);
+        await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+        await pause(3000);
+        currentUrl = page.url();
+        log(`   ✅ После повторного перехода: ${currentUrl}`);
+      }
 
       // ВАЖНО: Имитируем человеческую активность для обхода Cloudflare
       // Проверяем, загрузились ли вакансии
@@ -363,26 +433,40 @@ export class MaklerMdParser implements Parser {
       if (articlesCount === 0) {
         log(`   ⚠️  Вакансии не видны, имитируем активность...`);
 
-        // Двигаем мышкой в случайные точки
-        await page.mouse.move(100, 100);
-        await pause(200);
-        await page.mouse.move(500, 300);
-        await pause(200);
+        // Двигаем мышкой в случайные точки (как человек)
+        for (let i = 0; i < 5; i++) {
+          const x = Math.floor(Math.random() * 800) + 100;
+          const y = Math.floor(Math.random() * 600) + 100;
+          await page.mouse.move(x, y, { steps: 10 });
+          await pause(300);
+        }
 
-        // Делаем клик в безопасное место (в body)
+        // Делаем клик в безопасное место
         await page.mouse.click(400, 400);
+        await pause(1000);
+
+        // Скроллим страницу (как человек)
+        await page.evaluate(() => {
+          window.scrollBy(0, 300);
+        });
+        await pause(1000);
+
+        await page.evaluate(() => {
+          window.scrollBy(0, -300);
+        });
         
         // Ждем пока Cloudflare нас "пропустит"
+        log(`   ⏳ Ждем загрузки (Cloudflare проверка)...`);
         await pause(5000);
 
         // Проверяем еще раз
         articlesCount = await page.$$eval('article', (articles) => articles.length);
-        
+
         if (articlesCount === 0) {
           log(`   ⚠️  Вакансии все еще не видны после активности`);
-        } else {
-          log(`   ✅ После активности найдено ${articlesCount} вакансий`);
         }
+      } else {
+        log(`   ✅ Найдено ${articlesCount} вакансий`);
       }
 
       // Парсим вакансии
@@ -531,6 +615,8 @@ export class MaklerMdParser implements Parser {
     const details: Partial<Vacancy> = {};
 
     try {
+      await this.setupPage(page);
+      
       await page.goto(url, {
         waitUntil: 'networkidle2',
         timeout: 30000,
