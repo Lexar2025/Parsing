@@ -1,20 +1,15 @@
 /**
  * Парсер для сайта makler.md (Transnistria)
- * Puppeteer + Stealth для обхода Cloudflare защиты
+ * Puppeteer с настройками для обхода Cloudflare защиты
  */
 
-import puppeteer from 'puppeteer-extra';
-import StealthPlugin from 'puppeteer-extra-plugin-stealth';
-import { Browser, Page } from 'puppeteer';
+import puppeteer, { Browser, Page } from 'puppeteer';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import crypto from 'crypto';
 import pLimit from 'p-limit';
 import { Parser, ParserConfig, ParseResult, Vacancy } from '../types/vacancy.js';
 import { log, pause } from '../utils/helpers.js';
-
-// Используем Stealth plugin для обхода Cloudflare
-puppeteer.use(StealthPlugin());
 
 type ParserOptions = {
   headless?: boolean;
@@ -30,77 +25,151 @@ type ParserOptions = {
  * field_446[] - основные категории профессий
  */
 export const MAKLER_PROFESSIONS: Record<string, number> = {
-  'Логистика': 0,
-  'Другая деятельность': 2862,
-  'Руководитель': 2863,
-  'Кассиры': 2864,
-  'Работа для студентов': 2865,
-  'Медицинские услуги': 2866,
-  'Образование': 2867,
-  'Работа в IT': 2868,
+  // Транспорт, логистика, складское хозяйство
+  'Транспорт, логистика, складское хозяйство': 2891,
+  'Менеджеры перевозок': 2892,
+  'Водители': 2893,
+  'Грузчики': 2894,
+  'Экспедиторы': 2895,
+  'Кладовщики': 2896,
+  'Механики, автослесари': 2897,
+  'Мойщики авто': 2898,
+  'Работники заправочной станции': 2899,
+
+  // Строительство и ремонт
+  'Строительство и ремонт': 2950,
+  'Инженеры (Строительство)': 2951,
+  'Прорабы': 2952,
+  'Строители': 2953,
+  'Сантехники': 2954,
+  'Электромонтажники': 2955,
+  'Монтажники вентиляционных систем': 2956,
+  'Монтажники газового оборудования': 2957,
+  'Разнорабочие': 2958,
+
+  // Производство, промышленность
+  'Производство, промышленность': 2880,
+  'Инженеры, технологи': 2881,
+  'Рабочие': 2882,
+
+  // Торговля и продажи
+  'Торговля и продажи': 2887,
+  'Менеджеры по работе с клиентами': 2888,
+  'Продавцы, кассиры': 2889,
+  'Продажи по телефону': 2890,
+
+  // Охрана и безопасность
+  'Охрана и безопасность': 2918,
+  'Охранники': 2919,
+  'Оперативники': 2920,
+  'Вахтёры': 2921,
+
+  // Дизайн, культура, искусство
+  'Дизайн, культура, искусство': 2904,
+  'Дизайнеры, художники': 2905,
+  'Ведущие, актеры': 2907,
+  'Фотографы, операторы': 2906,
+  'Музыканты, певцы': 2908,
+
+  // Информационные технологии
+  'Информационные технологии': 2868,
   'Программисты': 2869,
-  'Backend': 2870,
-  'Frontend': 2871,
+  'Тестировщики, QA': 2870,
+  'Дизайнеры (UX, web)': 2871,
   'Системные администраторы': 2872,
   'Руководители проектов': 2873,
   'Техподдержка': 2874,
   'SEO': 2875,
-  'Рабочие специальности': 2876,
-  'Строительство': 2877,
-  'Грузчики': 2878,
-  'Сварщики': 2879,
-  'Автослесарь': 2880,
-  'Плотник': 2881,
-  'Сантехник': 2882,
-  'Строитель': 2883,
-  'Штукатур': 2884,
-  'Электрик': 2885,
-  'Столяры': 2886,
-  'Сварщики (Еще одна категория)': 2887,
-  'Монтажники': 2888,
-  'Гигиенист': 2889,
-  'Сиделка-уход за больными': 2890,
-  'Ветеринар': 2891,
-  'Медицинская сестра': 2892,
-  'Фармацевт': 2893,
-  'Массажист': 2894,
-  'Стоматолог': 2895,
-  'Медбрат': 2896,
-  'Госслужба': 2897,
-  'ISA': 2898,
-  'Сантехник/электрик': 2899,
-  'Маляры': 2900,
-  'Доставщики': 2901,
-  'Таксисты': 2902,
-  'Охрана': 2903,
-  'Охранники': 2904,
-  'Фриланс': 2905,
-  'Рекламная графика': 2906,
-  'UX/UI': 2907,
-  'Графический дизайн': 2908,
-  'SMM': 2909,
-  'Контент': 2910,
-  'Копирайтинг': 2911,
-  'Экономисты': 2912,
-  'Бухгалтерия': 2913,
-  'Маркетологи': 2914,
-  'HR': 2915,
-  'Менеджеры по продажам': 2916,
-  'Менеджеры по закупкам': 2917,
-  'Операторы call-центра': 2918,
-  'Продавцы': 2919,
-  'Кладовщики': 2920,
-  'Повар': 2921,
-  'Официанты': 2922,
-  'Администраторы залов': 2923,
-  'Бариста': 2924,
-  'Бармены': 2925,
-  'Курьеры': 2926,
-  'Торговые представители': 2927,
-  'Иностранные языки': 2928,
-  'Юристы': 2929,
-  'Журналисты': 2930,
-  'Фотографы': 2931,
+
+  // Маркетинг, реклама, PR
+  'Маркетинг, реклама, PR': 2909,
+  'Маркетологи': 2910,
+  'SMM': 2911,
+  'Копирайтеры, рерайтеры': 2912,
+  'Промоутеры': 2913,
+
+  // Медицина, фармацевтика
+  'Медицина, фармацевтика': 2941,
+  'Врачи': 2942,
+  'Фармацевты': 2943,
+  'Медицинский персонал': 2944,
+  'Психологи': 2945,
+
+  // Образование, воспитание
+  'Образование, воспитание': 2922,
+  'Преподаватели, педагоги': 2924,
+  'Воспитатели': 2923,
+  'Помощники воспитателей': 3121,
+
+  // Офисный персонал
+  'Офисный персонал': 2900,
+  'Офис-менеджеры, секретари': 2902,
+
+  // Персонал для дома
+  'Персонал для дома': 2925,
+  'Няни, гувернантки': 2926,
+  'Сиделки': 2927,
+  'Домработницы': 2928,
+
+  // Рестораны, общественное питание
+  'Рестораны, общественное питание': 2929,
+  'Администраторы (Рестораны)': 2930,
+  'Повара, работники кухни': 2931,
+  'Кондитеры': 2932,
+  'Бармены, официанты': 2933,
+
+  // Салоны красоты, фитнес
+  'Салоны красоты, фитнес': 2934,
+  'Администраторы (Салоны)': 2935,
+  'Визажисты, косметологи': 2936,
+  'Стилисты, парикмахеры': 2937,
+  'Тренера, инструкторы': 2938,
+  'Массажисты': 2939,
+  'Маникюр, педикюр': 2940,
+
+  // Сельское хозяйство
+  'Сельское хозяйство': 2946,
+  'Сельхоз работники': 2947,
+  'Агрономы': 2948,
+  'Ветеринары': 2949,
+
+  // СМИ, переводы
+  'СМИ, переводы': 2914,
+  'Журналисты': 2915,
+  'Теле- и радиоведущие': 2916,
+  'Переводчики': 2917,
+  'Редактор, корректор': 4812,
+
+  // Телекоммуникации и связь
+  'Телекоммуникации и связь': 2876,
+  'Инженеры (Связь)': 2877,
+  'Монтажники, техники': 2878,
+  'Операторы': 2879,
+
+  // Топ-менеджмент
+  'Топ-менеджмент': 2883,
+  'Директора': 2884,
+  'Руководители подразделений': 2885,
+  'Кадры, HR': 2886,
+
+  // Туризм, гостиничное дело
+  'Туризм, гостиничное дело': 2959,
+  'Администраторы (Туризм)': 2960,
+  'Менеджеры по туризму': 2961,
+  'Гиды/экскурсоводы': 2962,
+
+  // Юриспруденция и бухучёт
+  'Юриспруденция и бухучёт': 2963,
+  'Бухгалтеры': 2964,
+  'Юристы': 2965,
+  'Помощники нотариуса': 2966,
+  'Страховые агенты': 2967,
+
+  // Прочее
+  'Прочее (Общая категория)': 2968,
+  'Уборщицы': 2903,
+  'Персонал без специальной подготовки': 2969,
+  'Прочее': 2972,
 };
 
 export class MaklerMdParser implements Parser {
@@ -183,6 +252,7 @@ export class MaklerMdParser implements Parser {
         '--disable-blink-features=AutomationControlled',
         '--disable-web-security',
         '--disable-features=IsolateOrigins,site-per-process',
+        '--window-size=1920,1080',
       ],
     });
     log('✅ Браузер запущен');
@@ -197,6 +267,54 @@ export class MaklerMdParser implements Parser {
       this.browser = null;
       log('🔒 Браузер закрыт');
     }
+  }
+
+  /**
+   * Настройка страницы для обхода детекции
+   */
+  private async setupPage(page: Page): Promise<void> {
+    // Скрываем webdriver
+    await page.evaluateOnNewDocument(() => {
+      Object.defineProperty(navigator, 'webdriver', {
+        get: () => false,
+      });
+      
+      // Добавляем chrome объект
+      (window as any).chrome = {
+        runtime: {},
+      };
+      
+      // Переопределяем permissions
+      const originalQuery = (window.navigator as any).permissions.query;
+      (window.navigator as any).permissions.query = (parameters: any) =>
+        parameters.name === 'notifications'
+          ? Promise.resolve({ state: Notification.permission } as PermissionStatus)
+          : originalQuery(parameters);
+
+      // Добавляем плагины
+      Object.defineProperty(navigator, 'plugins', {
+        get: () => [1, 2, 3, 4, 5],
+      });
+
+      // Добавляем языки
+      Object.defineProperty(navigator, 'languages', {
+        get: () => ['ru-RU', 'ru', 'en-US', 'en'],
+      });
+    });
+
+    // Устанавливаем viewport
+    await page.setViewport({ width: 1920, height: 1080 });
+
+    // Устанавливаем user agent
+    await page.setUserAgent(
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    );
+
+    // Устанавливаем дополнительные заголовки
+    await page.setExtraHTTPHeaders({
+      'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+    });
   }
 
   /**
@@ -240,35 +358,34 @@ export class MaklerMdParser implements Parser {
       try {
         const vacancies = await this.parseVacanciesFromPage(pageUrl);
 
-        if (vacancies.length === 0) {
-          log(`   ⚠️  Страница ${currentPage + 1} пуста`);
-          emptyPagesCount++;
+        let newVacanciesCount = 0;
+        let duplicatesCount = 0;
 
+        for (const vacancy of vacancies) {
+          if (!seenIds.has(vacancy.id)) {
+            seenIds.add(vacancy.id);
+            allVacancies.push(vacancy);
+            newVacanciesCount++;
+          } else {
+            duplicatesCount++;
+          }
+        }
+
+        if (newVacanciesCount === 0) {
+          log(`   ⚠️  Нет новых вакансий на странице (все дубли)`);
+          emptyPagesCount++;
           if (emptyPagesCount >= 2) {
-            log(`   ⛔ Две пустые страницы подряд - завершаем парсинг`);
+            log(`   ⛔ Две страницы подряд без новых вакансий - завершаем парсинг`);
             break;
           }
         } else {
           emptyPagesCount = 0;
-
-          let newVacanciesCount = 0;
-          let duplicatesCount = 0;
-
-          for (const vacancy of vacancies) {
-            if (!seenIds.has(vacancy.id)) {
-              seenIds.add(vacancy.id);
-              allVacancies.push(vacancy);
-              newVacanciesCount++;
-            } else {
-              duplicatesCount++;
-            }
-          }
-
-          log(
-            `   ✅ Найдено: ${vacancies.length} (новых: ${newVacanciesCount}, дубликатов: ${duplicatesCount})`,
-          );
-          log(`   📊 Всего уникальных: ${allVacancies.length}`);
         }
+
+        log(
+          `   ✅ Найдено: ${vacancies.length} (новых: ${newVacanciesCount}, дубликатов: ${duplicatesCount})`,
+        );
+        log(`   📊 Всего уникальных: ${allVacancies.length}`);
 
         if (currentPage < maxPages - 1) {
           const randomDelay = delay + Math.random() * 1000;
@@ -301,12 +418,12 @@ export class MaklerMdParser implements Parser {
       }
     }
 
-    // Добавляем list=false (из рабочего примера)
-    url += '&list=false';
+    // Добавляем list=detail (из рабочего примера)
+    url += '&list=detail';
 
-    // Добавляем номер страницы
+    // ВАЖНО: page=2 для второй страницы, page=3 для третьей и т.д.
     if (page > 0) {
-      url += `&page=${page}`;
+      url += `&page=${page + 1}`;
     }
 
     return url;
@@ -347,14 +464,41 @@ export class MaklerMdParser implements Parser {
     const page = await this.browser.newPage();
 
     try {
-      // Устанавливаем viewport
-      await page.setViewport({ width: 1920, height: 1080 });
+      // Настраиваем страницу для обхода детекции
+      await this.setupPage(page);
 
       // Переход на страницу
+      log(`   🌐 Загрузка страницы...`);
       await page.goto(url, {
         waitUntil: 'networkidle2',
         timeout: 60000,
       });
+
+      // Ждем немного после загрузки
+      await pause(2000);
+
+      // Если после перехода url содержит attempt=, делаем повторный переход по исходному url
+      let currentUrl = page.url();
+      if (/attempt=\d+/.test(currentUrl)) {
+        log(`   ⚠️  Обнаружен временный URL (Cloudflare): ${currentUrl}`);
+        // Имитация активности
+        for (let i = 0; i < 5; i++) {
+          const x = Math.floor(Math.random() * 800) + 100;
+          const y = Math.floor(Math.random() * 600) + 100;
+          await page.mouse.move(x, y, { steps: 10 });
+          await pause(300);
+        }
+        await page.mouse.click(400, 400);
+        await pause(1000);
+        await page.evaluate(() => { window.scrollBy(0, 300); });
+        await pause(1000);
+        await page.evaluate(() => { window.scrollBy(0, -300); });
+        log(`   🔄 Повторный переход по исходному URL для снятия защиты...`);
+        await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+        await pause(3000);
+        currentUrl = page.url();
+        log(`   ✅ После повторного перехода: ${currentUrl}`);
+      }
 
       // ВАЖНО: Имитируем человеческую активность для обхода Cloudflare
       // Проверяем, загрузились ли вакансии
@@ -363,26 +507,40 @@ export class MaklerMdParser implements Parser {
       if (articlesCount === 0) {
         log(`   ⚠️  Вакансии не видны, имитируем активность...`);
 
-        // Двигаем мышкой в случайные точки
-        await page.mouse.move(100, 100);
-        await pause(200);
-        await page.mouse.move(500, 300);
-        await pause(200);
+        // Двигаем мышкой в случайные точки (как человек)
+        for (let i = 0; i < 5; i++) {
+          const x = Math.floor(Math.random() * 800) + 100;
+          const y = Math.floor(Math.random() * 600) + 100;
+          await page.mouse.move(x, y, { steps: 10 });
+          await pause(300);
+        }
 
-        // Делаем клик в безопасное место (в body)
+        // Делаем клик в безопасное место
         await page.mouse.click(400, 400);
+        await pause(1000);
+
+        // Скроллим страницу (как человек)
+        await page.evaluate(() => {
+          window.scrollBy(0, 300);
+        });
+        await pause(1000);
+
+        await page.evaluate(() => {
+          window.scrollBy(0, -300);
+        });
         
         // Ждем пока Cloudflare нас "пропустит"
+        log(`   ⏳ Ждем загрузки (Cloudflare проверка)...`);
         await pause(5000);
 
         // Проверяем еще раз
         articlesCount = await page.$$eval('article', (articles) => articles.length);
-        
+
         if (articlesCount === 0) {
           log(`   ⚠️  Вакансии все еще не видны после активности`);
-        } else {
-          log(`   ✅ После активности найдено ${articlesCount} вакансий`);
         }
+      } else {
+        log(`   ✅ Найдено ${articlesCount} вакансий`);
       }
 
       // Парсим вакансии
@@ -531,6 +689,8 @@ export class MaklerMdParser implements Parser {
     const details: Partial<Vacancy> = {};
 
     try {
+      await this.setupPage(page);
+      
       await page.goto(url, {
         waitUntil: 'networkidle2',
         timeout: 30000,
