@@ -7,7 +7,7 @@ import { RabotaMdParser } from './parsers/rabotaMd.js';
 import { NineNineNineMdParser } from './parsers/nineNineNineMd.js';
 import { MaklerMdParser } from './parsers/maklerMd.js';
 import { ParserConfig, Parser, Vacancy } from './types/vacancy.js';
-import { getParserConfig, getAvailableParsers } from './config/parsers.js';
+import { getParserConfig, getAvailableParsers } from './settings/parsers.js';
 import { VacancyManager, daysAgo } from './utils/vacancyManager.js';
 
 /**
