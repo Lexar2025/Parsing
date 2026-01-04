@@ -32,6 +32,7 @@
     "test:puppeteer": "node build/src/testPuppeteer.js",
     "dev:api": "tsx src/api/server.ts",
     "dev:worker": "tsx src/worker/worker.ts",
+    "test:system": "tsx test-system.ts",
     "start:api": "node build/src/api/server.js",
     "start:worker": "node build/src/worker/worker.js",
     "db:migrate": "prisma migrate dev",

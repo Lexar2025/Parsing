@@ -1,11 +1,12 @@
 /**
  * Конфигурация приложения
  */
+import 'dotenv/config';
 
 export const config = {
   // Database
   database: {
-    url: process.env.DATABASE_URL || '',
+    url: process.env.DATABASE_URL || '' ,
   },
   
   // API

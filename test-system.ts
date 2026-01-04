@@ -24,7 +24,7 @@ async function testSystem() {
 
     const result = await parser.parse({
       baseUrl: 'https://www.rabota.md',
-      searchQuery: 'it',
+      searchQuery: 'Программист',
       maxPages: 1, // Только первая страница для теста
     });
 
