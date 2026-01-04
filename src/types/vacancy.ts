@@ -9,6 +9,7 @@ export interface Vacancy {
   salary?: string;
   location?: string;
   description?: string;
+  fullDescription?: string; // Полное описание с детальной страницы
   url: string;
   publishedAt?: Date;
   education?: string;
@@ -24,6 +25,10 @@ export interface Vacancy {
   languages?: string[]; // Языки
   contactPerson?: string; // Контактное лицо
   region?: string; // Регион (полный адрес)
+  // Дополнительные поля для makler.md
+  vacancyType?: string; // Тип вакансии (Прямая/Агентство)
+  industry?: string; // Сферы деятельности
+  specialization?: string; // Специализация
   // Поля для отслеживания актуальности
   firstSeenAt?: Date | string; // Когда впервые найдена
   lastSeenAt?: Date | string; // Когда найдена в последний раз

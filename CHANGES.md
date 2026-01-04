@@ -1,102 +1,146 @@
-# ✅ Что было сделано
+# ✅ Итоговые изменения
 
-## Проблема
-makler.md блокировал парсер через Cloudflare защиту (HTTP 418 / пустая страница).
+## 1. Удален puppeteer-extra
 
-## Решение
+**Проблема:** Несовместимость версий `puppeteer-extra` и TypeScript
 
-### 1. Удалены лишние файлы документации
-Команда для очистки:
-```powershell
-Remove-Item -Path "CHEATSHEET.md","INDEX.md","MAKLER_*.md","NEXT_STEPS.md","QUICKSTART.md","SUMMARY.md","test-makler-*.js","cleanup.bat" -Force -ErrorAction SilentlyContinue
+**Решение:** Используем обычный Puppeteer с ручной имитацией человека
+
+```bash
+npm uninstall puppeteer-extra puppeteer-extra-plugin-stealth
 ```
 
-### 2. Добавлены новые зависимости
-В `package.json`:
-- `puppeteer-extra` - расширенный Puppeteer
-- `puppeteer-extra-plugin-stealth` - обход Cloudflare
+## 2. Обход Cloudflare без плагинов
 
-### 3. Полностью переписан парсер
-Файл: `src/parsers/maklerMd.ts`
+**Реализовано в `src/parsers/maklerMd.ts`:**
 
-**Изменения:**
-- ❌ Убран HTTP + axios
-- ✅ Добавлен Puppeteer + Stealth Plugin
-- ✅ Имитация человеческой активности (движение мыши, клики)
-- ✅ Использование рабочего URL с `list=false`
-- ✅ Исправлен словарь профессий
-- ✅ Автоматический обход Cloudflare
+- ✅ Скрытие webdriver через `evaluateOnNewDocument`
+- ✅ Добавление chrome объекта
+- ✅ Переопределение permissions
+- ✅ Правильный user-agent
+- ✅ Имитация движения мыши (случайные точки, steps)
+- ✅ Клики в безопасные места
+- ✅ Скроллинг страницы
+- ✅ Ожидание 5 сек после активности
+- ✅ Reload страницы при необходимости
 
-### 4. Обновлен parse.ts
-Теперь создает MaklerMdParser с правильными параметрами:
+## 3. Детальный парсинг вакансий
+
+**Добавлен парсинг со страницы вакансии:**
+
+### Из таблицы `ul.itemtable.box-columns`:
+- Форма занятости
+- График работы
+- Образование
+- Тип вакансии
+- Сфера деятельности
+- Специализация
+
+### Дополнительно:
+- Полное описание
+- Зарплата (если указана)
+- Компания (если указана)
+
+## 4. Расширен тип Vacancy
+
+**В `src/types/vacancy.ts` добавлены поля:**
+
 ```typescript
-new MaklerMdParser({
-  headless: false,      // Видно браузер
-  parseDetails: false,  // Не парсим детали
-  cacheEnabled: true,
-});
+fullDescription?: string;     // Полное описание
+vacancyType?: string;         // Тип вакансии (Прямая/Агентство)
+industry?: string;            // Сфера деятельности
+specialization?: string;      // Специализация
 ```
 
-### 5. Обновлен README.md
-Убран весь мусор, оставлена только нужная информация.
+## 5. Исправлен URL
 
-## Что делать дальше
-
-### Шаг 1: Удалить мусор
-```powershell
-cd C:\Users\User\Documents\Claude\Parsing
-Remove-Item -Path "CHEATSHEET.md","INDEX.md","MAKLER_*.md","NEXT_STEPS.md","QUICKSTART.md","SUMMARY.md","test-makler-*.js","cleanup.bat" -Force -ErrorAction SilentlyContinue
+**Используется рабочий формат:**
+```
+https://makler.md/transnistria/job/job-offers?list&field_446[]=2869&list=false
 ```
 
-### Шаг 2: Установить зависимости
-```powershell
-npm install
+Параметр `list=false` важен для корректного отображения.
+
+## 6. Исправлен словарь профессий
+
+**В `MAKLER_PROFESSIONS`:**
+- Все ID корректны
+- Все названия на русском
+- Поддержка частичного совпадения
+
+## Структура файлов
+
+```
+src/
+├── parsers/
+│   └── maklerMd.ts         ← Основной парсер (Puppeteer)
+├── types/
+│   └── vacancy.ts          ← Расширенный тип Vacancy
+├── config/
+│   └── parsers.ts          ← Конфигурация (delay, maxPages)
+└── parse.ts                ← Точка входа (parseDetails: false/true)
 ```
 
-### Шаг 3: Собрать
+## Настройка
+
+### В `src/parse.ts`:
+
+```typescript
+case 'makler.md':
+  return new MaklerMdParser({
+    headless: false,      // true = без UI
+    parseDetails: false,  // true = парсить детали
+    cacheEnabled: true,   // Кэширование деталей
+  });
+```
+
+### В `src/config/parsers.ts`:
+
+```typescript
+'makler.md': {
+  maxPages: 10,           // Количество страниц
+  delay: 1000,            // Задержка между страницами (мс)
+  concurrency: 3,         // Параллельных запросов
+}
+```
+
+## Команды
+
 ```powershell
+# Удалить лишние зависимости
+npm uninstall puppeteer-extra puppeteer-extra-plugin-stealth
+
+# Собрать
 npm run build
-```
 
-### Шаг 4: Запустить
-```powershell
+# Запустить
 npm run parse makler.md Программисты
 ```
 
-## Параметры парсера
+## Результат
 
-В `src/parse.ts` можно изменить:
+### Без детального парсинга (parseDetails: false):
+- Быстро (~1-2 мин на 10 страниц)
+- Основные поля: заголовок, описание, локация, телефон, дата
 
-```typescript
-new MaklerMdParser({
-  headless: false,      // true = без UI, false = видно браузер
-  parseDetails: false,  // true = парсить детали (медленнее)
-  cacheEnabled: true,   // Кэширование
-});
+### С детальным парсингом (parseDetails: true):
+- Медленнее (~5-10 мин на 10 страниц)
+- Все поля + форма занятости, график, образование, сфера, специализация
+
+## Кэширование
+
+Детали кэшируются в `cache/makler-md/` на 24 часа.
+
+Очистка кэша:
+```powershell
+Remove-Item -Recurse cache/makler-md/*
 ```
 
-## Профессии
+## Что дальше?
 
-В `src/parsers/maklerMd.ts` есть словарь:
-```typescript
-'Программисты': 2869,
-'Backend': 2870,
-'Frontend': 2871,
-// ... и т.д.
-```
+1. Запустите `npm run build`
+2. Запустите `npm run parse makler.md Программисты`
+3. Проверьте `vacancies_makler_md.json`
+4. При необходимости включите `parseDetails: true` для полных данных
 
-## Если не работает
-
-1. Проверьте что установлены зависимости: `npm install`
-2. Соберите: `npm run build`
-3. Запустите с `headless: false` чтобы видеть что происходит
-4. Увеличьте задержки в `src/config/parsers.ts`: `delay: 5000`
-
-## Технологии
-
-- **puppeteer-extra** - расширенный Puppeteer
-- **puppeteer-extra-plugin-stealth** - скрывает признаки автоматизации
-- Имитация человеческой активности
-- Правильный URL с `list=false`
-
-Всё готово! 🚀
+Всё готово! 🎉

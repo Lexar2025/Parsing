@@ -49,7 +49,7 @@ export const MAKLER_PROFESSIONS: Record<string, number> = {
 
   // Производство, промышленность
   'Производство, промышленность': 2880,
-  'Инженеры, технологи': 2881,
+  'Инженеры-технологи': 2881,
   'Рабочие': 2882,
 
   // Торговля и продажи
@@ -696,8 +696,75 @@ export class MaklerMdParser implements Parser {
         timeout: 30000,
       });
 
-      // Можно добавить парсинг дополнительных полей с детальной страницы
-      // Пока оставляем пустым, так как основные данные уже есть
+      // Парсим дополнительные поля с детальной страницы
+      const detailsData = await page.evaluate(() => {
+        const result: any = {};
+        
+        // Парсим таблицу с деталями
+        const itemTable = document.querySelector('ul.itemtable.box-columns');
+        if (itemTable) {
+          const items = itemTable.querySelectorAll('li');
+          
+          items.forEach(item => {
+            const fieldDiv = item.querySelector('.fields');
+            const valueDiv = item.querySelector('.values');
+            
+            if (fieldDiv && valueDiv) {
+              const field = fieldDiv.textContent?.trim();
+              const value = valueDiv.textContent?.trim();
+              
+              if (field && value) {
+                switch (field) {
+                  case 'Форма занятости':
+                    result.employmentType = value;
+                    break;
+                  case 'График работы':
+                    result.schedule = value;
+                    break;
+                  case 'Образование':
+                    result.education = value;
+                    break;
+                  case 'Тип вакансии':
+                    result.vacancyType = value;
+                    break;
+                  case 'Сферы деятельности':
+                    result.industry = value;
+                    break;
+                  case 'Специализация':
+                    result.specialization = value;
+                    break;
+                  case 'Расположение вакансии':
+                    // location уже есть в основных данных
+                    break;
+                }
+              }
+            }
+          });
+        }
+        
+        // Парсим полное описание если есть
+        const descriptionBlock = document.querySelector('.article_content, .ann_full_descr, .full-description');
+        if (descriptionBlock) {
+          result.fullDescription = descriptionBlock.textContent?.trim();
+        }
+        
+        // Парсим зарплату если есть
+        const salaryElement = document.querySelector('.salary, .ann_salary');
+        if (salaryElement) {
+          result.salary = salaryElement.textContent?.trim();
+        }
+        
+        // Парсим компанию если есть
+        const companyElement = document.querySelector('.company-name, .ann_company');
+        if (companyElement) {
+          result.company = companyElement.textContent?.trim();
+        }
+        
+        return result;
+      });
+
+      // Объединяем с details
+      Object.assign(details, detailsData);
 
       await page.close();
     } catch (error) {
