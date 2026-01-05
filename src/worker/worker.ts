@@ -45,7 +45,7 @@ await parseQueue.add(
   'periodic-rabota',
   {
     source: 'rabota.md',
-    searchQuery: 'it',
+    searchQuery: 'Программист',
     maxPages: 3,
   },
   {
@@ -59,7 +59,7 @@ await parseQueue.add(
 // Добавляем задачу парсинга сразу при старте
 await parseQueue.add('initial-rabota', {
   source: 'rabota.md',
-  searchQuery: 'it',
+  searchQuery: 'Программист',
   maxPages: 3,
 });
 
