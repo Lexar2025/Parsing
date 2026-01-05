@@ -1,11 +1,14 @@
 /**
  * BullMQ Worker для фоновых задач
+ * С поддержкой VacancyManager
  */
 
 import { Worker, Queue } from 'bullmq';
 import { config } from '../shared/config/index.js';
 import { parseJobProcessor } from './jobs/parseJob.js';
+import { notifyJobProcessor } from './jobs/notifyJob.js';
 import { prisma } from '../db/index.js';
+import { vacancyManager } from '../shared/managers/CentralManager.js';
 
 // Настройки Redis подключения
 const connection = {
@@ -14,66 +17,120 @@ const connection = {
   password: config.redis.password,
 };
 
-// Создаем очередь для парсинга
-export const parseQueue = new Queue('parse', { connection });
+let parseQueue: Queue | null = null;
+let notifyQueue: Queue | null = null;
 
-// Создаем worker для обработки задач
-const parseWorker = new Worker('parse', parseJobProcessor, {
-  connection,
-  concurrency: config.worker.concurrency,
-  limiter: {
-    max: 10, // максимум 10 задач
-    duration: 60000, // в минуту
-  },
-});
+// Пробуем подключиться к Redis
+try {
+  // Создаем очередь для парсинга
+  parseQueue = new Queue('parse', { connection });
 
-// Обработчики событий
-parseWorker.on('completed', (job) => {
-  console.log(`✅ Job ${job.id} completed:`, job.returnvalue);
-});
+  // Создаем очередь для уведомлений
+  notifyQueue = new Queue('notify', { connection });
 
-parseWorker.on('failed', (job, err) => {
-  console.error(`❌ Job ${job?.id} failed:`, err.message);
-});
+  // Регистрируем очередь в VacancyManager
+  vacancyManager.setQueue(parseQueue);
 
-parseWorker.on('error', (err) => {
-  console.error('Worker error:', err);
-});
+  console.log('✅ Redis подключен, Worker запускается...');
 
-// Добавляем периодическую задачу парсинга (каждые 6 часов)
-await parseQueue.add(
-  'periodic-rabota',
-  {
-    source: 'rabota.md',
-    searchQuery: 'Программист',
-    maxPages: 3,
-  },
-  {
-    repeat: {
-      every: config.worker.parseInterval, // 6 часов
+  // Создаем worker для обработки задач парсинга
+  const parseWorker = new Worker('parse', parseJobProcessor, {
+    connection,
+    concurrency: config.worker.concurrency,
+    limiter: {
+      max: 10, // максимум 10 задач
+      duration: 60000, // в минуту
     },
-    jobId: 'periodic-rabota-parse',
-  }
-);
+  });
 
-// Добавляем задачу парсинга сразу при старте
-await parseQueue.add('initial-rabota', {
-  source: 'rabota.md',
-  searchQuery: 'Программист',
-  maxPages: 3,
-});
+  // Создаем worker для уведомлений
+  const notifyWorker = new Worker('notify', notifyJobProcessor, {
+    connection,
+    concurrency: 1, // По одному, чтобы не спамить
+  });
 
-console.log('🔧 Worker started');
-console.log(`📊 Concurrency: ${config.worker.concurrency}`);
-console.log(`⏰ Parse interval: ${config.worker.parseInterval / 1000 / 60} minutes`);
+  // Обработчики событий для парсинга
+  parseWorker.on('completed', (job) => {
+    console.log(`✅ Парсинг ${job.id} завершен:`, job.returnvalue);
+  });
 
-// Graceful shutdown
-const shutdown = async () => {
-  console.log('Shutting down worker...');
-  await parseWorker.close();
-  await prisma.$disconnect();
-  process.exit(0);
-};
+  parseWorker.on('failed', (job, err) => {
+    console.error(`❌ Парсинг ${job?.id} провалился:`, err.message);
+  });
 
-process.on('SIGTERM', shutdown);
-process.on('SIGINT', shutdown);
+  parseWorker.on('error', (err) => {
+    console.error('Worker ошибка:', err);
+  });
+
+  // Обработчики для уведомлений
+  notifyWorker.on('completed', (job) => {
+    console.log(`✅ Проверка подписок ${job.id} завершена:`, job.returnvalue);
+  });
+
+  notifyWorker.on('failed', (job, err) => {
+    console.error(`❌ Проверка подписок ${job?.id} провалилась:`, err.message);
+  });
+
+  // Добавляем периодическую задачу парсинга (каждые 6 часов)
+  await parseQueue.add(
+    'periodic-rabota',
+    {
+      source: 'rabota.md',
+      searchQuery: 'it',
+      maxPages: 3,
+    },
+    {
+      repeat: {
+        every: config.worker.parseInterval, // 6 часов
+      },
+      jobId: 'periodic-rabota-parse',
+    }
+  );
+
+  // Добавляем периодическую задачу проверки подписок (каждые 2 часа)
+  await notifyQueue.add(
+    'check-subscriptions',
+    {},
+    {
+      repeat: {
+        every: config.worker.notifyInterval, // 2 часа
+      },
+      jobId: 'periodic-subscriptions-check',
+    }
+  );
+
+  // Добавляем задачу парсинга сразу при старте
+  await parseQueue.add('initial-rabota', {
+    source: 'rabota.md',
+    searchQuery: 'it',
+    maxPages: 3,
+  });
+
+  console.log('🔧 Worker запущен');
+  console.log(`📊 Concurrency: ${config.worker.concurrency}`);
+  console.log(`⏰ Интервал парсинга: ${config.worker.parseInterval / 1000 / 60} минут`);
+  console.log(`🔔 Интервал проверки подписок: ${config.worker.notifyInterval / 1000 / 60} минут`);
+
+  // Graceful shutdown
+  const shutdown = async () => {
+    console.log('Останавливаю worker...');
+    if (parseWorker) await parseWorker.close();
+    if (notifyWorker) await notifyWorker.close();
+    await prisma.$disconnect();
+    process.exit(0);
+  };
+
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
+
+} catch (error: any) {
+  console.error('❌ Не удалось подключиться к Redis:', error.message);
+  console.log('⚠️  Worker не запущен. Проверь что Redis запущен и доступен.');
+  console.log('💡 API будет работать без фоновых задач.');
+  
+  // Не выходим из процесса, чтобы не крашить всё приложение
+  // API сможет работать без Worker
+}
+
+// Экспортируем очереди для использования в других модулях
+export { parseQueue, notifyQueue };

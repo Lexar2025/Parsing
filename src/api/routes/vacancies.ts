@@ -1,8 +1,10 @@
 /**
  * API роут для работы с вакансиями
+ * Использует VacancyManager для умного поиска
  */
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { vacancyManager } from '../../shared/managers/CentralManager.js';
 import { vacancyService } from '../services/vacancy.service.js';
 
 interface VacancyQuery {
@@ -17,7 +19,7 @@ interface VacancyQuery {
 }
 
 export async function vacancyRoutes(fastify: FastifyInstance) {
-  // GET /vacancies - Получить список вакансий
+  // GET /vacancies - Умный поиск через VacancyManager
   fastify.get<{ Querystring: VacancyQuery }>(
     '/vacancies',
     async (request: FastifyRequest<{ Querystring: VacancyQuery }>, reply: FastifyReply) => {
@@ -33,26 +35,31 @@ export async function vacancyRoutes(fastify: FastifyInstance) {
           offset = 0,
         } = request.query;
 
+        // Формируем фильтры
         const filters = {
           keywords: keywords ? keywords.split(',').map((k) => k.trim()) : undefined,
           locations: locations ? locations.split(',').map((l) => l.trim()) : undefined,
           salaryMin: salaryMin ? Number(salaryMin) : undefined,
           experience: experience ? experience.split(',').map((e) => e.trim()) : undefined,
           schedule: schedule ? schedule.split(',').map((s) => s.trim()) : undefined,
-          sources: sources ? sources.split(',').map((s) => s.trim()) : undefined,
+          sources: sources ? sources.split(',').map((s) => s.trim()) as any : undefined,
           limit: Number(limit),
           offset: Number(offset),
         };
 
-        const vacancies = await vacancyService.findByFilters(filters);
+        // Используем VacancyManager для умного поиска
+        const result = await vacancyManager.search(filters);
 
         return reply.send({
           success: true,
-          data: vacancies,
+          data: result.vacancies,
           meta: {
-            total: vacancies.length,
+            total: result.meta.total,
             limit: filters.limit,
             offset: filters.offset,
+            source: result.meta.source,
+            lastUpdate: result.meta.lastUpdate,
+            updating: result.meta.updating
           },
         });
       } catch (error: any) {
@@ -98,7 +105,7 @@ export async function vacancyRoutes(fastify: FastifyInstance) {
   // GET /vacancies/stats - Статистика
   fastify.get('/vacancies/stats', async (request, reply) => {
     try {
-      const stats = await vacancyService.getStats();
+      const stats = await vacancyManager.getStats();
 
       return reply.send({
         success: true,
@@ -113,4 +120,34 @@ export async function vacancyRoutes(fastify: FastifyInstance) {
       });
     }
   });
+
+  // POST /vacancies/force-parse - Принудительный парсинг (для админа)
+  fastify.post<{ Body: { sources?: string[] } }>(
+    '/vacancies/force-parse',
+    async (request: FastifyRequest<{ Body: { sources?: string[] } }>, reply: FastifyReply) => {
+      try {
+        const { sources } = request.body || {};
+
+        // Запускаем парсинг в фоне (не блокирует ответ)
+        vacancyManager.search({
+          sources: sources as any,
+          limit: 1
+        }).catch(error => {
+          request.log.error({ err: error }, 'Background parsing failed:');
+        });
+
+        return reply.send({
+          success: true,
+          message: 'Parsing started in background',
+        });
+      } catch (error: any) {
+        request.log.error(error);
+        return reply.status(500).send({
+          success: false,
+          error: 'Failed to start parsing',
+          message: error.message,
+        });
+      }
+    }
+  );
 }
