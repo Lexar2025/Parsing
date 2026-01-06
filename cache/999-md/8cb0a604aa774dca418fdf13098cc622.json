@@ -1,0 +1,17 @@
+{
+  "author": "Юридическое лицо",
+  "education": "Высшее",
+  "experience": "Не имеет значения",
+  "schedule": "Гибкий",
+  "seasonal": false,
+  "employmentType": "Полная занятость",
+  "contactPerson": "Lidia",
+  "company": "Dent-Estet",
+  "languages": [
+    "Румынский",
+    "Русский",
+    "Английский"
+  ],
+  "region": "Кишинёв мун., Кишинёв, Старая Почта, str. Gheorghe Madan, 46/5",
+  "location": "Кишинёв мун., Кишинёв, Старая Почта, str. Gheorghe Madan, 46/5"
+}

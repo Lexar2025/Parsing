@@ -86,7 +86,7 @@ export class VacancyManager {
         emptyDB: sourceStatus.some(s => s.isEmpty)
       });
       
-      const freshVacancies = await this.parseNow(sources, filters);
+      await this.parseNow(sources, filters);
       
       // Применяем фильтры к свежим данным
       const filtered = await vacancyService.findByFilters({
@@ -198,7 +198,7 @@ export class VacancyManager {
       // Пока реализован только rabota.md
       if (source === 'rabota.md') {
         const parser = new RabotaMdParser({
-          parseDetails: false,
+          parseDetails: true,
           cacheEnabled: true,
           concurrency: 3
         });
@@ -206,13 +206,39 @@ export class VacancyManager {
         const result = await parser.parse({
           baseUrl: 'https://www.rabota.md',
           searchQuery: filters.keywords?.[0] || 'работа', // По умолчанию ищем "работа"
-          maxPages: 3 // 3 страницы для скорости
+          maxPages: 10 // 10 страниц для скорости
         });
 
         vacancies = result.vacancies;
+            } else if (source === '999.md') {
+      const parser = new NineNineNineMdParser({
+        parseDetails: true,
+        cacheEnabled: true,
+        concurrency: 3
+      });
+
+      const result = await parser.parse({
+        baseUrl: 'https://999.md',
+        searchQuery: filters.keywords?.[0] || 'работа',
+        maxPages: 10
+      });
+
+      vacancies = result.vacancies;
+    } else if (source === 'makler.md') {
+      const parser = new MaklerMdParser({
+        parseDetails: true,
+        cacheEnabled: true,
+        concurrency: 3
+      });
+
+      const result = await parser.parse({
+        baseUrl: 'https://makler.md',
+        searchQuery: filters.keywords?.[0] || 'работа',
+        maxPages: 10
+      });
+      vacancies = result.vacancies;
       } else {
         console.log(`   ⚠️  Парсер для ${source} еще не реализован`);
-        // TODO: Добавить парсеры для 999.md и makler.md
         return [];
       }
 

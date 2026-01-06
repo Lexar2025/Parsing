@@ -1,0 +1,16 @@
+{
+  "author": "Физическое лицо",
+  "education": "Высшее",
+  "experience": "От 3 до 5 лет",
+  "schedule": "Не полный день",
+  "seasonal": false,
+  "employmentType": "Частичная занятость",
+  "contactPerson": "Chelari Ala",
+  "company": "Clinica TerraDent",
+  "languages": [
+    "Румынский",
+    "Русский"
+  ],
+  "region": "Кишинёв мун., Кишинёв, Ботаника",
+  "location": "Кишинёв мун., Кишинёв, Ботаника"
+}

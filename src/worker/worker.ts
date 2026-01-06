@@ -8,7 +8,7 @@ import { config } from '../shared/config/index.js';
 import { parseJobProcessor } from './jobs/parseJob.js';
 import { notifyJobProcessor } from './jobs/notifyJob.js';
 import { prisma } from '../db/index.js';
-import { vacancyManager } from '../shared/managers/CentralManager.js';
+import { vacancyManager } from '../shared/managers/vacancyManager.js';
 
 // Настройки Redis подключения
 const connection = {

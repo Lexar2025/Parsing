@@ -9,7 +9,7 @@ import { config } from '../shared/config/index.js';
 import { vacancyRoutes } from './routes/vacancies.js';
 import { subscriptionRoutes } from './routes/subscriptions.js';
 import { prisma } from '../db/index.js';
-import { vacancyManager } from '../shared/managers/CentralManager.js';
+import { vacancyManager } from '../shared/managers/vacancyManager.js';
 
 const fastify = Fastify({
   logger: {
