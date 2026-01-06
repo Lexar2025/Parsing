@@ -2,7 +2,7 @@
  * Полный тест системы с менеджерами
  */
 
-import { vacancyManager } from './src/shared/managers/CentralManager.js';
+import { vacancyManager } from './src/shared/managers/vacancyManager.js';
 import { subscriptionManager } from './src/shared/managers/subscriptionManager.js';
 import { prisma } from './src/db/index.js';
 

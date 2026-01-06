@@ -21,7 +21,7 @@ function getParser(site: string): Parser {
       return new NineNineNineMdParser();
     case 'makler.md':
       return new MaklerMdParser({
-        headless: false,      // false = видно браузер для отладки
+        headless: true,      // false = видно браузер для отладки
         parseDetails: true,  // Не парсить детали (они не нужны)
         cacheEnabled: true,
       });

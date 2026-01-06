@@ -4,7 +4,7 @@
  */
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { vacancyManager } from '../../shared/managers/CentralManager.js';
+import { vacancyManager } from '../../shared/managers/vacancyManager.js';
 import { vacancyService } from '../services/vacancy.service.js';
 
 interface VacancyQuery {
@@ -121,30 +121,28 @@ export async function vacancyRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // POST /vacancies/force-parse - Принудительный парсинг (для админа)
+  // POST /vacancies/force-parse - Принудительный парсинг
   fastify.post<{ Body: { sources?: string[] } }>(
     '/vacancies/force-parse',
     async (request: FastifyRequest<{ Body: { sources?: string[] } }>, reply: FastifyReply) => {
       try {
         const { sources } = request.body || {};
 
-        // Запускаем парсинг в фоне (не блокирует ответ)
-        vacancyManager.search({
-          sources: sources as any,
-          limit: 1
-        }).catch(error => {
-          request.log.error({ err: error }, 'Background parsing failed:');
-        });
+        // Запускаем принудительный парсинг
+        const result = await vacancyManager.forceParse(sources);
 
         return reply.send({
           success: true,
-          message: 'Parsing started in background',
+          message: 'Parsing completed',
+          data: {
+            vacanciesParsed: result.results.length
+          }
         });
       } catch (error: any) {
         request.log.error(error);
         return reply.status(500).send({
           success: false,
-          error: 'Failed to start parsing',
+          error: 'Failed to parse',
           message: error.message,
         });
       }
