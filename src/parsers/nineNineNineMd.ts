@@ -166,7 +166,14 @@ export class NineNineNineMdParser implements Parser {
             
             return { ...v, ...extra };
           } catch (err) {
-            log(`⚠️ Ошибка деталей для ${v.url}:`, err);
+            log(`⚠️ Ошибка деталей для ${v.url}:`, {
+            name: err?.name,
+            message: err?.message,
+            stack: err?.stack,
+            url: v.url,
+            vacancy: v,
+            error: err
+          });
             return v;
           }
         }),
@@ -242,7 +249,7 @@ export class NineNineNineMdParser implements Parser {
 
       // Извлекаем данные
       const details = await page.evaluate(() => {
-        const result: Partial<Vacancy> = {};
+        const result: any = {};
 
         // Функция для извлечения значения по ключу
         const getFeatureValue = (key: string): string | undefined => {
@@ -319,7 +326,13 @@ export class NineNineNineMdParser implements Parser {
 
       return details;
     } catch (error) {
-      log(`❌ Ошибка при парсинге деталей ${url}:`, error);
+      log(`❌ Ошибка при парсинге деталей ${url}:`, {
+      name: error?.name,
+      message: error?.message,
+      stack: error?.stack,
+      url,
+      error
+    });
       return {};
     } finally {
       await page.close();

@@ -73,6 +73,33 @@ export async function vacancyRoutes(fastify: FastifyInstance) {
     }
   );
 
+    // POST /vacancies/force-parse - Принудительный парсинг
+  fastify.post<{ Body: { sources?: string[] } }>(
+    '/vacancies/force-parse',
+    async (request: FastifyRequest<{ Body: { sources?: string[] } }>, reply: FastifyReply) => {
+      try {
+        const { sources } = request.body || {};
+
+        // Запускаем принудительный парсинг
+        const result = await vacancyManager.forceParse(sources);
+
+        return reply.send({
+          success: true,
+          message: 'Parsing completed',
+          data: {
+            vacanciesParsed: result.results.length
+          }
+        });
+      } catch (error: any) {
+        request.log.error(error);
+        return reply.status(500).send({
+          success: false,
+          error: 'Failed to parse',
+          message: error.message,
+        });
+      }
+    }
+  );
   // GET /vacancies/:id - Получить конкретную вакансию
   fastify.get<{ Params: { id: string } }>(
     '/vacancies/:id',
@@ -120,32 +147,4 @@ export async function vacancyRoutes(fastify: FastifyInstance) {
       });
     }
   });
-
-  // POST /vacancies/force-parse - Принудительный парсинг
-  fastify.post<{ Body: { sources?: string[] } }>(
-    '/vacancies/force-parse',
-    async (request: FastifyRequest<{ Body: { sources?: string[] } }>, reply: FastifyReply) => {
-      try {
-        const { sources } = request.body || {};
-
-        // Запускаем принудительный парсинг
-        const result = await vacancyManager.forceParse(sources);
-
-        return reply.send({
-          success: true,
-          message: 'Parsing completed',
-          data: {
-            vacanciesParsed: result.results.length
-          }
-        });
-      } catch (error: any) {
-        request.log.error(error);
-        return reply.status(500).send({
-          success: false,
-          error: 'Failed to parse',
-          message: error.message,
-        });
-      }
-    }
-  );
 }

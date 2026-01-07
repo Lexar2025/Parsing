@@ -85,6 +85,7 @@ model Vacancy {
 model ParseLog {
   id              String   @id @default(cuid())
   source          String
+  searchQuery     String?  // Поисковый запрос для отслеживания парсинга
   status          String
   vacanciesFound  Int      @default(0)
   vacanciesNew    Int      @default(0)
@@ -93,5 +94,5 @@ model ParseLog {
   
   createdAt       DateTime @default(now())
   
-  @@index([source, createdAt])
+  @@index([source, searchQuery, createdAt])
 }

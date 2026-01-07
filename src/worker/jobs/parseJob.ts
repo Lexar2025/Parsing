@@ -55,6 +55,7 @@ export async function parseJobProcessor(job: Job<ParseJobData>) {
     await prisma.parseLog.create({
       data: {
         source,
+        searchQuery, // Сохраняем поисковый запрос
         status: 'success',
         vacanciesFound: vacancies.length,
         vacanciesNew: created,
@@ -79,6 +80,7 @@ export async function parseJobProcessor(job: Job<ParseJobData>) {
     await prisma.parseLog.create({
       data: {
         source,
+        searchQuery, // Сохраняем поисковый запрос и при ошибке
         status: 'error',
         duration,
         error: error.message,
