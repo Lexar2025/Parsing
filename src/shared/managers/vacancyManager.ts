@@ -2,10 +2,10 @@
  * Vacancy Manager - центральный менеджер для управления вакансиями
  * 
  * Умная логика:
- * - Парсит ВСЕ источники параллельно
- * - Проверяет по логам парсинга (чтобы не парсить одинаковые запросы)
- * - Если БД пуста или нет вакансий по запросу → парсинг СЕЙЧАС
- * - Если данные старые → фоновый парсинг
+ * - Проверяет историю парсинга ПО КОНКРЕТНОМУ searchQuery
+ * - Парсит только те источники, которые не парсились недавно
+ * - Если все источники парсились недавно → берет из БД (cache)
+ * - Если есть источники без недавнего парсинга → парсит их (fresh)
  */
 
 import { prisma } from '../../db/index.js';
@@ -56,6 +56,12 @@ export class VacancyManager {
 
   /**
    * Главный метод поиска вакансий
+   * 
+   * Логика:
+   * 1. Проверяет историю парсинга для ЭТОГО searchQuery
+   * 2. Определяет какие источники нужно парсить (те, что не парсились недавно)
+   * 3. Если есть источники для парсинга → парсит их
+   * 4. Если все источники парсились недавно → берет из БД
    */
   async search(filters: SearchFilters): Promise<SearchResult> {
     const sources = filters.sources || ['rabota.md', '999.md', 'makler.md'];
@@ -63,78 +69,64 @@ export class VacancyManager {
 
     console.log(`🔍 Поиск вакансий:`, { 
       keywords: filters.keywords, 
-      sources 
+      sources,
+      searchQuery 
     });
 
-    // 1. Проверяем был ли уже парсинг с таким запросом
+    // 1. Проверяем историю парсинга для ЭТОГО запроса по каждому источнику
     const parseHistory = await this.checkParseHistory(sources, searchQuery);
     
-    // 2. Ищем в БД
+    console.log(`📊 История парсинга для "${searchQuery}":`);
+    parseHistory.forEach(h => {
+      console.log(`   ${h.source}: ${h.wasRecentlyParsed ? '✅ недавно' : '❌ устарел'} (${h.lastParse?.toLocaleString() || 'никогда'})`);
+    });
+
+    // 2. Определяем какие источники нужно парсить
+    const sourcesToParse = parseHistory
+      .filter(p => !p.wasRecentlyParsed)
+      .map(p => p.source);
+
+    // 3. Если есть источники для парсинга → парсим их
+    if (sourcesToParse.length > 0) {
+      console.log(`\n📭 Запускаю парсинг ${sourcesToParse.length} источников: ${sourcesToParse.join(', ')}`);
+      console.log(`   Причина: нет недавнего парсинга для запроса "${searchQuery}"`);
+      
+      await this.parseNow(sourcesToParse as any, filters, searchQuery);
+      
+      // Получаем свежие данные (из ВСЕХ источников, включая те что были в кеше)
+      const vacancies = await vacancyService.findByFilters({
+        ...filters,
+        sources
+      });
+      
+      console.log(`✅ Парсинг завершен. Найдено вакансий: ${vacancies.length}`);
+      
+      return {
+        vacancies,
+        meta: {
+          total: vacancies.length,
+          source: 'fresh',
+          lastUpdate: new Date(),
+          updating: false,
+          parseReason: `Парсинг ${sourcesToParse.length} источников: ${sourcesToParse.join(', ')}`
+        }
+      };
+    }
+
+    // 4. Все источники парсились недавно → берем из БД
+    console.log(`\n✅ Все источники парсились недавно для "${searchQuery}", беру из БД`);
+    
     const vacancies = await vacancyService.findByFilters({
       ...filters,
       sources
     });
 
-    console.log(`📊 Найдено в БД: ${vacancies.length} вакансий`);
-
-    // 3. Определяем нужен ли парсинг
-    let needsParsing = false;
-    let parseReason = '';
-
-    // Если БД пуста
-    if (vacancies.length === 0) {
-      // Проверяем был ли уже парсинг с ЭТИМ запросом
-      const recentParse = parseHistory.find(p => p.wasRecentlyParsed);
-      
-      if (recentParse) {
-        console.log(`   ℹ️  Запрос "${searchQuery}" уже парсился недавно (${recentParse.source})`);
-        console.log(`   ⏰ Последний парсинг: ${recentParse.lastParse?.toLocaleString()}`);
-        // Не парсим повторно если недавно уже парсили ЭТОТ запрос
-        needsParsing = false;
-      } else {
-        console.log(`   📭 Нет вакансий по запросу "${searchQuery}"`);
-        needsParsing = true;
-        parseReason = 'Нет результатов по этому запросу';
-      }
-    }
-
-    // Или если данные старые и есть источники без недавнего парсинга
-    const staleSources = parseHistory.filter(p => !p.wasRecentlyParsed);
-    if (!needsParsing && staleSources.length > 0) {
-      console.log(`   ⏰ Устаревшие источники: ${staleSources.map(s => s.source).join(', ')}`);
-      needsParsing = true;
-      parseReason = 'Данные устарели';
-    }
-
-    // 4. Парсим если нужно
-    if (needsParsing) {
-      console.log(`📭 Запускаю парсинг! Причина: ${parseReason}`);
-      
-      await this.parseNow(sources, filters, searchQuery);
-      
-      // Применяем фильтры к свежим данным
-      const filtered = await vacancyService.findByFilters({
-        ...filters,
-        sources
-      });
-      
-      return {
-        vacancies: filtered,
-        meta: {
-          total: filtered.length,
-          source: 'fresh',
-          lastUpdate: new Date(),
-          updating: false,
-          parseReason
-        }
-      };
-    }
-
-    // 5. Возвращаем что есть
     const lastUpdate = parseHistory.reduce((latest, p) => {
       if (!p.lastParse) return latest;
       return !latest || p.lastParse > latest ? p.lastParse : latest;
     }, null as Date | null);
+
+    console.log(`📊 Найдено в БД: ${vacancies.length} вакансий`);
 
     return {
       vacancies,
@@ -149,6 +141,7 @@ export class VacancyManager {
 
   /**
    * Проверяет историю парсинга с учетом поискового запроса
+   * Возвращает информацию по каждому источнику
    */
   private async checkParseHistory(sources: string[], searchQuery: string) {
     const history = await Promise.all(
@@ -158,7 +151,7 @@ export class VacancyManager {
           where: {
             source,
             status: 'success',
-            searchQuery // Ищем точное совпадение поискового запроса
+            searchQuery // ← Ищем точное совпадение поискового запроса
           },
           orderBy: { createdAt: 'desc' }
         });
@@ -188,14 +181,14 @@ export class VacancyManager {
   }
 
   /**
-   * Синхронный парсинг ВСЕХ источников параллельно
+   * Синхронный парсинг указанных источников параллельно
    */
   private async parseNow(sources: string[], _filters: SearchFilters, searchQuery: string): Promise<any[]> {
-    console.log(`🚀 Запуск парсинга: ${sources.join(', ')} для запроса "${searchQuery}"`);
+    console.log(`\n🚀 Запуск парсинга: ${sources.join(', ')} для запроса "${searchQuery}"`);
     
     const startTime = Date.now();
 
-    // Парсим ВСЕ источники параллельно
+    // Парсим указанные источники параллельно
     const parsePromises = sources.map(source => 
       this.parseSource(source, searchQuery, startTime)
     );
@@ -212,7 +205,7 @@ export class VacancyManager {
       }
     });
 
-    console.log(`✅ Парсинг завершен: ${allVacancies.length} вакансий за ${Date.now() - startTime}мс`);
+    console.log(`\n✅ Парсинг завершен: ${allVacancies.length} вакансий за ${Date.now() - startTime}мс`);
 
     return allVacancies;
   }
@@ -235,7 +228,7 @@ export class VacancyManager {
       switch (source) {
         case 'rabota.md':
           parser = new RabotaMdParser({
-            parseDetails: true,
+            parseDetails: false,
             cacheEnabled: true,
             concurrency: 3
           });
@@ -243,7 +236,7 @@ export class VacancyManager {
           
         case '999.md':
           parser = new NineNineNineMdParser({
-            parseDetails: true, // ВКЛЮЧАЕМ детали для 999.md
+            parseDetails: true, // ← ВКЛЮЧАЕМ детальный парсинг для 999.md
             cacheEnabled: true,
             concurrency: 3,
             headless: true
@@ -252,9 +245,10 @@ export class VacancyManager {
           
         case 'makler.md':
           parser = new MaklerMdParser({
-            parseDetails: true,
+            parseDetails: false,
             cacheEnabled: true,
-            concurrency: 3
+            concurrency: 3,
+            headless: true
           });
           break;
           
@@ -268,7 +262,7 @@ export class VacancyManager {
                  source === '999.md' ? 'https://999.md' :
                  'https://makler.md',
         searchQuery,
-        maxPages: 10
+        maxPages: 3
       });
 
       vacancies = result.vacancies;
@@ -282,10 +276,24 @@ export class VacancyManager {
         await prisma.parseLog.create({
           data: {
             source,
-            searchQuery, // Сохраняем поисковый запрос
+            searchQuery, // ← Сохраняем поисковый запрос
             status: 'success',
             vacanciesFound: vacancies.length,
             vacanciesNew: created,
+            duration: Date.now() - startTime
+          }
+        });
+      } else {
+        console.log(`   ⚠️  ${source}: вакансий не найдено`);
+        
+        // Логируем даже если ничего не найдено
+        await prisma.parseLog.create({
+          data: {
+            source,
+            searchQuery,
+            status: 'success',
+            vacanciesFound: 0,
+            vacanciesNew: 0,
             duration: Date.now() - startTime
           }
         });
@@ -299,7 +307,7 @@ export class VacancyManager {
       await prisma.parseLog.create({
         data: {
           source,
-          searchQuery, // Сохраняем поисковый запрос и при ошибке
+          searchQuery, // ← Сохраняем поисковый запрос и при ошибке
           status: 'error',
           error: error.message,
           duration: Date.now() - startTime
