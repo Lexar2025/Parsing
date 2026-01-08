@@ -228,7 +228,7 @@ export class VacancyManager {
       switch (source) {
         case 'rabota.md':
           parser = new RabotaMdParser({
-            parseDetails: false,
+            parseDetails: true,
             cacheEnabled: true,
             concurrency: 3
           });
@@ -245,7 +245,7 @@ export class VacancyManager {
           
         case 'makler.md':
           parser = new MaklerMdParser({
-            parseDetails: false,
+            parseDetails: true,
             cacheEnabled: true,
             concurrency: 3,
             headless: true
@@ -262,7 +262,7 @@ export class VacancyManager {
                  source === '999.md' ? 'https://999.md' :
                  'https://makler.md',
         searchQuery,
-        maxPages: 3
+        maxPages: 10
       });
 
       vacancies = result.vacancies;

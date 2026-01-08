@@ -2,9 +2,9 @@
  * Тестовый скрипт для проверки всей системы
  */
 
-import { prisma } from './src/db/index.js';
-import { RabotaMdParser } from './src/parsers/rabotaMd.js';
-import { vacancyService } from './src/api/services/vacancy.service.js';
+import { prisma } from '../src/db/index.js';
+import { RabotaMdParser } from '../src/parsers/rabotaMd.js';
+import { vacancyService } from '../src/api/services/vacancy.service.js';
 
 async function testSystem() {
   console.log('🧪 Тестирование системы...\n');
