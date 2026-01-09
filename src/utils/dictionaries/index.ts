@@ -3,7 +3,7 @@
  * Запускается раз в неделю (можно через cron или вручную)
  */
 
-import { parseRabotaMdDictionary } from './rabota-md-dict.js';
+import { parseRabotaMdJobs } from './rabota-md-dict.js';
 import { parseNineNineNineMdDictionary } from './999-md-dict.js';
 import { parseMaklerMdDictionary } from './makler-md-dict.js';
 import { professionDictionaryService } from '../../api/services/profession-dictionary.service.js';
@@ -15,7 +15,7 @@ export async function updateAllDictionaries() {
   console.log('🚀 Начинаю обновление словариков специальностей...\n');
 
   const sources = [
-    { name: 'rabota.md', parser: parseRabotaMdDictionary },
+    { name: 'rabota.md', parser: parseRabotaMdJobs },
     { name: '999.md', parser: parseNineNineNineMdDictionary },
     { name: 'makler.md', parser: parseMaklerMdDictionary }
   ];
@@ -58,7 +58,7 @@ export async function updateDictionary(source: 'rabota.md' | '999.md' | 'makler.
 
   switch (source) {
     case 'rabota.md':
-      parser = parseRabotaMdDictionary;
+      parser = parseRabotaMdJobs;
       break;
     case '999.md':
       parser = parseNineNineNineMdDictionary;

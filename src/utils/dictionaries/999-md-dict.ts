@@ -38,7 +38,6 @@ export async function parseNineNineNineMdDictionary() {
 
       links.forEach(link => {
         const text = link.textContent?.trim();
-        const href = link.getAttribute('href');
         const subcategoryId = link.getAttribute('data-subcategory');
 
         if (text && text !== 'Все объявления') {
