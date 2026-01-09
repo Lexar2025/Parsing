@@ -73,20 +73,22 @@ export async function vacancyRoutes(fastify: FastifyInstance) {
     }
   );
 
-    // POST /vacancies/force-parse - Принудительный парсинг
-  fastify.post<{ Body: { sources?: string[] } }>(
+  // POST /vacancies/force-parse - Принудительный парсинг
+  fastify.post<{ Body: { sources?: string[]; searchQuery?: string } }>(
     '/vacancies/force-parse',
-    async (request: FastifyRequest<{ Body: { sources?: string[] } }>, reply: FastifyReply) => {
+    async (request: FastifyRequest<{ Body: { sources?: string[]; searchQuery?: string } }>, reply: FastifyReply) => {
       try {
-        const { sources } = request.body || {};
+        const { sources, searchQuery } = request.body || {};
 
         // Запускаем принудительный парсинг
-        const result = await vacancyManager.forceParse(sources);
+        const result = await vacancyManager.forceParse(sources, searchQuery);
 
         return reply.send({
           success: true,
           message: 'Parsing completed',
           data: {
+            sources: sources || ['rabota.md', '999.md', 'makler.md'],
+            searchQuery: searchQuery || 'работа',
             vacanciesParsed: result.results.length
           }
         });

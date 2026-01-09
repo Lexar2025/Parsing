@@ -8,6 +8,7 @@ import cors from '@fastify/cors';
 import { config } from '../shared/config/index.js';
 import { vacancyRoutes } from './routes/vacancies.js';
 import { subscriptionRoutes } from './routes/subscriptions.js';
+import { dictionaryRoutes } from './routes/dictionaries.js';
 import { prisma } from '../db/index.js';
 import { vacancyManager } from '../shared/managers/vacancyManager.js';
 
@@ -48,6 +49,7 @@ fastify.get('/health', async () => {
 // Routes
 await fastify.register(vacancyRoutes, { prefix: '/api' });
 await fastify.register(subscriptionRoutes, { prefix: '/api' });
+await fastify.register(dictionaryRoutes, { prefix: '/api' });
 
 // Graceful shutdown
 const signals: NodeJS.Signals[] = ['SIGINT', 'SIGTERM'];
@@ -72,6 +74,7 @@ const start = async () => {
     fastify.log.info(`📊 Health check: http://${config.api.host}:${config.api.port}/health`);
     fastify.log.info(`📋 Vacancies API: http://${config.api.host}:${config.api.port}/api/vacancies`);
     fastify.log.info(`🔔 Subscriptions API: http://${config.api.host}:${config.api.port}/api/subscriptions`);
+    fastify.log.info(`📖 Dictionaries API: http://${config.api.host}:${config.api.port}/api/dictionaries`);
     
     // Показываем статистику при старте
     const stats = await vacancyManager.getStats();

@@ -96,3 +96,20 @@ model ParseLog {
   
   @@index([source, searchQuery, createdAt])
 }
+
+// ============ PROFESSION DICTIONARIES ============
+model ProfessionDictionary {
+  id              String   @id @default(cuid())
+  source          String   // 'rabota.md', '999.md', 'makler.md'
+  profession      String   // Название специальности
+  professionId    String?  // ID специальности на сайте (если есть)
+  category        String?  // Категория (например, 'IT', 'Строительство')
+  synonyms        String[] // Синонимы для семантического поиска
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([source, profession])
+  @@index([source])
+  @@index([category])
+}
