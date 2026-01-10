@@ -1,15 +1,17 @@
 /**
  * Vacancy Manager - центральный менеджер для управления вакансиями
  * 
- * Новая логика:
- * 1. Сначала проверяем БД - если есть данные → отдаем сразу (cache)
- * 2. Проверяем логи парсинга - если устарели → запускаем фоновое обновление
- * 3. Если данных нет в БД → парсим СЕЙЧАС (fresh)
- * 4. Поддержка парсинга одного источника
+ * Логика:
+ * 1. Проверяем БД сначала
+ * 2. Если есть данные → отдаем сразу (cache) + фоновое обновление если нужно
+ * 3. Если данных нет → парсим СЕЙЧАС (fresh)
+ * 4. Поддержка семантического поиска через словарики
+ * 5. Парсинг одного источника
  */
 
 import { prisma } from '../../db/index.js';
 import { vacancyService } from '../../api/services/vacancy.service.js';
+import { professionDictionaryService } from '../../api/services/profession-dictionary.service.js';
 import { RabotaMdParser } from '../../parsers/rabotaMd.js';
 import { NineNineNineMdParser } from '../../parsers/nineNineNineMd.js';
 import { MaklerMdParser } from '../../parsers/maklerMd.js';
@@ -23,6 +25,7 @@ export interface SearchFilters {
   sources?: ('rabota.md' | '999.md' | 'makler.md')[];
   limit?: number;
   offset?: number;
+  useSemanticSearch?: boolean; // Использовать семантический поиск
 }
 
 export interface SearchResult {
@@ -33,6 +36,7 @@ export interface SearchResult {
     lastUpdate: Date | null;
     updating: boolean;
     parseReason?: string;
+    semanticMappings?: any; // Результаты семантического поиска
   };
 }
 
@@ -57,10 +61,11 @@ export class VacancyManager {
   /**
    * Главный метод поиска вакансий
    * 
-   * Новая логика:
-   * 1. Проверяем БД сначала
-   * 2. Если есть данные → отдаем сразу (cache) + запускаем фоновое обновление если нужно
-   * 3. Если данных нет → парсим СЕЙЧАС (fresh)
+   * Логика:
+   * 1. Если useSemanticSearch=true → семантический поиск через словарики
+   * 2. Проверяем БД сначала
+   * 3. Если есть данные → отдаем сразу (cache) + фоновое обновление
+   * 4. Если данных нет → парсим СЕЙЧАС (fresh)
    */
   async search(filters: SearchFilters): Promise<SearchResult> {
     const sources = filters.sources || ['rabota.md', '999.md', 'makler.md'];
@@ -69,8 +74,25 @@ export class VacancyManager {
     console.log(`🔍 Поиск вакансий:`, { 
       keywords: filters.keywords, 
       sources,
-      searchQuery 
+      searchQuery,
+      useSemanticSearch: filters.useSemanticSearch 
     });
+
+    // Если включен семантический поиск - используем его
+    if (filters.useSemanticSearch) {
+      return this.searchWithSemantics(filters);
+    }
+
+    // Обычный поиск
+    return this.searchRegular(filters);
+  }
+
+  /**
+   * Обычный поиск (без семантики)
+   */
+  private async searchRegular(filters: SearchFilters): Promise<SearchResult> {
+    const sources = filters.sources || ['rabota.md', '999.md', 'makler.md'];
+    const searchQuery = filters.keywords?.[0] || 'работа';
 
     // 1. СНАЧАЛА проверяем БД
     const vacancies = await vacancyService.findByFilters({
@@ -80,7 +102,7 @@ export class VacancyManager {
 
     console.log(`📊 Найдено в БД: ${vacancies.length} вакансий`);
 
-    // 2. Проверяем историю парсинга для ЭТОГО запроса
+    // 2. Проверяем историю парсинга
     const parseHistory = await this.checkParseHistory(sources, searchQuery);
     
     console.log(`📊 История парсинга для "${searchQuery}":`);
@@ -97,7 +119,7 @@ export class VacancyManager {
     if (vacancies.length > 0) {
       console.log(`✅ Данные найдены в БД, возвращаю ${vacancies.length} вакансий`);
       
-      // Если есть устаревшие источники → запускаем фоновое обновление
+      // Фоновое обновление если нужно
       if (sourcesToUpdate.length > 0) {
         console.log(`⏰ Запускаю фоновое обновление для: ${sourcesToUpdate.join(', ')}`);
         this.scheduleBackgroundParsing(sourcesToUpdate as any, searchQuery);
@@ -114,7 +136,7 @@ export class VacancyManager {
           total: vacancies.length,
           source: 'cache',
           lastUpdate,
-          updating: sourcesToUpdate.length > 0 // Указываем что идет обновление в фоне
+          updating: sourcesToUpdate.length > 0
         }
       };
     }
@@ -146,13 +168,172 @@ export class VacancyManager {
   }
 
   /**
-   * Проверяет историю парсинга с учетом поискового запроса
-   * Возвращает информацию по каждому источнику
+   * Поиск с семантическим маппингом
+   * 
+   * Логика:
+   * 1. Делаем семантический поиск в словариках
+   * 2. Находим все похожие специальности для каждого источника
+   * 3. Ищем в БД по ОРИГИНАЛЬНОМУ запросу (не по точным совпадениям)
+   * 4. Если нужен парсинг - парсим с ТОЧНЫМИ названиями из словариков
    */
+  private async searchWithSemantics(filters: SearchFilters): Promise<SearchResult> {
+    const sources = filters.sources || ['rabota.md', '999.md', 'makler.md'];
+    const searchQuery = filters.keywords?.[0] || 'работа';
+
+    console.log(`🧠 Семантический поиск для "${searchQuery}"`);
+
+    // 1. Семантический поиск в словариках
+    const mappings = await professionDictionaryService.findProfessionMappings(
+      searchQuery,
+      sources
+    );
+
+    console.log(`📋 Найдено совпадений в словариках:`, mappings.mappings.length);
+
+    // 2. Ищем в БД по ОРИГИНАЛЬНОМУ запросу
+    const vacancies = await vacancyService.findByFilters({
+      ...filters,
+      sources
+    });
+
+    console.log(`📊 Найдено в БД (по "${searchQuery}"): ${vacancies.length} вакансий`);
+
+    // 3. Если данные есть - возвращаем, проверяем актуальность
+    if (vacancies.length > 0) {
+      // Проверяем был ли парсинг с ТОЧНЫМИ названиями из словариков
+      const parseHistory = await Promise.all(
+        mappings.mappings.map(async (mapping) => {
+          const lastParse = await prisma.parseLog.findFirst({
+            where: {
+              source: mapping.source,
+              searchQuery: mapping.profession, // ТОЧНОЕ название
+              status: 'success'
+            },
+            orderBy: { createdAt: 'desc' }
+          });
+
+          return {
+            source: mapping.source,
+            profession: mapping.profession,
+            lastParse: lastParse?.createdAt || null,
+            wasRecentlyParsed: lastParse 
+              ? Date.now() - lastParse.createdAt.getTime() < this.STALE_THRESHOLD
+              : false
+          };
+        })
+      );
+
+      const sourcesToUpdate = parseHistory
+        .filter(p => !p.wasRecentlyParsed)
+        .map(p => ({ source: p.source, profession: p.profession }));
+
+      if (sourcesToUpdate.length > 0) {
+        console.log(`⏰ Запускаю фоновое обновление с точными названиями:`);
+        sourcesToUpdate.forEach(s => {
+          console.log(`   ${s.source}: "${s.profession}"`);
+        });
+        
+        this.scheduleSemanticParsing(sourcesToUpdate);
+      }
+
+      return {
+        vacancies,
+        meta: {
+          total: vacancies.length,
+          source: 'cache',
+          lastUpdate: new Date(),
+          updating: sourcesToUpdate.length > 0,
+          semanticMappings: mappings
+        }
+      };
+    }
+
+    // 4. Если данных нет - парсим СЕЙЧАС с точными названиями
+    console.log(`\n📭 Данных нет, запускаю семантический парсинг`);
+    
+    await this.parseWithSemantics(mappings);
+    
+    // Получаем свежие данные
+    const freshVacancies = await vacancyService.findByFilters({
+      ...filters,
+      sources
+    });
+    
+    console.log(`✅ Парсинг завершен. Найдено вакансий: ${freshVacancies.length}`);
+    
+    return {
+      vacancies: freshVacancies,
+      meta: {
+        total: freshVacancies.length,
+        source: 'fresh',
+        lastUpdate: new Date(),
+        updating: false,
+        parseReason: 'Семантический поиск - нет данных в БД',
+        semanticMappings: mappings
+      }
+    };
+  }
+
+  /**
+   * Парсинг с семантическими маппингами
+   * Для каждого источника парсим с ТОЧНЫМ названием из словарика
+   */
+  private async parseWithSemantics(mappings: any): Promise<void> {
+    console.log(`🚀 Запуск семантического парсинга`);
+
+    // Группируем маппинги по источникам
+    const groupedMappings: Record<string, any[]> = {};
+    mappings.mappings.forEach((m: any) => {
+      if (!groupedMappings[m.source]) {
+        groupedMappings[m.source] = [];
+      }
+      groupedMappings[m.source].push(m);
+    });
+
+    // Парсим каждый источник с лучшим совпадением
+    const parsePromises = Object.entries(groupedMappings).map(([source, matches]) => {
+      // Берем лучшее совпадение (с максимальной similarity)
+      const bestMatch = matches.sort((a, b) => b.similarity - a.similarity)[0];
+      
+      console.log(`   ${source}: парсинг "${bestMatch.profession}" (similarity: ${bestMatch.similarity})`);
+      
+      return this.parseSource(source, bestMatch.profession, Date.now());
+    });
+
+    await Promise.allSettled(parsePromises);
+  }
+
+  /**
+   * Фоновый парсинг с семантическими маппингами
+   */
+  private async scheduleSemanticParsing(sourcesToUpdate: Array<{ source: string; profession: string }>) {
+    if (!this.parseQueue) {
+      console.log('   ⚠️  Worker не доступен, пропускаю фоновый парсинг');
+      return;
+    }
+
+    for (const { source, profession } of sourcesToUpdate) {
+      try {
+        await this.parseQueue.add(
+          `semantic-${source}-${profession}`,
+          { source, searchQuery: profession, maxPages: 5 },
+          { 
+            priority: 5, 
+            removeOnComplete: true,
+            jobId: `semantic-${source}-${profession}-${Date.now()}`
+          }
+        );
+
+        console.log(`   📋 Задача добавлена: ${source} "${profession}"`);
+      } catch (error) {
+        console.log(`   ⚠️  Не удалось добавить задачу для ${source}`);
+      }
+    }
+  }
+
   private async checkParseHistory(sources: string[], searchQuery: string) {
     const history = await Promise.all(
       sources.map(async (source) => {
-        // Ищем последний УСПЕШНЫЙ парсинг для ЭТОГО запроса
         const lastParse = await prisma.parseLog.findFirst({
           where: {
             source,
@@ -186,22 +367,17 @@ export class VacancyManager {
     return log?.createdAt || null;
   }
 
-  /**
-   * Синхронный парсинг указанных источников параллельно
-   */
   private async parseNow(sources: string[], _filters: SearchFilters, searchQuery: string): Promise<any[]> {
     console.log(`\n🚀 Запуск парсинга: ${sources.join(', ')} для запроса "${searchQuery}"`);
     
     const startTime = Date.now();
 
-    // Парсим указанные источники параллельно
     const parsePromises = sources.map(source => 
       this.parseSource(source, searchQuery, startTime)
     );
     
     const results = await Promise.allSettled(parsePromises);
     
-    // Собираем успешные результаты
     const allVacancies: any[] = [];
     results.forEach((result, index) => {
       if (result.status === 'fulfilled') {
@@ -216,9 +392,6 @@ export class VacancyManager {
     return allVacancies;
   }
 
-  /**
-   * Парсинг одного источника
-   */
   private async parseSource(
     source: string, 
     searchQuery: string,
@@ -230,11 +403,10 @@ export class VacancyManager {
       let vacancies: any[] = [];
       let parser: any;
 
-      // Выбираем парсер
       switch (source) {
         case 'rabota.md':
           parser = new RabotaMdParser({
-            parseDetails: false,
+            parseDetails: true,
             cacheEnabled: true,
             concurrency: 3
           });
@@ -251,7 +423,7 @@ export class VacancyManager {
           
         case 'makler.md':
           parser = new MaklerMdParser({
-            parseDetails: false,
+            parseDetails: true,
             cacheEnabled: true,
             concurrency: 3,
             headless: true
@@ -268,7 +440,7 @@ export class VacancyManager {
                  source === '999.md' ? 'https://999.md' :
                  'https://makler.md',
         searchQuery,
-        maxPages: 3
+        maxPages: 10
       });
 
       vacancies = result.vacancies;
@@ -278,7 +450,6 @@ export class VacancyManager {
         
         console.log(`   ✅ ${source}: ${created} новых, ${updated} обновлено`);
 
-        // Логируем с указанием поискового запроса
         await prisma.parseLog.create({
           data: {
             source,
@@ -292,7 +463,6 @@ export class VacancyManager {
       } else {
         console.log(`   ⚠️  ${source}: вакансий не найдено`);
         
-        // Логируем даже если ничего не найдено
         await prisma.parseLog.create({
           data: {
             source,
@@ -324,9 +494,6 @@ export class VacancyManager {
     }
   }
 
-  /**
-   * Фоновый парсинг через Worker (не блокирует ответ пользователю)
-   */
   private async scheduleBackgroundParsing(sources: string[], searchQuery: string) {
     if (!this.parseQueue) {
       console.log('   ⚠️  Worker не доступен, пропускаю фоновый парсинг');
@@ -337,7 +504,7 @@ export class VacancyManager {
       try {
         await this.parseQueue.add(
           `background-${source}-${searchQuery}`,
-          { source, searchQuery, maxPages: 5 },
+          { source, searchQuery, maxPages: 10 },
           { 
             priority: 5, 
             removeOnComplete: true,
@@ -347,14 +514,11 @@ export class VacancyManager {
 
         console.log(`   📋 Задача фонового парсинга добавлена: ${source}`);
       } catch (error) {
-        console.log(`   ⚠️  Не удалось добавить задачу для ${source}`);
+        console.log(`   ⚠️  Не удалось добавить задачу для ${source}:`, error);
       }
     }
   }
 
-  /**
-   * Принудительный парсинг (для API эндпоинта)
-   */
   async forceParse(sources?: string[], searchQuery?: string): Promise<{ success: boolean; results: any[] }> {
     const targetSources = sources || ['rabota.md', '999.md', 'makler.md'];
     const query = searchQuery || 'работа';

@@ -4,6 +4,8 @@
 
 import { Job } from 'bullmq';
 import { RabotaMdParser } from '../../parsers/rabotaMd.js';
+import { NineNineNineMdParser } from '../../parsers/nineNineNineMd.js';
+import { MaklerMdParser } from '../../parsers/maklerMd.js';
 import { vacancyService } from '../../api/services/vacancy.service.js';
 import { prisma } from '../../db/index.js';
 
@@ -39,7 +41,43 @@ export async function parseJobProcessor(job: Job<ParseJobData>) {
         vacancies = result.vacancies;
         break;
       }
-      // TODO: Добавить парсеры для 999.md и makler.md
+      
+      case '999.md': {
+        const parser = new NineNineNineMdParser({
+          parseDetails: true,
+          cacheEnabled: true,
+          headless: true,
+          concurrency: 3
+        });
+
+        const result = await parser.parse({
+          baseUrl: 'https://999.md',
+          searchQuery: searchQuery || 'работа',
+          maxPages,
+        });
+
+        vacancies = result.vacancies;
+        break;
+      }
+      
+      case 'makler.md': {
+        const parser = new MaklerMdParser({
+          parseDetails: true,
+          cacheEnabled: true,
+          headless: true,
+          concurrency: 3
+        });
+
+        const result = await parser.parse({
+          baseUrl: 'https://makler.md',
+          searchQuery: searchQuery || 'работа',
+          maxPages,
+        });
+
+        vacancies = result.vacancies;
+        break;
+      }
+      
       default:
         throw new Error(`Parser for source ${source} not implemented`);
     }

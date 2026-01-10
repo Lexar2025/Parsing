@@ -13,7 +13,9 @@ interface VacancyQuery {
   salaryMin?: number;
   experience?: string;
   schedule?: string;
-  sources?: string;
+  source?: string;  // ОДИН источник (новое)
+  sources?: string; // Несколько источников
+  useSemanticSearch?: string; // Семантический поиск
   limit?: number;
   offset?: number;
 }
@@ -30,10 +32,24 @@ export async function vacancyRoutes(fastify: FastifyInstance) {
           salaryMin,
           experience,
           schedule,
-          sources,
-          limit = 50,
+          source,  // ОДИН источник
+          sources, // Несколько
+          useSemanticSearch,
+          limit = 200, // а как сделать максимум?
           offset = 0,
         } = request.query;
+
+        // Определяем источники
+        let sourcesArray: any = undefined;
+        
+        if (source) {
+          // Если указан ОДИН источник
+          sourcesArray = [source.trim()];
+        } else if (sources) {
+          // Если указано НЕСКОЛЬКО
+          sourcesArray = sources.split(',').map((s) => s.trim());
+        }
+        // Если не указано ничего - возьмется по умолчанию все 3
 
         // Формируем фильтры
         const filters = {
@@ -42,7 +58,8 @@ export async function vacancyRoutes(fastify: FastifyInstance) {
           salaryMin: salaryMin ? Number(salaryMin) : undefined,
           experience: experience ? experience.split(',').map((e) => e.trim()) : undefined,
           schedule: schedule ? schedule.split(',').map((s) => s.trim()) : undefined,
-          sources: sources ? sources.split(',').map((s) => s.trim()) as any : undefined,
+          sources: sourcesArray,
+          useSemanticSearch: useSemanticSearch === 'true',
           limit: Number(limit),
           offset: Number(offset),
         };

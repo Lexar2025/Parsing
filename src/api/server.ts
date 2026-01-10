@@ -5,6 +5,7 @@
 
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import { Queue } from 'bullmq';
 import { config } from '../shared/config/index.js';
 import { vacancyRoutes } from './routes/vacancies.js';
 import { subscriptionRoutes } from './routes/subscriptions.js';
@@ -17,6 +18,29 @@ const fastify = Fastify({
     level: process.env.NODE_ENV === 'development' ? 'info' : 'error',
   },
 });
+
+// Подключаем Queue для фоновых задач
+// (НЕ Worker, а только Queue для добавления задач)
+try {
+  const connection = {
+    host: config.redis.host,
+    port: config.redis.port,
+    password: config.redis.password,
+  };
+
+  const parseQueue = new Queue('parse', { connection });
+  
+  // Проверяем подключение
+  await parseQueue.waitUntilReady();
+  
+  // Регистрируем Queue в VacancyManager
+  vacancyManager.setQueue(parseQueue);
+  
+  console.log('✅ Redis Queue подключена (фоновое обновление доступно)');
+} catch (error) {
+  console.log('⚠️  Redis не доступен - фоновое обновление не будет работать');
+  console.log('  Запустите Redis и Worker для включения фоновых задач');
+}
 
 // CORS
 await fastify.register(cors, {

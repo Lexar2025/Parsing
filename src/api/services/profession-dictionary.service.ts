@@ -18,6 +18,7 @@ export interface ProfessionMapping {
 export class ProfessionDictionaryService {
   /**
    * Сохранить словарик для источника
+   * С автоматическим заполнением синонимов
    */
   async saveProfessions(
     source: string,
@@ -32,6 +33,9 @@ export class ProfessionDictionaryService {
 
     const results = await Promise.allSettled(
       professions.map(async (prof) => {
+        // Автоматически генерируем синонимы если не указаны
+        const synonyms = prof.synonyms || this.generateSynonyms(prof.profession);
+        
         return prisma.professionDictionary.upsert({
           where: {
             source_profession: {
@@ -44,12 +48,12 @@ export class ProfessionDictionaryService {
             profession: prof.profession,
             professionId: prof.professionId,
             category: prof.category,
-            synonyms: prof.synonyms || []
+            synonyms
           },
           update: {
             professionId: prof.professionId,
             category: prof.category,
-            synonyms: prof.synonyms || []
+            synonyms
           }
         });
       })
@@ -61,6 +65,39 @@ export class ProfessionDictionaryService {
     console.log(`✅ Сохранено: ${successful}, ошибок: ${failed}`);
 
     return { successful, failed };
+  }
+
+  /**
+   * Автоматическая генерация синонимов
+   * На основе слов в названии
+   */
+  private generateSynonyms(profession: string): string[] {
+    const synonyms: string[] = [];
+    const profLower = profession.toLowerCase();
+
+    // Словарь синонимов
+    const synonymMap: Record<string, string[]> = {
+      'программист': ['разработчик', 'developer', 'кодер'],
+      'разработчик': ['программист', 'developer'],
+      'developer': ['программист', 'разработчик'],
+      'it': ['ит', 'информационные технологии'],
+      'менеджер': ['manager', 'управляющий'],
+      'водитель': ['driver', 'шофер'],
+      'бухгалтер': ['счетовод', 'accountant'],
+      'дизайнер': ['designer'],
+      'маркетолог': ['marketer', 'специалист по маркетингу'],
+      'продавец': ['продажник', 'sales'],
+    };
+
+    // Ищем совпадения в словаре
+    for (const [key, syns] of Object.entries(synonymMap)) {
+      if (profLower.includes(key)) {
+        synonyms.push(...syns);
+      }
+    }
+
+    // Убираем дубликаты
+    return [...new Set(synonyms)];
   }
 
   /**
