@@ -10,6 +10,7 @@ import { config } from '../shared/config/index.js';
 import { vacancyRoutes } from './routes/vacancies.js';
 import { subscriptionRoutes } from './routes/subscriptions.js';
 import { dictionaryRoutes } from './routes/dictionaries.js';
+import { cacheRoutes } from './routes/cache.js';
 import { prisma } from '../db/index.js';
 import { vacancyManager } from '../shared/managers/vacancyManager.js';
 
@@ -74,6 +75,7 @@ fastify.get('/health', async () => {
 await fastify.register(vacancyRoutes, { prefix: '/api' });
 await fastify.register(subscriptionRoutes, { prefix: '/api' });
 await fastify.register(dictionaryRoutes, { prefix: '/api' });
+await fastify.register(cacheRoutes, { prefix: '/api' });
 
 // Graceful shutdown
 const signals: NodeJS.Signals[] = ['SIGINT', 'SIGTERM'];

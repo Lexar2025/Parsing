@@ -7,11 +7,13 @@
  * 3. Если данных нет → парсим СЕЙЧАС (fresh)
  * 4. Поддержка семантического поиска через словарики
  * 5. Парсинг одного источника
+ * 6. Пагинация по номеру страницы (page)
  */
 
 import { prisma } from '../../db/index.js';
 import { vacancyService } from '../../api/services/vacancy.service.js';
 import { professionDictionaryService } from '../../api/services/profession-dictionary.service.js';
+import { cacheService } from '../../api/services/cache.service.js';
 import { RabotaMdParser } from '../../parsers/rabotaMd.js';
 import { NineNineNineMdParser } from '../../parsers/nineNineNineMd.js';
 import { MaklerMdParser } from '../../parsers/maklerMd.js';
@@ -24,7 +26,7 @@ export interface SearchFilters {
   schedule?: string[];
   sources?: ('rabota.md' | '999.md' | 'makler.md')[];
   limit?: number;
-  offset?: number;
+  page?: number;          // Номер страницы (начиная с 1)
   useSemanticSearch?: boolean; // Использовать семантический поиск
 }
 
@@ -32,7 +34,8 @@ export interface SearchResult {
   vacancies: any[];
   meta: {
     total: number;
-    source: 'cache' | 'fresh' | 'partial';
+    totalPages: number;   // Общее количество страниц
+    source: 'cache' | 'fresh' | 'partial' | 'cache-paginated';
     lastUpdate: Date | null;
     updating: boolean;
     parseReason?: string;
@@ -62,45 +65,103 @@ export class VacancyManager {
    * Главный метод поиска вакансий
    * 
    * Логика:
-   * 1. Если useSemanticSearch=true → семантический поиск через словарики
-   * 2. Проверяем БД сначала
-   * 3. Если есть данные → отдаем сразу (cache) + фоновое обновление
-   * 4. Если данных нет → парсим СЕЙЧАС (fresh)
+   * 1. Если есть userId - проверяем Redis кэш для быстрой пагинации
+   * 2. Если useSemanticSearch=true → семантический поиск через словарики
+   * 3. Проверяем БД сначала
+   * 4. Если есть данные → отдаем сразу (cache) + фоновое обновление
+   * 5. Если данных нет → парсим СЕЙЧАС (fresh)
    */
-  async search(filters: SearchFilters): Promise<SearchResult> {
+  async search(filters: SearchFilters, userId?: string): Promise<SearchResult> {
     const sources = filters.sources || ['rabota.md', '999.md', 'makler.md'];
     const searchQuery = filters.keywords?.[0] || 'работа';
+    const limit = filters.limit || 10;
+    const page = filters.page || 1;
 
     console.log(`🔍 Поиск вакансий:`, { 
       keywords: filters.keywords, 
       sources,
       searchQuery,
-      useSemanticSearch: filters.useSemanticSearch 
+      useSemanticSearch: filters.useSemanticSearch,
+      userId: userId || 'anonymous',
+      limit,
+      page
     });
+
+    // НОВАЯ ЛОГИКА: Проверяем Redis кэш для пагинации
+    if (userId) {
+      const cacheKey = cacheService.generateKey(userId, filters);
+      const hasCache = await cacheService.hasCache(cacheKey);
+
+      if (hasCache) {
+        console.log(`📦 Найден кэш для пользователя ${userId}`);
+        
+        // Вычисляем offset из page
+        const offset = (page - 1) * limit;
+        
+        // Получаем страницу из кэша
+        const cachedPage = await cacheService.getPage(cacheKey, limit, offset);
+        
+        if (cachedPage) {
+          // Получаем мета-информацию
+          const cachedResults = await cacheService.getCachedResults(cacheKey);
+          const total = cachedResults?.total || 0;
+          const totalPages = Math.ceil(total / limit);
+          
+          return {
+            vacancies: cachedPage,
+            meta: {
+              total,
+              totalPages,
+              source: 'cache-paginated',
+              lastUpdate: cachedResults?.cachedAt || new Date(),
+              updating: false
+            }
+          };
+        }
+      }
+    }
 
     // Если включен семантический поиск - используем его
     if (filters.useSemanticSearch) {
-      return this.searchWithSemantics(filters);
+      return this.searchWithSemantics(filters, userId);
     }
 
     // Обычный поиск
-    return this.searchRegular(filters);
+    return this.searchRegular(filters, userId);
   }
 
   /**
    * Обычный поиск (без семантики)
    */
-  private async searchRegular(filters: SearchFilters): Promise<SearchResult> {
+  private async searchRegular(filters: SearchFilters, userId?: string): Promise<SearchResult> {
     const sources = filters.sources || ['rabota.md', '999.md', 'makler.md'];
     const searchQuery = filters.keywords?.[0] || 'работа';
+    const limit = filters.limit || 10;
+    const page = filters.page || 1;
 
-    // 1. СНАЧАЛА проверяем БД
-    const vacancies = await vacancyService.findByFilters({
+    // 1. СНАЧАЛА проверяем БД - получаем ВСЕ результаты для кэширования
+    const allVacancies = await vacancyService.findByFilters({
       ...filters,
-      sources
+      sources,
+      limit: undefined, // Берем ВСЕ вакансии
+      page: undefined
     });
 
-    console.log(`📊 Найдено в БД: ${vacancies.length} вакансий`);
+    console.log(`📊 Найдено в БД: ${allVacancies.length} вакансий`);
+
+    // Кэшируем результаты если есть userId
+    if (userId && allVacancies.length > 0) {
+      const cacheKey = cacheService.generateKey(userId, filters);
+      await cacheService.cacheSearchResults(cacheKey, allVacancies, filters);
+    }
+
+    // Вычисляем пагинацию
+    const total = allVacancies.length;
+    const totalPages = Math.ceil(total / limit);
+    const offset = (page - 1) * limit;
+    const vacancies = allVacancies.slice(offset, offset + limit);
+
+    console.log(`📄 Страница ${page}/${totalPages}, показываю ${vacancies.length} из ${total} вакансий`);
 
     // 2. Проверяем историю парсинга
     const parseHistory = await this.checkParseHistory(sources, searchQuery);
@@ -116,8 +177,8 @@ export class VacancyManager {
       .map(p => p.source);
 
     // 4. ЕСЛИ В БД ЕСТЬ ДАННЫЕ → отдаем сразу
-    if (vacancies.length > 0) {
-      console.log(`✅ Данные найдены в БД, возвращаю ${vacancies.length} вакансий`);
+    if (allVacancies.length > 0) {
+      console.log(`✅ Данные найдены в БД, возвращаю страницу ${page}`);
       
       // Фоновое обновление если нужно
       if (sourcesToUpdate.length > 0) {
@@ -133,7 +194,8 @@ export class VacancyManager {
       return {
         vacancies,
         meta: {
-          total: vacancies.length,
+          total,
+          totalPages,
           source: 'cache',
           lastUpdate,
           updating: sourcesToUpdate.length > 0
@@ -150,15 +212,24 @@ export class VacancyManager {
     // Получаем свежие данные
     const freshVacancies = await vacancyService.findByFilters({
       ...filters,
-      sources
+      sources,
+      limit: undefined,
+      page: undefined
     });
+
+    // Вычисляем пагинацию для свежих данных
+    const freshTotal = freshVacancies.length;
+    const freshTotalPages = Math.ceil(freshTotal / limit);
+    const freshOffset = (page - 1) * limit;
+    const freshPage = freshVacancies.slice(freshOffset, freshOffset + limit);
     
-    console.log(`✅ Парсинг завершен. Найдено вакансий: ${freshVacancies.length}`);
+    console.log(`✅ Парсинг завершен. Найдено вакансий: ${freshTotal}`);
     
     return {
-      vacancies: freshVacancies,
+      vacancies: freshPage,
       meta: {
-        total: freshVacancies.length,
+        total: freshTotal,
+        totalPages: freshTotalPages,
         source: 'fresh',
         lastUpdate: new Date(),
         updating: false,
@@ -176,9 +247,11 @@ export class VacancyManager {
    * 3. Ищем в БД по ОРИГИНАЛЬНОМУ запросу (не по точным совпадениям)
    * 4. Если нужен парсинг - парсим с ТОЧНЫМИ названиями из словариков
    */
-  private async searchWithSemantics(filters: SearchFilters): Promise<SearchResult> {
+  private async searchWithSemantics(filters: SearchFilters, userId?: string): Promise<SearchResult> {
     const sources = filters.sources || ['rabota.md', '999.md', 'makler.md'];
     const searchQuery = filters.keywords?.[0] || 'работа';
+    const limit = filters.limit || 10;
+    const page = filters.page || 1;
 
     console.log(`🧠 Семантический поиск для "${searchQuery}"`);
 
@@ -190,16 +263,30 @@ export class VacancyManager {
 
     console.log(`📋 Найдено совпадений в словариках:`, mappings.mappings.length);
 
-    // 2. Ищем в БД по ОРИГИНАЛЬНОМУ запросу
-    const vacancies = await vacancyService.findByFilters({
+    // 2. Ищем в БД по ОРИГИНАЛЬНОМУ запросу - берем ВСЕ для кэширования
+    const allVacancies = await vacancyService.findByFilters({
       ...filters,
-      sources
+      sources,
+      limit: undefined,
+      page: undefined
     });
 
-    console.log(`📊 Найдено в БД (по "${searchQuery}"): ${vacancies.length} вакансий`);
+    console.log(`📊 Найдено в БД (по "${searchQuery}"): ${allVacancies.length} вакансий`);
+
+    // Кэшируем результаты если есть userId
+    if (userId && allVacancies.length > 0) {
+      const cacheKey = cacheService.generateKey(userId, filters);
+      await cacheService.cacheSearchResults(cacheKey, allVacancies, filters);
+    }
+
+    // Вычисляем пагинацию
+    const total = allVacancies.length;
+    const totalPages = Math.ceil(total / limit);
+    const offset = (page - 1) * limit;
+    const vacancies = allVacancies.slice(offset, offset + limit);
 
     // 3. Если данные есть - возвращаем, проверяем актуальность
-    if (vacancies.length > 0) {
+    if (allVacancies.length > 0) {
       // Проверяем был ли парсинг с ТОЧНЫМИ названиями из словариков
       const parseHistory = await Promise.all(
         mappings.mappings.map(async (mapping) => {
@@ -239,7 +326,8 @@ export class VacancyManager {
       return {
         vacancies,
         meta: {
-          total: vacancies.length,
+          total,
+          totalPages,
           source: 'cache',
           lastUpdate: new Date(),
           updating: sourcesToUpdate.length > 0,
@@ -256,15 +344,24 @@ export class VacancyManager {
     // Получаем свежие данные
     const freshVacancies = await vacancyService.findByFilters({
       ...filters,
-      sources
+      sources,
+      limit: undefined,
+      page: undefined
     });
+
+    // Вычисляем пагинацию для свежих данных
+    const freshTotal = freshVacancies.length;
+    const freshTotalPages = Math.ceil(freshTotal / limit);
+    const freshOffset = (page - 1) * limit;
+    const freshPage = freshVacancies.slice(freshOffset, freshOffset + limit);
     
-    console.log(`✅ Парсинг завершен. Найдено вакансий: ${freshVacancies.length}`);
+    console.log(`✅ Парсинг завершен. Найдено вакансий: ${freshTotal}`);
     
     return {
-      vacancies: freshVacancies,
+      vacancies: freshPage,
       meta: {
-        total: freshVacancies.length,
+        total: freshTotal,
+        totalPages: freshTotalPages,
         source: 'fresh',
         lastUpdate: new Date(),
         updating: false,

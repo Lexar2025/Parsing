@@ -16,8 +16,9 @@ interface VacancyQuery {
   source?: string;  // ОДИН источник (новое)
   sources?: string; // Несколько источников
   useSemanticSearch?: string; // Семантический поиск
+  userId?: string;  // ID пользователя для кэширования (для бота)
   limit?: number;
-  offset?: number;
+  page?: number;    // Номер страницы (начиная с 1)
 }
 
 export async function vacancyRoutes(fastify: FastifyInstance) {
@@ -35,8 +36,9 @@ export async function vacancyRoutes(fastify: FastifyInstance) {
           source,  // ОДИН источник
           sources, // Несколько
           useSemanticSearch,
-          limit = 200, // а как сделать максимум?
-          offset = 0,
+          userId,  // ID пользователя (для телеграм бота)
+          limit = 10,
+          page = 1,
         } = request.query;
 
         // Определяем источники
@@ -61,19 +63,20 @@ export async function vacancyRoutes(fastify: FastifyInstance) {
           sources: sourcesArray,
           useSemanticSearch: useSemanticSearch === 'true',
           limit: Number(limit),
-          offset: Number(offset),
+          page: Number(page),
         };
 
-        // Используем VacancyManager для умного поиска
-        const result = await vacancyManager.search(filters);
+        // Используем VacancyManager для умного поиска (с userId для кэширования)
+        const result = await vacancyManager.search(filters, userId);
 
         return reply.send({
           success: true,
           data: result.vacancies,
           meta: {
             total: result.meta.total,
+            totalPages: result.meta.totalPages,
+            currentPage: filters.page,
             limit: filters.limit,
-            offset: filters.offset,
             source: result.meta.source,
             lastUpdate: result.meta.lastUpdate,
             updating: result.meta.updating
