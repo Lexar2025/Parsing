@@ -128,8 +128,8 @@ export class NineNineNineMdParser implements Parser {
         page: 1,
         hasNextPage: false,
       };
-    } catch (error) {
-      log('❌ Ошибка при парсинге:', error);
+    } catch (error: unknown) {
+      log('❌ Ошибка при парсинге:', error instanceof Error ? error.message : String(error));
       throw error;
     } finally {
       await this.close();
@@ -165,15 +165,23 @@ export class NineNineNineMdParser implements Parser {
             }
             
             return { ...v, ...extra };
-          } catch (err) {
+          } catch (err: unknown) {
+            const errorInfo = err instanceof Error ? {
+              name: err.name,
+              message: err.message,
+              stack: err.stack
+            } : {
+              name: 'UnknownError',
+              message: 'Неизвестная ошибка',
+              stack: undefined
+            };
+            
             log(`⚠️ Ошибка деталей для ${v.url}:`, {
-            name: err?.name,
-            message: err?.message,
-            stack: err?.stack,
-            url: v.url,
-            vacancy: v,
-            error: err
-          });
+              ...errorInfo,
+              url: v.url,
+              vacancyId: v.id,
+              source: '999.md'
+            });
             return v;
           }
         }),
@@ -247,9 +255,26 @@ export class NineNineNineMdParser implements Parser {
       // Дополнительная задержка для загрузки всех элементов
       await pause(500);
 
-      // Извлекаем данные БЕЗ функций внутри evaluate (чтобы избежать проблем с __name)
-      const details = await page.evaluate(() => {
-        const result: any = {};
+      // Извлекаем данные с правильной типизацией
+      interface NineNineNineVacancyDetails {
+        author?: string;
+        education?: string;
+        experience?: string;
+        salary?: string;
+        schedule?: string;
+        employmentType?: string;
+        companyType?: string;
+        contactPerson?: string;
+        company?: string;
+        seasonal?: boolean;
+        languages?: string[];
+        region?: string;
+        location?: string;
+        description?: string;
+      }
+
+      const details = await page.evaluate((): NineNineNineVacancyDetails => {
+        const result: NineNineNineVacancyDetails = {};
 
         // Получаем все features
         const features = document.querySelectorAll('.styles_group__feature__5ZWJy');
@@ -267,15 +292,15 @@ export class NineNineNineMdParser implements Parser {
         });
 
         // Извлекаем значения
-        result.author = featureMap.get('Автор');
-        result.education = featureMap.get('Образование');
-        result.experience = featureMap.get('Стаж работы');
-        result.salary = featureMap.get('Зарплата');
-        result.schedule = featureMap.get('График работы');
-        result.employmentType = featureMap.get('Тип занятости');
-        result.companyType = featureMap.get('Тип компании');
-        result.contactPerson = featureMap.get('Контактное лицо');
-        result.company = featureMap.get('Название компании');
+        result.author = featureMap.get('Автор') || undefined;
+        result.education = featureMap.get('Образование') || undefined;
+        result.experience = featureMap.get('Стаж работы') || undefined;
+        result.salary = featureMap.get('Зарплата') || undefined;
+        result.schedule = featureMap.get('График работы') || undefined;
+        result.employmentType = featureMap.get('Тип занятости') || undefined;
+        result.companyType = featureMap.get('Тип компании') || undefined;
+        result.contactPerson = featureMap.get('Контактное лицо') || undefined;
+        result.company = featureMap.get('Название компании') || undefined;
         
         // Сезонная работа
         const seasonalText = featureMap.get('Сезонная работа');
@@ -290,34 +315,45 @@ export class NineNineNineMdParser implements Parser {
           const langFeatures = languagesGroup.querySelectorAll('.styles_group__feature__5ZWJy');
           result.languages = Array.from(langFeatures)
             .map((f) => f.querySelector('.styles_group__key__uRhnQ')?.textContent?.trim())
-            .filter((l) => !!l);
+            .filter((l): l is string => l !== undefined && l.trim() !== '');
         }
 
         // Регион/адрес
         const addressEl = document.querySelector('.styles_address__text__duvKg');
         if (addressEl) {
-          result.region = addressEl.textContent?.trim();
-          result.location = addressEl.textContent?.trim();
+          const addressText = addressEl.textContent?.trim();
+          if (addressText) {
+            result.region = addressText;
+            result.location = addressText;
+          }
         }
 
         // Описание (если есть)
         const descriptionEl = document.querySelector('.styles_adPage__description__qDkzc');
         if (descriptionEl) {
-          result.description = descriptionEl.textContent?.trim();
+          result.description = descriptionEl.textContent?.trim() || undefined;
         }
 
         return result;
       });
 
       return details;
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorInfo = error instanceof Error ? {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      } : {
+        name: 'UnknownError',
+        message: 'Неизвестная ошибка при парсинге деталей',
+        stack: undefined
+      };
+      
       log(`❌ Ошибка при парсинге деталей ${url}:`, {
-      name: error?.name,
-      message: error?.message,
-      stack: error?.stack,
-      url,
-      error
-    });
+        ...errorInfo,
+        url,
+        source: '999.md'
+      });
       return {};
     } finally {
       await page.close();
@@ -423,8 +459,8 @@ export class NineNineNineMdParser implements Parser {
       });
 
       return totalPages;
-    } catch (error) {
-      log('⚠️ Не удалось определить количество страниц, используем maxPages');
+    } catch (error: unknown) {
+      log('⚠️ Не удалось определить количество страниц:', error instanceof Error ? error.message : String(error));
       return 10; // По умолчанию
     } finally {
       await page.close();
@@ -467,8 +503,9 @@ export class NineNineNineMdParser implements Parser {
         if (currentPage < pagesToParse) {
           await pause(delay);
         }
-      } catch (error) {
-        log(`   ❌ Ошибка при парсинге страницы ${currentPage}:`, error);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        log(`   ❌ Ошибка при парсинге страницы ${currentPage}:`, errorMessage);
 
         // Если таймаут, пробуем еще раз с увеличенной задержкой
         if (error instanceof Error && error.name === 'TimeoutError') {
@@ -482,8 +519,9 @@ export class NineNineNineMdParser implements Parser {
               allVacancies.push(...vacancies);
               log(`   ✅ Повторная попытка успешна: ${vacancies.length} вакансий`);
             }
-          } catch (retryError) {
-            log(`   ❌ Повторная попытка не удалась, пропускаем страницу`);
+          } catch (retryError: unknown) {
+            const retryMessage = retryError instanceof Error ? retryError.message : String(retryError);
+            log(`   ❌ Повторная попытка не удалась:`, retryMessage);
           }
         }
       }

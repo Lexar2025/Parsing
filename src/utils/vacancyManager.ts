@@ -11,6 +11,15 @@ export interface VacancyManagerOptions {
   autoCleanup?: boolean; // Автоматически удалять старые неактивные
 }
 
+interface VacancyStats {
+  total: number;
+  active: number;
+  inactive: number;
+  new: number;
+  bySource: Record<string, number>;
+  oldInactive: number;
+}
+
 export class VacancyManager {
   private options: Required<VacancyManagerOptions>;
 
@@ -36,7 +45,7 @@ export class VacancyManager {
         lastSeenAt: v.lastSeenAt ? new Date(v.lastSeenAt) : undefined,
         publishedAt: v.publishedAt ? new Date(v.publishedAt) : undefined,
       }));
-    } catch (error) {
+    } catch {
       // Файл не существует или пустой
       return [];
     }
@@ -111,7 +120,9 @@ export class VacancyManager {
   async save(filePath: string, vacancies: Vacancy[]): Promise<void> {
     // Убедимся что папка существует
     const dir = path.dirname(filePath);
-    await fs.mkdir(dir, { recursive: true }).catch(() => {});
+    await fs.mkdir(dir, { recursive: true }).catch(() => {
+      // Игнорируем ошибку если папка уже существует
+    });
 
     // Применяем очистку если включено
     let toSave = vacancies;
@@ -125,23 +136,16 @@ export class VacancyManager {
   /**
    * Получить статистику по вакансиям
    */
-  getStats(vacancies: Vacancy[]): {
-    total: number;
-    active: number;
-    inactive: number;
-    new: number;
-    bySource: Record<string, number>;
-    oldInactive: number;
-  } {
+  getStats(vacancies: Vacancy[]): VacancyStats {
     const now = new Date();
     const thresholdMs = this.options.inactiveThresholdDays * 24 * 60 * 60 * 1000;
     
-    const stats = {
+    const stats: VacancyStats = {
       total: vacancies.length,
       active: 0,
       inactive: 0,
       new: 0,
-      bySource: {} as Record<string, number>,
+      bySource: {},
       oldInactive: 0,
     };
 

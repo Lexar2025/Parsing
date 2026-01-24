@@ -46,9 +46,16 @@ export abstract class BaseVacancyAdapter implements VacancyAdapter {
    */
   protected extractSalaryMin(salary?: string): number | undefined {
     if (!salary) return undefined;
-    const match = salary.match(/(\d+[\s,]*\d*)/);
-    if (!match) return undefined;
-    return parseInt(match[1].replace(/[\s,]/g, ''));
+    try {
+      const match = salary.match(/(\d+[\s,]*\d*)/);
+      if (!match) return undefined;
+      const cleanNumber = match[1].replace(/[\s,]/g, '');
+      const num = parseInt(cleanNumber);
+      return isNaN(num) ? undefined : num;
+    } catch (error) {
+      console.warn(`⚠️ Ошибка при извлечении минимальной зарплаты из "${salary}":`, error);
+      return undefined;
+    }
   }
   
   /**
@@ -56,9 +63,16 @@ export abstract class BaseVacancyAdapter implements VacancyAdapter {
    */
   protected extractSalaryMax(salary?: string): number | undefined {
     if (!salary) return undefined;
-    const matches = salary.match(/(\d+[\s,]*\d*)/g);
-    if (!matches || matches.length < 2) return undefined;
-    return parseInt(matches[matches.length - 1].replace(/[\s,]/g, ''));
+    try {
+      const matches = salary.match(/(\d+[\s,]*\d*)/g);
+      if (!matches || matches.length < 2) return undefined;
+      const cleanNumber = matches[matches.length - 1].replace(/[\s,]/g, '');
+      const num = parseInt(cleanNumber);
+      return isNaN(num) ? undefined : num;
+    } catch (error) {
+      console.warn(`⚠️ Ошибка при извлечении максимальной зарплаты из "${salary}":`, error);
+      return undefined;
+    }
   }
   
   /**
@@ -78,22 +92,31 @@ export abstract class BaseVacancyAdapter implements VacancyAdapter {
   protected mapExperience(experience?: string): string | undefined {
     if (!experience) return undefined;
     
-    const exp = experience.toLowerCase();
+    const exp = experience.toLowerCase().trim();
     
-    if (exp.includes('без опыта') || exp.includes('fără experiență')) {
+    if (exp.includes('без опыта') || exp.includes('fără experiență') || exp.includes('no experience')) {
       return 'no_experience';
     }
-    if (exp.includes('1-3') || exp.includes('до 3')) {
+    if (exp.includes('1-3') || exp.includes('до 3') || exp.includes('1 to 3')) {
       return 'between_1_and_3';
     }
-    if (exp.includes('3-6') || exp.includes('3 до 6')) {
+    if (exp.includes('3-6') || exp.includes('3 до 6') || exp.includes('3 to 6')) {
       return 'between_3_and_6';
     }
-    if (exp.includes('более 6') || exp.includes('peste 6')) {
+    if (exp.includes('более 6') || exp.includes('peste 6') || exp.includes('over 6')) {
       return 'more_than_6';
     }
     
-    return experience;
+    // Если не удалось сопоставить, возвращаем оригинальное значение в унифицированном формате
+    return this.normalizeExperience(experience);
+  }
+
+  private normalizeExperience(experience: string): string {
+    return experience
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '_')
+      .replace(/[^a-z0-9_]/g, '');
   }
   
   /**
@@ -102,14 +125,23 @@ export abstract class BaseVacancyAdapter implements VacancyAdapter {
   protected mapEmployment(schedule?: string): string | undefined {
     if (!schedule) return undefined;
     
-    const s = schedule.toLowerCase();
+    const s = schedule.toLowerCase().trim();
     
-    if (s.includes('полная') || s.includes('full')) return 'full';
-    if (s.includes('частичная') || s.includes('part')) return 'part';
-    if (s.includes('проект') || s.includes('project')) return 'project';
-    if (s.includes('стажировка') || s.includes('internship')) return 'probation';
+    if (s.includes('полная') || s.includes('full time') || s.includes('full')) return 'full';
+    if (s.includes('частичная') || s.includes('part time') || s.includes('part')) return 'part';
+    if (s.includes('проект') || s.includes('project') || s.includes('contract')) return 'project';
+    if (s.includes('стажировка') || s.includes('internship') || s.includes('probation')) return 'probation';
     
-    return schedule;
+    // Если не удалось сопоставить, возвращаем оригинальное значение в унифицированном формате
+    return this.normalizeEmployment(schedule);
+  }
+
+  private normalizeEmployment(employment: string): string {
+    return employment
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '_')
+      .replace(/[^a-z0-9_]/g, '');
   }
   
   /**
@@ -118,18 +150,27 @@ export abstract class BaseVacancyAdapter implements VacancyAdapter {
   protected mapSchedule(workPlace?: string): string | undefined {
     if (!workPlace) return undefined;
     
-    const wp = workPlace.toLowerCase();
+    const wp = workPlace.toLowerCase().trim();
     
-    if (wp.includes('удален') || wp.includes('remote') || wp.includes('la distanță')) {
+    if (wp.includes('удален') || wp.includes('remote') || wp.includes('la distanță') || wp.includes('distanță')) {
       return 'remote';
     }
-    if (wp.includes('офис') || wp.includes('office') || wp.includes('birou')) {
+    if (wp.includes('офис') || wp.includes('office') || wp.includes('birou') || wp.includes('sediu')) {
       return 'office';
     }
-    if (wp.includes('гибрид') || wp.includes('hybrid')) {
+    if (wp.includes('гибрид') || wp.includes('hybrid') || wp.includes('mixt')) {
       return 'hybrid';
     }
     
-    return 'office'; // по умолчанию
+    // Если не удалось сопоставить, возвращаем оригинальное значение в унифицированном формате
+    return this.normalizeSchedule(workPlace);
+  }
+
+  private normalizeSchedule(schedule: string): string {
+    return schedule
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '_')
+      .replace(/[^a-z0-9_]/g, '');
   }
 }

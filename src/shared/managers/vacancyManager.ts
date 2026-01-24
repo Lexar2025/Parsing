@@ -17,6 +17,48 @@ import { cacheService } from '../../api/services/cache.service.js';
 import { RabotaMdParser } from '../../parsers/rabotaMd.js';
 import { NineNineNineMdParser } from '../../parsers/nineNineNineMd.js';
 import { MaklerMdParser } from '../../parsers/maklerMd.js';
+import { Vacancy } from '../../types/vacancy.js';
+
+// Универсальная функция для маппинга Prisma модели вакансии в интерфейс Vacancy
+function mapPrismaToVacancy(prismaVacancy: any): Vacancy {
+  // Безопасное извлечение данных из rawData (JSON поля)
+  const getRawDataField = (field: string) => {
+    if (prismaVacancy.rawData && typeof prismaVacancy.rawData === 'object') {
+      return prismaVacancy.rawData[field] || undefined;
+    }
+    return undefined;
+  };
+
+  return {
+    id: prismaVacancy.id,
+    title: prismaVacancy.title,
+    company: prismaVacancy.company || undefined,
+    salary: prismaVacancy.salaryMin ? `${prismaVacancy.salaryMin} - ${prismaVacancy.salaryMax || prismaVacancy.salaryMin}` : undefined,
+    location: prismaVacancy.location || undefined,
+    description: prismaVacancy.description || undefined,
+    fullDescription: getRawDataField('fullDescription'),
+    url: prismaVacancy.sourceUrl,
+    publishedAt: prismaVacancy.publishedAt || undefined,
+    education: getRawDataField('education'),
+    experience: prismaVacancy.experience || undefined,
+    schedule: prismaVacancy.schedule || undefined,
+    workPlace: getRawDataField('workPlace'),
+    source: prismaVacancy.source as 'rabota.md' | '999.md' | 'makler.md' | 'other',
+    author: getRawDataField('author'),
+    seasonal: getRawDataField('seasonal'),
+    employmentType: prismaVacancy.employment || undefined,
+    companyType: getRawDataField('companyType'),
+    languages: getRawDataField('languages'),
+    contactPerson: getRawDataField('contactPerson'),
+    region: getRawDataField('region'),
+    vacancyType: getRawDataField('vacancyType'),
+    industry: getRawDataField('industry'),
+    specialization: getRawDataField('specialization'),
+    firstSeenAt: prismaVacancy.createdAt || undefined,
+    lastSeenAt: prismaVacancy.updatedAt || undefined,
+    isActive: true,
+  };
+}
 
 export interface SearchFilters {
   keywords?: string[];
@@ -31,7 +73,7 @@ export interface SearchFilters {
 }
 
 export interface SearchResult {
-  vacancies: any[];
+  vacancies: Vacancy[];
   meta: {
     total: number;
     totalPages: number;   // Общее количество страниц
@@ -46,7 +88,7 @@ export interface SearchResult {
 export class VacancyManager {
   private static instance: VacancyManager;
   private readonly STALE_THRESHOLD = 12 * 60 * 60 * 1000; // 12 часов
-  private parseQueue: any = null;
+  private parseQueue: any | null = null;
 
   private constructor() {}
 
@@ -57,7 +99,7 @@ export class VacancyManager {
     return VacancyManager.instance;
   }
 
-  setQueue(queue: any) {
+  setQueue(queue: any): void {
     this.parseQueue = queue;
   }
 
@@ -152,7 +194,9 @@ export class VacancyManager {
     // Кэшируем результаты если есть userId
     if (userId && allVacancies.length > 0) {
       const cacheKey = cacheService.generateKey(userId, filters);
-      await cacheService.cacheSearchResults(cacheKey, allVacancies, filters);
+      // Используем универсальную функцию маппинга
+      const typedVacancies = allVacancies.map(mapPrismaToVacancy);
+      await cacheService.cacheSearchResults(cacheKey, typedVacancies, filters);
     }
 
     // Вычисляем пагинацию
@@ -191,8 +235,11 @@ export class VacancyManager {
         return !latest || p.lastParse > latest ? p.lastParse : latest;
       }, null as Date | null);
 
+      // Используем универсальную функцию маппинга
+      const transformedVacancies = vacancies.map(mapPrismaToVacancy);
+
       return {
-        vacancies,
+        vacancies: transformedVacancies,
         meta: {
           total,
           totalPages,
@@ -225,8 +272,11 @@ export class VacancyManager {
     
     console.log(`✅ Парсинг завершен. Найдено вакансий: ${freshTotal}`);
     
+    // Используем универсальную функцию маппинга
+    const transformedFreshPage = freshPage.map(mapPrismaToVacancy);
+
     return {
-      vacancies: freshPage,
+      vacancies: transformedFreshPage,
       meta: {
         total: freshTotal,
         totalPages: freshTotalPages,
@@ -276,7 +326,9 @@ export class VacancyManager {
     // Кэшируем результаты если есть userId
     if (userId && allVacancies.length > 0) {
       const cacheKey = cacheService.generateKey(userId, filters);
-      await cacheService.cacheSearchResults(cacheKey, allVacancies, filters);
+      // Используем универсальную функцию маппинга
+      const typedVacancies = allVacancies.map(mapPrismaToVacancy);
+      await cacheService.cacheSearchResults(cacheKey, typedVacancies, filters);
     }
 
     // Вычисляем пагинацию
@@ -293,10 +345,11 @@ export class VacancyManager {
           const lastParse = await prisma.parseLog.findFirst({
             where: {
               source: mapping.source,
-              searchQuery: mapping.profession, // ТОЧНОЕ название
+              searchQuery: mapping.profession, // ТОЧНОЕ название из словаря
               status: 'success'
             },
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' },
+            select: { createdAt: true } // Выбираем только дату для оптимизации
           });
 
           return {
@@ -304,7 +357,7 @@ export class VacancyManager {
             profession: mapping.profession,
             lastParse: lastParse?.createdAt || null,
             wasRecentlyParsed: lastParse 
-              ? Date.now() - lastParse.createdAt.getTime() < this.STALE_THRESHOLD
+              ? (Date.now() - lastParse.createdAt.getTime()) < this.STALE_THRESHOLD
               : false
           };
         })
@@ -323,8 +376,11 @@ export class VacancyManager {
         this.scheduleSemanticParsing(sourcesToUpdate);
       }
 
+      // Используем универсальную функцию маппинга
+      const transformedVacancies = vacancies.map(mapPrismaToVacancy);
+
       return {
-        vacancies,
+        vacancies: transformedVacancies,
         meta: {
           total,
           totalPages,
@@ -336,10 +392,74 @@ export class VacancyManager {
       };
     }
 
-    // 4. Если данных нет - парсим СЕЙЧАС с точными названиями
-    console.log(`\n📭 Данных нет, запускаю семантический парсинг`);
+    // 4. Если данных нет - проверяем были ли недавно парсинги с точными названиями
+    console.log(`\n📭 Данных нет по запросу "${searchQuery}", проверяю недавние парсинговые задачи`);
     
-    await this.parseWithSemantics(mappings);
+    // Проверяем были ли недавно парсинг с ТОЧНЫМИ названиями из словарей
+    const recentParseHistory = await Promise.all(
+      mappings.mappings.map(async (mapping) => {
+        const lastParse = await prisma.parseLog.findFirst({
+          where: {
+            source: mapping.source,
+            searchQuery: mapping.profession, // ТОЧНОЕ название из словаря
+            status: 'success'
+          },
+          orderBy: { createdAt: 'desc' },
+          select: { createdAt: true }
+        });
+
+        return {
+          source: mapping.source,
+          profession: mapping.profession,
+          lastParse: lastParse?.createdAt || null,
+          wasRecentlyParsed: lastParse 
+            ? (Date.now() - lastParse.createdAt.getTime()) < this.STALE_THRESHOLD
+            : false
+        };
+      })
+    );
+
+    // Если ни для одного источника не было недавнего парсинга с точными названиями - парсим
+    const hasRecentParses = recentParseHistory.some(h => h.wasRecentlyParsed);
+    
+    if (!hasRecentParses) {
+      console.log(`⏰ Ни для одного источника не было недавнего парсинга с точными названиями, запускаю семантический парсинг`);
+      await this.parseWithSemantics(mappings);
+    } else {
+      console.log(`✅ Недавние парсинговые задачи найдены, пропускаю семантический парсинг`);
+      // Проверим, есть ли теперь вакансии после недавнего парсинга
+      const cachedVacancies = await vacancyService.findByFilters({
+        ...filters,
+        sources,
+        limit: undefined,
+        page: undefined
+      });
+      
+      if (cachedVacancies.length > 0) {
+        console.log(`📊 Найдено ${cachedVacancies.length} вакансий после проверки кэша`);
+        // Вычисляем пагинацию для кэшированных данных
+        const cachedTotal = cachedVacancies.length;
+        const cachedTotalPages = Math.ceil(cachedTotal / limit);
+        const cachedOffset = (page - 1) * limit;
+        const cachedPage = cachedVacancies.slice(cachedOffset, cachedOffset + limit);
+        
+        // Трансформируем вакансии в формат Vacancy интерфейса
+        const transformedCachedPage = cachedPage.map(mapPrismaToVacancy);
+        
+        return {
+          vacancies: transformedCachedPage,
+          meta: {
+            total: cachedTotal,
+            totalPages: cachedTotalPages,
+            source: 'cache',
+            lastUpdate: new Date(),
+            updating: false,
+            parseReason: 'Найдены вакансии после проверки кэша',
+            semanticMappings: mappings
+          }
+        };
+      }
+    }
     
     // Получаем свежие данные
     const freshVacancies = await vacancyService.findByFilters({
@@ -357,8 +477,11 @@ export class VacancyManager {
     
     console.log(`✅ Парсинг завершен. Найдено вакансий: ${freshTotal}`);
     
+    // Используем универсальную функцию маппинга
+    const transformedFreshPage = freshPage.map(mapPrismaToVacancy);
+
     return {
-      vacancies: freshPage,
+      vacancies: transformedFreshPage,
       meta: {
         total: freshTotal,
         totalPages: freshTotalPages,
@@ -375,7 +498,7 @@ export class VacancyManager {
    * Парсинг с семантическими маппингами
    * Для каждого источника парсим с ТОЧНЫМ названием из словарика
    */
-  private async parseWithSemantics(mappings: any): Promise<void> {
+  private async parseWithSemantics(mappings: { mappings: Array<{ source: string; profession: string; similarity: number }> }): Promise<void> {
     console.log(`🚀 Запуск семантического парсинга`);
 
     // Группируем маппинги по источникам
@@ -403,7 +526,7 @@ export class VacancyManager {
   /**
    * Фоновый парсинг с семантическими маппингами
    */
-  private async scheduleSemanticParsing(sourcesToUpdate: Array<{ source: string; profession: string }>) {
+  private async scheduleSemanticParsing(sourcesToUpdate: Array<{ source: string; profession: string }>): Promise<void> {
     if (!this.parseQueue) {
       console.log('   ⚠️  Worker не доступен, пропускаю фоновый парсинг');
       return;
@@ -422,26 +545,29 @@ export class VacancyManager {
         );
 
         console.log(`   📋 Задача добавлена: ${source} "${profession}"`);
-      } catch (error) {
+      } catch {
         console.log(`   ⚠️  Не удалось добавить задачу для ${source}`);
       }
     }
   }
 
-  private async checkParseHistory(sources: string[], searchQuery: string) {
+  private async checkParseHistory(sources: string[], searchQuery: string): Promise<Array<{ source: string; lastParse: Date | null; wasRecentlyParsed: boolean }>> {
     const history = await Promise.all(
       sources.map(async (source) => {
+        // Ищем последний успешный парсинг для этого источника И поискового запроса
         const lastParse = await prisma.parseLog.findFirst({
           where: {
             source,
+            searchQuery,
             status: 'success',
-            searchQuery
           },
-          orderBy: { createdAt: 'desc' }
+          orderBy: { createdAt: 'desc' },
+          select: { createdAt: true } // Выбираем только дату для оптимизации
         });
 
+        // Проверяем, был ли парсинг недавно (в пределах порога устаревания)
         const wasRecentlyParsed = lastParse 
-          ? Date.now() - lastParse.createdAt.getTime() < this.STALE_THRESHOLD
+          ? (Date.now() - lastParse.createdAt.getTime()) < this.STALE_THRESHOLD
           : false;
 
         return {
@@ -458,7 +584,8 @@ export class VacancyManager {
   private async getLastSuccessfulParse(source: string): Promise<Date | null> {
     const log = await prisma.parseLog.findFirst({
       where: { source, status: 'success' },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      select: { createdAt: true }
     });
 
     return log?.createdAt || null;
@@ -497,9 +624,10 @@ export class VacancyManager {
     try {
       console.log(`   🔍 Парсинг ${source} (запрос: "${searchQuery}")...`);
       
-      let vacancies: any[] = [];
-      let parser: any;
-
+      let vacancies: Vacancy[] = [];
+      let parser: any = null;
+    
+    try {
       switch (source) {
         case 'rabota.md':
           parser = new RabotaMdParser({
@@ -513,8 +641,7 @@ export class VacancyManager {
           parser = new NineNineNineMdParser({
             parseDetails: true,
             cacheEnabled: true,
-            concurrency: 3,
-            headless: true
+            concurrency: 3
           });
           break;
           
@@ -522,8 +649,7 @@ export class VacancyManager {
           parser = new MaklerMdParser({
             parseDetails: true,
             cacheEnabled: true,
-            concurrency: 3,
-            headless: true
+            concurrency: 3
           });
           break;
           
@@ -531,6 +657,11 @@ export class VacancyManager {
           console.log(`   ⚠️  Парсер для ${source} не реализован`);
           return [];
       }
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`   ❌ Ошибка инициализации парсера ${source}:`, errorMessage);
+      return [];
+    }
 
       const result = await parser.parse({
         baseUrl: source === 'rabota.md' ? 'https://www.rabota.md' : 
@@ -574,15 +705,16 @@ export class VacancyManager {
 
       return vacancies;
 
-    } catch (error: any) {
-      console.error(`   ❌ Ошибка ${source}:`, error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`   ❌ Ошибка ${source}:`, errorMessage);
       
       await prisma.parseLog.create({
         data: {
           source,
           searchQuery,
           status: 'error',
-          error: error.message,
+          error: errorMessage,
           duration: Date.now() - startTime
         }
       });
@@ -591,7 +723,7 @@ export class VacancyManager {
     }
   }
 
-  private async scheduleBackgroundParsing(sources: string[], searchQuery: string) {
+  private async scheduleBackgroundParsing(sources: string[], searchQuery: string): Promise<void> {
     if (!this.parseQueue) {
       console.log('   ⚠️  Worker не доступен, пропускаю фоновый парсинг');
       return;
@@ -616,7 +748,7 @@ export class VacancyManager {
     }
   }
 
-  async forceParse(sources?: string[], searchQuery?: string): Promise<{ success: boolean; results: any[] }> {
+  async forceParse(sources?: string[], searchQuery?: string): Promise<{ success: boolean; results: Vacancy[] }> {
     const targetSources = sources || ['rabota.md', '999.md', 'makler.md'];
     const query = searchQuery || 'работа';
     
@@ -630,7 +762,7 @@ export class VacancyManager {
     };
   }
 
-  async getStats() {
+  async getStats(): Promise<Array<{ source: string; count: number; lastParse: Date | null; isStale: boolean; status: string }>> {
     const sources = ['rabota.md', '999.md', 'makler.md'];
     
     const stats = await Promise.all(

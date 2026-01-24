@@ -5,7 +5,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { cacheService } from '../services/cache.service.js';
 
-export async function cacheRoutes(fastify: FastifyInstance) {
+export async function cacheRoutes(fastify: FastifyInstance): Promise<void> {
   // GET /cache/stats/:userId - Статистика кэша пользователя
   fastify.get<{ Params: { userId: string } }>(
     '/cache/stats/:userId',
@@ -17,12 +17,13 @@ export async function cacheRoutes(fastify: FastifyInstance) {
           success: true,
           data: stats
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         request.log.error(error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         return reply.status(500).send({
           success: false,
           error: 'Failed to get cache stats',
-          message: error.message
+          message: errorMessage
         });
       }
     }
@@ -40,12 +41,13 @@ export async function cacheRoutes(fastify: FastifyInstance) {
           message: `Cleared cache for user ${request.params.userId}`,
           deleted
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         request.log.error(error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         return reply.status(500).send({
           success: false,
           error: 'Failed to clear cache',
-          message: error.message
+          message: errorMessage
         });
       }
     }

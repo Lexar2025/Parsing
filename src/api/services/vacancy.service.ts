@@ -16,28 +16,39 @@ export class VacancyService {
     let updated = 0;
 
     for (const vacancy of vacancies) {
-      const adapter = getAdapter(vacancy.source as any);
-      const prismaData = adapter.toPrisma(vacancy);
+      try {
+        const source = vacancy.source as keyof typeof getAdapter;
+        const adapter = getAdapter(source);
+        const prismaData = adapter.toPrisma(vacancy);
 
-      const result = await prisma.vacancy.upsert({
-        where: {
-          source_sourceId: {
-            source: prismaData.source,
-            sourceId: prismaData.sourceId,
+        const result = await prisma.vacancy.upsert({
+          where: {
+            source_sourceId: {
+              source: prismaData.source,
+              sourceId: prismaData.sourceId,
+            },
           },
-        },
-        create: prismaData,
-        update: {
-          ...prismaData,
-          updatedAt: new Date(),
-        },
-      });
+          create: prismaData,
+          update: {
+            ...prismaData,
+            updatedAt: new Date(),
+          },
+        });
 
-      // Проверяем была ли создана или обновлена
-      if (result.createdAt.getTime() === result.updatedAt.getTime()) {
-        created++;
-      } else {
-        updated++;
+        // Проверяем была ли создана или обновлена
+        if (result.createdAt && result.updatedAt &&
+            result.createdAt.getTime() === result.updatedAt.getTime()) {
+          created++;
+        } else {
+          updated++;
+        }
+      } catch (error: unknown) {
+        console.error(`❌ Ошибка получения адаптера для источника ${vacancy.source}:`, {
+          error: error instanceof Error ? error.message : String(error),
+          vacancyId: vacancy.id,
+          source: vacancy.source
+        });
+        continue;
       }
     }
 
@@ -59,54 +70,79 @@ export class VacancyService {
     page?: number;
   }): Promise<Vacancy[]> {
     const where: Prisma.VacancyWhereInput = {};
+    const OR_conditions: Prisma.VacancyWhereInput[] = [];
 
     // Ключевые слова (поиск в title и description)
     if (filters.keywords && filters.keywords.length > 0) {
-      where.OR = filters.keywords.map((keyword) => ({
-        OR: [
-          { title: { contains: keyword, mode: 'insensitive' } },
-          { description: { contains: keyword, mode: 'insensitive' } },
-        ],
-      }));
+      for (const keyword of filters.keywords) {
+        OR_conditions.push({
+          OR: [
+            { title: { contains: keyword, mode: 'insensitive' as const } },
+            { description: { contains: keyword, mode: 'insensitive' as const } },
+          ],
+        });
+      }
     }
 
     // Локация
     if (filters.locations && filters.locations.length > 0) {
-      where.location = {
-        in: filters.locations,
-        mode: 'insensitive',
-      };
+      for (const location of filters.locations) {
+        OR_conditions.push({
+          location: {
+            contains: location.trim(),
+            mode: 'insensitive' as const
+          }
+        });
+      }
     }
 
     // Минимальная зарплата
     if (filters.salaryMin) {
-      where.salaryMax = {
-        gte: filters.salaryMin,
-      };
+      OR_conditions.push({
+        OR: [
+          { salaryMax: { gte: filters.salaryMin } },
+          { salaryMin: { gte: filters.salaryMin } }
+        ]
+      });
     }
 
     // Опыт
     if (filters.experience && filters.experience.length > 0) {
-      where.experience = {
-        in: filters.experience,
-      };
+      for (const exp of filters.experience) {
+        OR_conditions.push({
+          experience: {
+            contains: exp.trim(),
+            mode: 'insensitive' as const
+          }
+        });
+      }
     }
 
     // График работы
     if (filters.schedule && filters.schedule.length > 0) {
-      where.schedule = {
-        in: filters.schedule,
-      };
+      for (const schedule of filters.schedule) {
+        OR_conditions.push({
+          schedule: {
+            contains: schedule.trim(),
+            mode: 'insensitive' as const
+          }
+        });
+      }
     }
 
-    // Источники
+    // Если есть OR условия, объединяем их
+    if (OR_conditions.length > 0) {
+      where.OR = OR_conditions;
+    }
+
+    // Источники (AND условие)
     if (filters.sources && filters.sources.length > 0) {
       where.source = {
         in: filters.sources,
       };
     }
 
-    // Дата публикации
+    // Дата публикации (AND условие)
     if (filters.publishedAfter) {
       where.publishedAt = {
         gte: filters.publishedAfter,
@@ -116,8 +152,8 @@ export class VacancyService {
     return prisma.vacancy.findMany({
       where,
       orderBy: { publishedAt: 'desc' },
-      take: filters.limit || 50,
-      skip: filters.page || 0,
+      take: Math.min(filters.limit || 50, 100), // Максимум 100 записей за раз
+      skip: filters.page ? (filters.page - 1) * (filters.limit || 50) : 0,
     });
   }
 

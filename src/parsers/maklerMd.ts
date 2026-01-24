@@ -208,8 +208,8 @@ export class MaklerMdParser implements Parser {
         page: 1,
         hasNextPage: false,
       };
-    } catch (error) {
-      log('❌ Ошибка при парсинге:', error);
+    } catch (error: unknown) {
+      log('❌ Ошибка при парсинге:', error instanceof Error ? error.message : String(error));
       await this.closeBrowser();
       throw error;
     }
@@ -252,32 +252,79 @@ export class MaklerMdParser implements Parser {
    * Настройка страницы для обхода детекции
    */
   private async setupPage(page: Page): Promise<void> {
-    // Скрываем webdriver
+    // Скрываем webdriver и добавляем свойства для обхода детекции
     await page.evaluateOnNewDocument(() => {
+      // Скрываем webdriver
       Object.defineProperty(navigator, 'webdriver', {
         get: () => false,
       });
-      
-      // Добавляем chrome объект
-      (window as any).chrome = {
-        runtime: {},
-      };
-      
-      // Переопределяем permissions
-      const originalQuery = (window.navigator as any).permissions.query;
-      (window.navigator as any).permissions.query = (parameters: any) =>
-        parameters.name === 'notifications'
-          ? Promise.resolve({ state: Notification.permission } as PermissionStatus)
-          : originalQuery(parameters);
 
-      // Добавляем плагины
+      // Типизированный Chrome объект
+      interface Chrome {
+        runtime: Record<string, unknown>;
+        app: Record<string, unknown>;
+      }
+
+      // Безопасное приведение window для доступа к chrome
+      const windowAny = window as unknown as { chrome?: Chrome };
+      if (!windowAny.chrome) {
+        windowAny.chrome = {
+          runtime: {},
+          app: {}
+        };
+      }
+
+      // Переопределяем permissions
+      const originalPermissions = Object.getOwnPropertyDescriptor(navigator, 'permissions');
+      if (originalPermissions) {
+        Object.defineProperty(navigator, 'permissions', {
+          ...originalPermissions,
+          value: {
+            ...originalPermissions.value,
+            query: (parameters: { name: string }) => {
+              if (parameters.name === 'notifications') {
+                return Promise.resolve({
+                  state: Notification.permission
+                } as PermissionStatus);
+              }
+              return originalPermissions.value!.query(parameters);
+            }
+          }
+        });
+      }
+
+      // Добавляем плагины с правильной типизацией
+      interface Plugin {
+        name: string;
+        filename: string;
+        description: string;
+      }
+
       Object.defineProperty(navigator, 'plugins', {
-        get: () => [1, 2, 3, 4, 5],
+        get: () => {
+          return [
+            { name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer', description: 'Portable Document Format' },
+            { name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai', description: 'Portable Document Format' },
+            { name: 'Native Client', filename: 'internal-nacl-plugin', description: '' }
+          ] as Plugin[];
+        }
       });
 
       // Добавляем языки
       Object.defineProperty(navigator, 'languages', {
-        get: () => ['ru-RU', 'ru', 'en-US', 'en'],
+        get: () => {
+          return ['ru-RU', 'ru', 'en-US', 'en'] as const;
+        }
+      });
+
+      // Добавляем deviceMemory
+      Object.defineProperty(navigator, 'deviceMemory', {
+        get: () => 8,
+      });
+
+      // Добавляем hardwareConcurrency
+      Object.defineProperty(navigator, 'hardwareConcurrency', {
+        get: () => 4,
       });
     });
 
@@ -373,8 +420,9 @@ export class MaklerMdParser implements Parser {
         }
 
         currentPage++;
-      } catch (error) {
-        log(`   ❌ Ошибка при парсинге страницы ${currentPage + 1}:`, error);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        log(`   ❌ Ошибка при парсинге страницы ${currentPage + 1}:`, errorMessage);
         currentPage++;
       }
     }
@@ -495,17 +543,21 @@ export class MaklerMdParser implements Parser {
         }
 
         // Делаем клик в безопасное место
-        await page.mouse.click(400, 400);
+        try {
+          await page.mouse.click(400, 400);
+        } catch {
+          // Игнорируем ошибки клика
+        }
         await pause(1000);
 
         // Скроллим страницу (как человек)
         await page.evaluate(() => {
-          window.scrollBy(0, 300);
+          window.scrollBy({ top: 300, behavior: 'smooth' });
         });
         await pause(1000);
 
         await page.evaluate(() => {
-          window.scrollBy(0, -300);
+          window.scrollBy({ top: -300, behavior: 'smooth' });
         });
         
         // Ждем пока Cloudflare нас "пропустит"
@@ -523,63 +575,83 @@ export class MaklerMdParser implements Parser {
       }
 
       // Парсим вакансии
-      const vacancies = await page.$$eval('article', (articles) => {
-        return articles.map((article) => {
-          try {
-            // Время публикации
-            const timeElement = article.querySelector('.ls-detail_time');
-            const timeText = timeElement?.textContent?.trim();
+      interface MaklerVacancyPreview {
+        id: string;
+        title: string;
+        description?: string;
+        location?: string;
+        url: string;
+        publishedAt?: string;
+        contactPerson?: string;
+        source: 'makler.md';
+        }
 
-            // Заголовок и ссылка
-            const titleLink = article.querySelector('.ls-detail_antTitle a.ls-detail_anUrl');
-            const title = titleLink?.textContent?.trim() || '';
-            const url = titleLink?.getAttribute('href') || '';
+        const vacancies = await page.$$eval('article', (articles): MaklerVacancyPreview[] => {
+          return articles.map((article) => {
+        try {
+        // Время публикации
+        const timeElement = article.querySelector('.ls-detail_time');
+        const timeText = timeElement?.textContent?.trim() || undefined;
 
-            if (!title || !url) {
-              return null;
-            }
+        // Заголовок и ссылка
+        const titleLink = article.querySelector('.ls-detail_antTitle a.ls-detail_anUrl');
+        const title = titleLink?.textContent?.trim() || '';
+        const href = titleLink?.getAttribute('href') || '';
 
-            // Описание
-            const descElement = article.querySelector('.subfir');
-            const description = descElement?.textContent?.trim() || undefined;
+        if (!title || !href) {
+        return null;
+        }
 
-            // Локация и телефон
-            const infoBlock = article.querySelector('.ls-detail_anData');
-            const location = infoBlock?.querySelector('#pointer_icon')?.textContent?.trim() || undefined;
-            const phone = infoBlock?.querySelector('.phone_icon')?.textContent?.trim() || undefined;
+        // Описание
+        const descElement = article.querySelector('.subfir');
+        const description = descElement?.textContent?.trim() || undefined;
 
-            // Извлекаем ID из URL
-            const idMatch = url.match(/\/an\/(\d+)/);
-            const id = idMatch ? idMatch[1] : url;
+        // Локация и телефон
+        const infoBlock = article.querySelector('.ls-detail_anData');
+        const locationElement = infoBlock?.querySelector('#pointer_icon');
+        const location = locationElement?.textContent?.trim() || undefined;
+        
+        const phoneElement = infoBlock?.querySelector('.phone_icon');
+        const phone = phoneElement?.textContent?.trim() || undefined;
 
-            return {
-              id,
-              title,
-              description,
-              location,
-              url: url.startsWith('http') ? url : `https://makler.md${url}`,
-              publishedAt: timeText,
-              contactPerson: phone,
-              source: 'makler.md',
-            };
-          } catch {
-            return null;
-          }
-        }).filter(Boolean);
-      });
+        // Извлекаем ID из URL
+        const idMatch = href.match(/\/an\/(\d+)/);
+        const id = idMatch ? idMatch[1] : href;
+
+        const url = href.startsWith('http') ? href : `https://makler.md${href}`;
+
+        return {
+        id,
+        title,
+        description,
+        location,
+        url,
+        publishedAt: timeText,
+        contactPerson: phone,
+        source: 'makler.md',
+        } as MaklerVacancyPreview;
+        } catch (error) {
+        console.error('Ошибка при парсинге карточки вакансии:', error);
+        return null;
+        }
+        }).filter((v): v is MaklerVacancyPreview => v !== null);
+        });
 
       await page.close();
 
       // Обрабатываем даты
-      return vacancies.map((v: any) => ({
+      return vacancies.map((v): Vacancy => ({
         ...v,
         publishedAt: this.parseDate(v.publishedAt),
-      })) as Vacancy[];
+        source: 'makler.md',
+      }));
 
-    } catch (error) {
-      await page.close();
-      throw error;
-    }
+    } catch (error: unknown) {
+    await page.close();
+    const errorMessage = error instanceof Error ? error.message : String(error);
+      log(`⚠️ Ошибка при парсинге страницы вакансий ${url}:`, errorMessage);
+        throw error;
+      }
   }
 
   /**
@@ -598,24 +670,36 @@ export class MaklerMdParser implements Parser {
       const match = dateStr.match(/(\d+)\s+(\w+)\s+(\d+):(\d+)/i);
       if (match) {
         const day = parseInt(match[1]);
-        const month = months[match[2].toLowerCase()];
+        const monthName = match[2].toLowerCase();
+        const month = months[monthName];
         const hour = parseInt(match[3]);
         const minute = parseInt(match[4]);
+
+        if (isNaN(day) || isNaN(hour) || isNaN(minute) || month === undefined) {
+          return undefined;
+        }
 
         const now = new Date();
         const date = new Date(now.getFullYear(), month, day, hour, minute);
 
+        // Проверяем корректность даты
+        if (isNaN(date.getTime())) {
+          return undefined;
+        }
+
+        // Если дата в будущем, считаем, что она из прошлого года
         if (date > now) {
           date.setFullYear(now.getFullYear() - 1);
         }
 
         return date;
       }
-    } catch {
-      // Игнорируем ошибки парсинга
+      return undefined;
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      log(`⚠️ Ошибка при парсинге даты "${dateStr}":`, errorMessage);
+      return undefined;
     }
-
-    return undefined;
   }
 
   /**
@@ -645,8 +729,23 @@ export class MaklerMdParser implements Parser {
             }
 
             return { ...v, ...extra };
-          } catch (err) {
-            log(`⚠️ Ошибка деталей для ${v.url}:`, err);
+          } catch (err: unknown) {
+            const errorInfo = err instanceof Error ? {
+              name: err.name,
+              message: err.message,
+              stack: err.stack
+            } : {
+              name: 'UnknownError',
+              message: 'Неизвестная ошибка при парсинге деталей',
+              stack: undefined
+            };
+            
+            log(`⚠️ Ошибка деталей для ${v.url}:`, {
+              ...errorInfo,
+              url: v.url,
+              vacancyId: v.id,
+              source: 'makler.md'
+            });
             return v;
           }
         }),
@@ -676,8 +775,20 @@ export class MaklerMdParser implements Parser {
       });
 
       // Парсим дополнительные поля с детальной страницы
-      const detailsData = await page.evaluate(() => {
-        const result: any = {};
+      interface MaklerVacancyDetails {
+        employmentType?: string;
+        schedule?: string;
+        education?: string;
+        vacancyType?: string;
+        industry?: string;
+        specialization?: string;
+        fullDescription?: string;
+        salary?: string;
+        company?: string;
+      }
+
+      const detailsData = await page.evaluate((): MaklerVacancyDetails => {
+        const result: MaklerVacancyDetails = {};
         
         // Парсим таблицу с деталями
         const itemTable = document.querySelector('ul.itemtable.box-columns');
@@ -724,19 +835,19 @@ export class MaklerMdParser implements Parser {
         // Парсим полное описание если есть
         const descriptionBlock = document.querySelector('.article_content, .ann_full_descr, .full-description');
         if (descriptionBlock) {
-          result.fullDescription = descriptionBlock.textContent?.trim();
+          result.fullDescription = descriptionBlock.textContent?.trim() || undefined;
         }
         
         // Парсим зарплату если есть
         const salaryElement = document.querySelector('.salary, .ann_salary');
         if (salaryElement) {
-          result.salary = salaryElement.textContent?.trim();
+          result.salary = salaryElement.textContent?.trim() || undefined;
         }
         
         // Парсим компанию если есть
         const companyElement = document.querySelector('.company-name, .ann_company');
         if (companyElement) {
-          result.company = companyElement.textContent?.trim();
+          result.company = companyElement.textContent?.trim() || undefined;
         }
         
         return result;
@@ -746,8 +857,10 @@ export class MaklerMdParser implements Parser {
       Object.assign(details, detailsData);
 
       await page.close();
-    } catch (error) {
+    } catch (error: unknown) {
       await page.close();
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      log(`⚠️ Ошибка при парсинге деталей вакансии ${url}:`, errorMessage);
       throw error;
     }
 

@@ -15,9 +15,10 @@
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noImplicitAny": false,
-    "noImplicitThis": false,
-    "strictNullChecks": false
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    "resolveJsonModule": true
   },
   "include": ["src", "__tests__"],
   "exclude": ["node_modules", "build", "node-typescript-boilerplate-main"]

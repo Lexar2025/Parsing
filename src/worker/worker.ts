@@ -132,10 +132,10 @@ async function startWorker() {
     process.on('SIGTERM', shutdown);
     process.on('SIGINT', shutdown);
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ Не удалось подключиться к Redis:');
-    console.error('   Ошибка:', error.message);
-    console.error('   Стек:', error.stack);
+    console.error('   Ошибка:', (error as Error).message);
+    console.error('   Стек:', (error as Error).stack);
     console.log('');
     console.log('⚠️  Worker не запущен. Возможные причины:');
     console.log('   1. Redis не запущен (запустите: redis-server)');

@@ -10,47 +10,97 @@ export class NineNineNineMdAdapter extends BaseVacancyAdapter {
   sourceName = '999.md';
   
   toPrisma(vacancy: ParsedVacancy): Prisma.VacancyCreateInput {
-    return {
-      // Унифицированные поля
-      title: vacancy.title,
-      company: vacancy.company || vacancy.author || 'Не указана',
-      description: vacancy.description || '',
-      location: vacancy.location || vacancy.region,
-      
-      // Зарплата
-      salaryMin: this.extractSalaryMin(vacancy.salary),
-      salaryMax: this.extractSalaryMax(vacancy.salary),
-      salaryCurrency: this.extractCurrency(vacancy.salary),
-      
-      // Опыт и тип работы
-      experience: this.mapExperience(vacancy.experience),
-      employment: this.mapEmployment(vacancy.employmentType),
-      schedule: this.mapSchedule(vacancy.workPlace),
-      
-      // Навыки (из языков если есть)
-      skills: vacancy.languages || [],
-      
-      // Мета-данные
-      source: this.sourceName,
-      sourceId: vacancy.id,
-      sourceUrl: vacancy.url,
-      publishedAt: vacancy.publishedAt || new Date(),
-      
-      // Сырые данные для дополнительных полей 999.md
-      rawData: {
-        author: vacancy.author,
-        seasonal: vacancy.seasonal,
-        employmentType: vacancy.employmentType,
-        companyType: vacancy.companyType,
-        languages: vacancy.languages,
-        contactPerson: vacancy.contactPerson,
-        region: vacancy.region,
-        education: vacancy.education,
-        fullDescription: vacancy.fullDescription,
-        firstSeenAt: vacancy.firstSeenAt,
-        lastSeenAt: vacancy.lastSeenAt,
-        isActive: vacancy.isActive,
-      } as Prisma.InputJsonValue,
-    };
+    try {
+      // Валидация обязательных полей
+      if (!vacancy.title || !vacancy.url || !vacancy.id) {
+        throw new Error(`Отсутствуют обязательные поля для вакансии: ${vacancy.id}`);
+      }
+
+      // Обработка даты публикации
+      let publishedAt: Date;
+      if (vacancy.publishedAt) {
+        if (vacancy.publishedAt instanceof Date) {
+          publishedAt = vacancy.publishedAt;
+        } else if (typeof vacancy.publishedAt === 'string') {
+          publishedAt = new Date(vacancy.publishedAt);
+          if (isNaN(publishedAt.getTime())) {
+            publishedAt = new Date();
+          }
+        } else {
+          publishedAt = new Date();
+        }
+      } else {
+        publishedAt = new Date();
+      }
+
+      // Обработка компании
+      const company = vacancy.company?.trim() ||
+                     vacancy.author?.trim() ||
+                     'Не указана';
+
+      // Обработка локации
+      const location = (vacancy.location || vacancy.region || '').trim() || null;
+
+      // Обработка описания
+      const description = vacancy.description?.trim() || '';
+
+      // Обработка языков как навыков
+      const skills = Array.isArray(vacancy.languages) ?
+        vacancy.languages.filter(lang => lang?.trim()) :
+        [];
+
+      return {
+        // Унифицированные поля
+        title: vacancy.title.trim(),
+        company: company,
+        description: description,
+        location: location,
+        
+        // Зарплата
+        salaryMin: this.extractSalaryMin(vacancy.salary),
+        salaryMax: this.extractSalaryMax(vacancy.salary),
+        salaryCurrency: this.extractCurrency(vacancy.salary) || 'MDL',
+        
+        // Опыт и тип работы
+        experience: this.mapExperience(vacancy.experience),
+        employment: this.mapEmployment(vacancy.employmentType),
+        schedule: this.mapSchedule(vacancy.workPlace),
+        
+        // Навыки (из языков если есть)
+        skills: skills,
+        
+        // Мета-данные
+        source: this.sourceName,
+        sourceId: vacancy.id.trim(),
+        sourceUrl: vacancy.url.trim(),
+        publishedAt: publishedAt,
+        
+        // Сырые данные для дополнительных полей 999.md
+        rawData: {
+          author: vacancy.author?.trim() || null,
+          seasonal: typeof vacancy.seasonal === 'boolean' ? vacancy.seasonal : null,
+          employmentType: vacancy.employmentType?.trim() || null,
+          companyType: vacancy.companyType?.trim() || null,
+          languages: skills,
+          contactPerson: vacancy.contactPerson?.trim() || null,
+          region: vacancy.region?.trim() || null,
+          education: vacancy.education?.trim() || null,
+          fullDescription: vacancy.fullDescription?.trim() || null,
+          firstSeenAt: vacancy.firstSeenAt ? new Date(vacancy.firstSeenAt) : null,
+          lastSeenAt: vacancy.lastSeenAt ? new Date(vacancy.lastSeenAt) : null,
+          isActive: typeof vacancy.isActive === 'boolean' ? vacancy.isActive : true,
+        } satisfies Prisma.InputJsonValue,
+      };
+    } catch (error: unknown) {
+      console.error(`❌ Ошибка в адаптере 999.md для вакансии ${vacancy.id}:`, {
+        error: error instanceof Error ? error.message : String(error),
+        vacancy: {
+          id: vacancy.id,
+          title: vacancy.title,
+          url: vacancy.url
+        }
+      });
+      throw error;
+    }
   }
 }

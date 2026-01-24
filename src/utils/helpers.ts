@@ -16,13 +16,18 @@ export function cleanText(text: string): string {
   return text.replace(/\s+/g, ' ').trim();
 }
 
+interface ElementWithText {
+  text?: () => string;
+  textContent?: string;
+}
+
 /**
  * Безопасное извлечение текста из элемента
  */
 export function safeText(element: unknown): string {
   if (!element) return '';
   
-  const el = element as { text?: () => string; textContent?: string };
+  const el = element as ElementWithText;
   return cleanText(el.text?.() || el.textContent || '');
 }
 

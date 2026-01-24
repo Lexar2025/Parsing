@@ -11,7 +11,9 @@ interface DictionaryQuery {
   search?: string;
 }
 
-export async function dictionaryRoutes(fastify: FastifyInstance) {
+type DictionarySource = 'rabota.md' | '999.md' | 'makler.md';
+
+export async function dictionaryRoutes(fastify: FastifyInstance): Promise<void> {
   // GET /dictionaries - Получить все словарики
   fastify.get<{ Querystring: DictionaryQuery }>(
     '/dictionaries',
@@ -39,12 +41,13 @@ export async function dictionaryRoutes(fastify: FastifyInstance) {
           success: true,
           data: allProfessions
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         request.log.error(error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         return reply.status(500).send({
           success: false,
           error: 'Failed to fetch dictionaries',
-          message: error.message
+          message: errorMessage
         });
       }
     }
@@ -77,12 +80,13 @@ export async function dictionaryRoutes(fastify: FastifyInstance) {
           success: true,
           data: mappings
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         request.log.error(error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         return reply.status(500).send({
           success: false,
           error: 'Failed to search dictionaries',
-          message: error.message
+          message: errorMessage
         });
       }
     }
@@ -97,12 +101,13 @@ export async function dictionaryRoutes(fastify: FastifyInstance) {
         success: true,
         data: stats
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       request.log.error(error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       return reply.status(500).send({
         success: false,
         error: 'Failed to fetch stats',
-        message: error.message
+        message: errorMessage
       });
     }
   });
@@ -116,14 +121,15 @@ export async function dictionaryRoutes(fastify: FastifyInstance) {
 
         if (source) {
           // Обновить словарик для одного источника
-          if (!['rabota.md', '999.md', 'makler.md'].includes(source)) {
+          const validSources: DictionarySource[] = ['rabota.md', '999.md', 'makler.md'];
+          if (!validSources.includes(source as DictionarySource)) {
             return reply.status(400).send({
               success: false,
               error: 'Invalid source. Must be one of: rabota.md, 999.md, makler.md'
             });
           }
 
-          await updateDictionary(source as any);
+          await updateDictionary(source as DictionarySource);
 
           return reply.send({
             success: true,
@@ -138,12 +144,13 @@ export async function dictionaryRoutes(fastify: FastifyInstance) {
           success: true,
           message: 'All dictionaries updated'
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         request.log.error(error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         return reply.status(500).send({
           success: false,
           error: 'Failed to update dictionaries',
-          message: error.message
+          message: errorMessage
         });
       }
     }
@@ -169,12 +176,13 @@ export async function dictionaryRoutes(fastify: FastifyInstance) {
           success: true,
           message: `Deleted ${deleted} professions from ${source}`
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         request.log.error(error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         return reply.status(500).send({
           success: false,
           error: 'Failed to clear dictionary',
-          message: error.message
+          message: errorMessage
         });
       }
     }

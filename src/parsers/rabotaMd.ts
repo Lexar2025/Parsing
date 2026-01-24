@@ -98,7 +98,7 @@ export class RabotaMdParser implements Parser {
         page: 1,
         hasNextPage: false,
       };
-    } catch (error) {
+    } catch (error: unknown) {
       log('❌ Ошибка при парсинге:', error);
       throw error;
     }
@@ -148,7 +148,7 @@ export class RabotaMdParser implements Parser {
             }
 
             return { ...v, ...extra };
-          } catch (err) {
+          } catch (err: unknown) {
             log(`⚠️ Ошибка деталей для ${v.url}:`, err);
             return v;
           }
@@ -230,7 +230,7 @@ export class RabotaMdParser implements Parser {
         }
 
         currentPage++;
-      } catch (error) {
+      } catch (error: unknown) {
         if (
           error &&
           typeof error === 'object' &&
@@ -385,8 +385,8 @@ export class RabotaMdParser implements Parser {
   private async fetchPage(url: string): Promise<string> {
     try {
       const response = await this.axiosInstance.get(url);
-      return response.data;
-    } catch (error) {
+      return response.data as string;
+    } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         log(`❌ Ошибка HTTP: ${error.message}`);
       }

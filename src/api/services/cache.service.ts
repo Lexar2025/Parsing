@@ -7,9 +7,10 @@ import { Redis } from 'ioredis';
 import crypto from 'crypto';
 import { config } from '../../shared/config/index.js';
 import { SearchFilters } from '../../shared/managers/vacancyManager.js';
+import { Vacancy } from '../../types/vacancy.js';
 
 export interface CachedSearchResult {
-  vacancies: any[];
+  vacancies: Vacancy[];
   total: number;
   filters: SearchFilters;
   cachedAt: Date;
@@ -76,13 +77,13 @@ export class CacheService {
    */
   async cacheSearchResults(
     key: string,
-    vacancies: any[],
+    vacancies: Vacancy[],
     filters: SearchFilters,
     ttl: number = this.DEFAULT_TTL
   ): Promise<void> {
     try {
       const data: CachedSearchResult = {
-        vacancies,
+        vacancies: vacancies as Vacancy[],
         total: vacancies.length,
         filters,
         cachedAt: new Date(),
@@ -99,7 +100,7 @@ export class CacheService {
   /**
    * Получить страницу из кэша
    */
-  async getPage(key: string, limit: number, offset: number): Promise<any[] | null> {
+  async getPage(key: string, limit: number, offset: number): Promise<Vacancy[] | null> {
     try {
       const cached = await this.redis.get(key);
 

@@ -21,7 +21,9 @@ interface VacancyQuery {
   page?: number;    // Номер страницы (начиная с 1)
 }
 
-export async function vacancyRoutes(fastify: FastifyInstance) {
+type VacancySource = 'rabota.md' | '999.md' | 'makler.md';
+
+export async function vacancyRoutes(fastify: FastifyInstance): Promise<void> {
   // GET /vacancies - Умный поиск через VacancyManager
   fastify.get<{ Querystring: VacancyQuery }>(
     '/vacancies',
@@ -42,14 +44,14 @@ export async function vacancyRoutes(fastify: FastifyInstance) {
         } = request.query;
 
         // Определяем источники
-        let sourcesArray: any = undefined;
+        let sourcesArray: VacancySource[] | undefined = undefined;
         
         if (source) {
           // Если указан ОДИН источник
-          sourcesArray = [source.trim()];
+          sourcesArray = [source.trim() as VacancySource];
         } else if (sources) {
           // Если указано НЕСКОЛЬКО
-          sourcesArray = sources.split(',').map((s) => s.trim());
+          sourcesArray = sources.split(',').map((s) => s.trim() as VacancySource);
         }
         // Если не указано ничего - возьмется по умолчанию все 3
 
@@ -82,12 +84,13 @@ export async function vacancyRoutes(fastify: FastifyInstance) {
             updating: result.meta.updating
           },
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         request.log.error(error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         return reply.status(500).send({
           success: false,
           error: 'Failed to fetch vacancies',
-          message: error.message,
+          message: errorMessage,
         });
       }
     }
@@ -112,16 +115,18 @@ export async function vacancyRoutes(fastify: FastifyInstance) {
             vacanciesParsed: result.results.length
           }
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         request.log.error(error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         return reply.status(500).send({
           success: false,
           error: 'Failed to parse',
-          message: error.message,
+          message: errorMessage,
         });
       }
     }
   );
+  
   // GET /vacancies/:id - Получить конкретную вакансию
   fastify.get<{ Params: { id: string } }>(
     '/vacancies/:id',
@@ -140,12 +145,13 @@ export async function vacancyRoutes(fastify: FastifyInstance) {
           success: true,
           data: vacancy,
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         request.log.error(error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         return reply.status(500).send({
           success: false,
           error: 'Failed to fetch vacancy',
-          message: error.message,
+          message: errorMessage,
         });
       }
     }
@@ -160,12 +166,13 @@ export async function vacancyRoutes(fastify: FastifyInstance) {
         success: true,
         data: stats,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       request.log.error(error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       return reply.status(500).send({
         success: false,
         error: 'Failed to fetch stats',
-        message: error.message,
+        message: errorMessage,
       });
     }
   });

@@ -38,7 +38,7 @@ try {
   vacancyManager.setQueue(parseQueue);
   
   console.log('✅ Redis Queue подключена (фоновое обновление доступно)');
-} catch (error) {
+} catch {
   console.log('⚠️  Redis не доступен - фоновое обновление не будет работать');
   console.log('  Запустите Redis и Worker для включения фоновых задач');
 }
@@ -62,7 +62,7 @@ fastify.get('/health', async () => {
       database: 'connected',
       sources: stats
     };
-  } catch (error) {
+  } catch {
     return { 
       status: 'error', 
       error: 'Database connection failed',
@@ -89,7 +89,7 @@ signals.forEach((signal) => {
 });
 
 // Start server
-const start = async () => {
+const start = async (): Promise<void> => {
   try {
     await fastify.listen({
       port: config.api.port,

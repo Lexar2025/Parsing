@@ -137,7 +137,7 @@ async function main(): Promise<void> {
     console.log('  npm run parse <site> [category]\n');
     console.log('Доступные сайты:');
     getAvailableParsers().forEach((site) => {
-      const config = getParserConfig(site as '999.md' | 'rabota.md');
+      const config = getParserConfig(site as '999.md' | 'rabota.md' | 'makler.md');
       console.log(`  - ${site} (по умолчанию: ${config.defaultCategory || 'все'})`);
     });
     console.log('\nПримеры:');
@@ -242,13 +242,13 @@ async function main(): Promise<void> {
     console.log('='.repeat(60));
     console.log('✅ Парсинг завершен успешно!');
     console.log('='.repeat(60));
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('\n❌ Произошла ошибка:');
     if (error instanceof Error) {
       console.error(error.message);
       console.error(error.stack);
     } else {
-      console.error(error);
+      console.error(String(error));
     }
     process.exit(1);
   }

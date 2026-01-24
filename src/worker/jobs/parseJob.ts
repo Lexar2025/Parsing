@@ -111,7 +111,7 @@ export async function parseJobProcessor(job: Job<ParseJobData>) {
       updated,
       duration,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     const duration = Date.now() - startTime;
 
     // Логируем ошибку
@@ -121,11 +121,11 @@ export async function parseJobProcessor(job: Job<ParseJobData>) {
         searchQuery, // Сохраняем поисковый запрос и при ошибке
         status: 'error',
         duration,
-        error: error.message,
+        error: (error as Error).message,
       },
     });
 
-    job.log(`Parsing failed: ${error.message}`);
+    job.log(`Parsing failed: ${(error as Error).message}`);
 
     throw error;
   }

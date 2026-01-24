@@ -34,8 +34,8 @@ export async function notifyJobProcessor(job: Job) {
       notifications: updates.reduce((sum, u) => sum + u.newVacancies.length, 0)
     };
 
-  } catch (error: any) {
-    job.log(`❌ Ошибка проверки подписок: ${error.message}`);
+  } catch (error: unknown) {
+    job.log(`❌ Ошибка проверки подписок: ${(error as Error).message}`);
     throw error;
   }
 }

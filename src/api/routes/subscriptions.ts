@@ -30,7 +30,7 @@ interface UpdateSubscriptionBody {
   isActive?: boolean;
 }
 
-export async function subscriptionRoutes(fastify: FastifyInstance) {
+export async function subscriptionRoutes(fastify: FastifyInstance): Promise<void> {
   // POST /subscriptions - Создать подписку
   fastify.post<{ Body: CreateSubscriptionBody }>(
     '/subscriptions',
@@ -70,12 +70,13 @@ export async function subscriptionRoutes(fastify: FastifyInstance) {
           success: true,
           data: subscription,
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         request.log.error(error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         return reply.status(500).send({
           success: false,
           error: 'Failed to create subscription',
-          message: error.message,
+          message: errorMessage,
         });
       }
     }
@@ -105,12 +106,13 @@ export async function subscriptionRoutes(fastify: FastifyInstance) {
           success: true,
           data: subscriptions,
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         request.log.error(error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         return reply.status(500).send({
           success: false,
           error: 'Failed to fetch subscriptions',
-          message: error.message,
+          message: errorMessage,
         });
       }
     }
@@ -144,12 +146,13 @@ export async function subscriptionRoutes(fastify: FastifyInstance) {
           success: true,
           data: subscription,
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         request.log.error(error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         return reply.status(500).send({
           success: false,
           error: 'Failed to update subscription',
-          message: error.message,
+          message: errorMessage,
         });
       }
     }
@@ -166,12 +169,13 @@ export async function subscriptionRoutes(fastify: FastifyInstance) {
           success: true,
           message: 'Subscription deleted',
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         request.log.error(error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         return reply.status(500).send({
           success: false,
           error: 'Failed to delete subscription',
-          message: error.message,
+          message: errorMessage,
         });
       }
     }
@@ -186,12 +190,13 @@ export async function subscriptionRoutes(fastify: FastifyInstance) {
         success: true,
         data: stats,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       request.log.error(error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       return reply.status(500).send({
         success: false,
         error: 'Failed to fetch stats',
-        message: error.message,
+        message: errorMessage,
       });
     }
   });
