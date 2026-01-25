@@ -127,10 +127,10 @@ async function startWorker(): Promise<void> {
       }
     );
 
-    // Добавляем задачу парсинга сразу при старте
+    // Добавляем задачу парсинга сразу при старте с более распространенным запросом
     await parseQueue.add('initial-rabota', {
       source: 'rabota.md',
-      searchQuery: 'it',
+      searchQuery: 'программист',
       maxPages: 3,
     });
 
@@ -139,6 +139,11 @@ async function startWorker(): Promise<void> {
       const { addDictionaryUpdateJob } = await import('./jobs/dictionaryUpdateJob.js');
       await addDictionaryUpdateJob(dictUpdateQueue);
     }
+
+    // Запускаем немедленное обновление словарей при старте
+    console.log('🔄 Запускаю немедленное обновление словарей при старте...');
+    const { updateAllDictionaries } = await import('../utils/dictionaries/index.js');
+    await updateAllDictionaries();
 
     console.log('🔧 Worker запущен');
     console.log(`📊 Concurrency: ${config.worker.concurrency}`);

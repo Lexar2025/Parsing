@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # PostgreSQL база данных
   postgres:
@@ -34,7 +32,7 @@ services:
     ports:
       - "${REDIS_PORT:-6379}:6379"
     healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -78,7 +76,7 @@ services:
       - "${PORT:-3000}:3000"
     networks:
       - parsing-network
-    command: sh -c "npx prisma migrate deploy && node build/api/server.js"
+    command: sh -c "npx prisma migrate deploy && node build/src/api/server.js"
 
   # Worker для обработки фоновых задач
   worker:
@@ -116,9 +114,9 @@ services:
       - ./logs:/app/logs
     networks:
       - parsing-network
-    command: node build/worker/worker.js
+    command: node build/src/worker/worker.js
 
-  # Adminer для управления БД (опционально, для разработки)
+  # Adminer для управления БД (порт изменен на 8082)
   adminer:
     image: adminer:latest
     container_name: parsing-adminer
@@ -126,16 +124,14 @@ services:
     depends_on:
       - postgres
     ports:
-      - "8080:8080"
+      - "8082:8080"  # ИЗМЕНЕНО: 8082 вместо 8080
     environment:
       ADMINER_DEFAULT_SERVER: postgres
       ADMINER_DESIGN: nette
     networks:
       - parsing-network
-    profiles:
-      - dev
 
-  # Redis Commander для управления Redis (опционально, для разработки)
+  # Redis Commander для управления Redis
   redis-commander:
     image: rediscommander/redis-commander:latest
     container_name: parsing-redis-commander
@@ -148,8 +144,6 @@ services:
       - "8081:8081"
     networks:
       - parsing-network
-    profiles:
-      - dev
 
 networks:
   parsing-network:

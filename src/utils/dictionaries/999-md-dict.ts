@@ -12,7 +12,31 @@ export async function parseNineNineNineMdDictionary(): Promise<Array<{
 }>> {
   console.log('🔍 Парсинг словаря специальностей с 999.md...');
 
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({
+    headless: 'shell',
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--disable-software-rasterizer',
+      '--disable-background-networking',
+      '--disable-background-timer-throttling',
+      '--disable-backgrounding-occluded-windows',
+      '--disable-renderer-backgrounding',
+      '--disable-infobars',
+      '--disable-breakpad',
+      '--disable-notifications',
+      '--mute-audio',
+      '--no-service-autorun',
+      '--password-store=basic',
+      '--use-gl=swiftshader',
+      '--hide-scrollbars',
+      '--disable-features=VizDisplayCompositor'
+    ],
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser',
+    timeout: 60000
+  });
   const page = await browser.newPage();
 
   try {

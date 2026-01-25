@@ -25,8 +25,8 @@ WORKDIR /app
 COPY package*.json ./
 COPY tsconfig*.json ./
 
-# Устанавливаем зависимости
-RUN npm ci --only=production && \
+# Устанавливаем ВСЕ зависимости (включая dev) для сборки TypeScript
+RUN npm ci && \
     npm cache clean --force
 
 # Копируем исходный код
@@ -37,6 +37,10 @@ RUN npx prisma generate
 
 # Компилируем TypeScript
 RUN npm run build
+
+# Удаляем devDependencies после сборки
+RUN npm prune --production && \
+    npm cache clean --force
 
 # Этап 2: Production образ
 FROM node:20-alpine
@@ -89,4 +93,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD node -e "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
 # Команда по умолчанию
-CMD ["node", "build/api/server.js"]
+CMD ["node", "build/src/api/server.js"]
