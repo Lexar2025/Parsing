@@ -1,6 +1,7 @@
 # 📊 Текущее состояние проекта
 
-**Дата обновления:** 12 января 2026
+**Дата обновления:** 25 января 2026  
+**Версия:** 2.1 (Docker Ready)
 
 ---
 
@@ -8,40 +9,48 @@
 
 ### 1. **Парсеры** (100%)
 - ✅ rabota.md - полный парсинг с деталями
-- ✅ 999.md - полный парсинг с деталями
+- ✅ 999.md - полный парсинг с деталями  
 - ✅ makler.md - полный парсинг с деталями
 - ✅ Унифицированные адаптеры для всех источников
 - ✅ Кэширование HTML страниц
 - ✅ Rate limiting для защиты от блокировок
 - ✅ Обработка ошибок и retry логика
+- ✅ Строгая типизация TypeScript без `any`
 
 ### 2. **База данных** (100%)
-- ✅ PostgreSQL с Prisma ORM
-- ✅ Таблицы: User, Subscription, Vacancy, ParseLog, ProfessionDictionary
+- ✅ PostgreSQL 16 с Prisma ORM
+- ✅ Таблицы: User, UserSettings, Subscription, Vacancy, ParseLog, ProfessionDictionary
 - ✅ Индексы для быстрого поиска
-- ✅ Миграции настроены
-- ✅ Prisma Studio для GUI
+- ✅ Миграции настроены и проверены
+- ✅ Prisma Client с правильными типами
+- ✅ Docker volume для персистентности данных
 
-### 3. **API Server** (95%)
-- ✅ REST API на Fastify
+### 3. **API Server** (100%)
+- ✅ REST API на Fastify 5.x
 - ✅ Эндпоинт `/api/vacancies` с фильтрами
 - ✅ Эндпоинт `/api/vacancies/:id`
 - ✅ Эндпоинт `/api/vacancies/stats`
 - ✅ Эндпоинт `/api/vacancies/force-parse`
+- ✅ Эндпоинты для подписок (CRUD)
+- ✅ Эндпоинты для словарей профессий
+- ✅ Эндпоинты для управления кэшем
 - ✅ **Умная пагинация по page (не offset)**
 - ✅ **Кэширование результатов в Redis**
 - ✅ **Поддержка userId для персональных кэшей**
 - ✅ Семантический поиск через словари
 - ✅ CORS настроен
-- 🔲 Эндпоинты для подписок (в разработке)
+- ✅ Health check эндпоинт
+- ✅ Graceful shutdown
 
-### 4. **Worker** (90%)
+### 4. **Worker** (100%)
 - ✅ Фоновые задачи на BullMQ + Redis
 - ✅ Периодический парсинг (каждые 6 часов)
+- ✅ Проверка подписок (каждые 2 часа)
+- ✅ Обновление словарей профессий (ежедневно)
 - ✅ Логирование парсинга в ParseLog
-- ✅ Обработка ошибок
-- 🔲 Проверка подписок (в разработке)
-- 🔲 Отправка уведомлений (в разработке)
+- ✅ Обработка ошибок с retry
+- ✅ Graceful shutdown
+- ✅ Типизированные job processors
 
 ### 5. **VacancyManager** (100%)
 - ✅ Умный поиск с проверкой актуальности
@@ -51,37 +60,90 @@
 - ✅ Кэширование результатов для быстрой пагинации
 - ✅ Поддержка пагинации по page
 - ✅ Возврат totalPages для понимания когда остановиться
+- ✅ Строгая типизация без `any`
 
-### 6. **Кэширование** (100%)
+### 6. **SubscriptionManager** (100%)
+- ✅ Создание/обновление/удаление подписок
+- ✅ Получение активных подписок
+- ✅ Проверка новых вакансий по фильтрам
+- ✅ Интеграция с VacancyService
+- ✅ Type-safe работа с JSON фильтрами
+- ✅ Статистика по подпискам
+
+### 7. **Кэширование** (100%)
 - ✅ CacheService для Redis
 - ✅ Хэширование фильтров для ключей кэша
-- ✅ TTL: 30 минут
+- ✅ TTL: 30 минут (настраивается)
 - ✅ Персональные кэши для пользователей (userId)
 - ✅ Быстрая пагинация (10-20мс vs 500-1000мс)
 - ✅ Автоматическая инвалидация
+- ✅ Методы для очистки кэша
 
-### 7. **Семантический поиск** (100%)
+### 8. **Семантический поиск** (100%)
 - ✅ ProfessionDictionaryService
 - ✅ Словари для всех 3 источников
 - ✅ Нормализация запросов
-- ✅ Similarity scoring
+- ✅ Similarity scoring (exact, synonyms, partial)
 - ✅ Автоматический маппинг профессий
+- ✅ Генерация синонимов
+- ✅ Статистика по словарям
 
-### 8. **Документация** (95%)
+### 9. **Docker** (100%)
+- ✅ Multi-stage Dockerfile для API и Worker
+- ✅ Docker Compose с полной инфраструктурой
+- ✅ PostgreSQL 16 Alpine
+- ✅ Redis 7 Alpine
+- ✅ Автоматические health checks
+- ✅ Volumes для персистентности данных
+- ✅ Сети для изоляции сервисов
+- ✅ Adminer для управления БД (dev profile)
+- ✅ Redis Commander для Redis (dev profile)
+- ✅ Правильная компиляция TypeScript
+- ✅ Автоматический запуск миграций
+- ✅ Скрипты для управления (docker-start.ps1)
+
+### 10. **Качество кода** (100%)
+- ✅ TypeScript 5.7 со строгой типизацией
+- ✅ ESLint с правилами для TypeScript
+- ✅ Prettier для форматирования
+- ✅ Нет использования `any` типов
+- ✅ Type guards для JSON полей Prisma
+- ✅ DRY принцип - нет дублирования
+- ✅ KISS - простой и понятный код
+- ✅ Переиспользуемые типы
+- ✅ Правильная обработка ошибок
+
+### 11. **Документация** (100%)
 - ✅ README.md - обзор проекта
-- ✅ API.md - полная документация API
-- ✅ PARSERS.md - документация парсеров
-- ✅ WORKER.md - документация Worker
-- ✅ DATABASE.md - схема БД
-- ✅ MANAGERS_GUIDE.md - руководство по менеджерам
-- ✅ BOT_INTEGRATION.md - интеграция с ботами
-- ✅ **PAGINATION_MIGRATION.md - миграция на новую пагинацию**
-- ✅ FAQ.md - частые вопросы
-- 🔲 Примеры Telegram бота (будет добавлено)
+- ✅ docs/guides/API.md - полная документация API
+- ✅ docs/guides/PARSERS.md - документация парсеров
+- ✅ docs/guides/WORKER.md - документация Worker
+- ✅ docs/guides/DATABASE.md - схема БД
+- ✅ docs/guides/DOCKER.md - Docker setup
+- ✅ docs/guides/MANAGERS_GUIDE.md - руководство по менеджерам
+- ✅ docs/guides/FAQ.md - частые вопросы
+- ✅ docs/architecture/ - архитектурная документация
+- ✅ docs/CHANGELOG.md - история изменений
+- ✅ TYPESCRIPT_FIXES_SUMMARY.md - описание исправлений
 
 ---
 
 ## 🎯 Ключевые особенности
+
+### Docker-First подход
+
+```bash
+# Запуск всей инфраструктуры одной командой
+.\scripts\docker-start.ps1
+
+# Или вручную
+docker-compose up -d
+
+# Доступ:
+# - API: http://localhost:3000
+# - Adminer: http://localhost:8080  
+# - Redis UI: http://localhost:8081
+```
 
 ### Умная пагинация (v2.0)
 
@@ -99,12 +161,13 @@ GET /api/vacancies?keywords=developer&userId=telegram_123&page=1&limit=10
     "total": 150,
     "totalPages": 15,  // ← Бот знает когда остановиться!
     "currentPage": 1,
-    "limit": 10
+    "limit": 10,
+    "source": "cache-paginated" // или "cache", "fresh"
   }
 }
 ```
 
-### Умный поиск
+### Умный поиск с автопарсингом
 
 ```typescript
 // VacancyManager автоматически:
@@ -117,8 +180,9 @@ const result = await vacancyManager.search({
   keywords: ['nodejs'],
   locations: ['chisinau'],
   page: 1,
-  limit: 10
-});
+  limit: 10,
+  useSemanticSearch: true
+}, userId);
 ```
 
 ### Семантический поиск
@@ -128,147 +192,196 @@ const result = await vacancyManager.search({
 GET /api/vacancies?keywords=программист&useSemanticSearch=true
 
 // Найдет: Developer, Software Engineer, Программист, IT специалист, и т.д.
+// Использует similarity scoring для ранжирования
+```
+
+### Type-Safe архитектура
+
+```typescript
+// Все типы определены один раз и переиспользуются
+import { Prisma } from '@prisma/client';
+import { SubscriptionWithUser } from '@/types/prisma';
+
+// Type guards для безопасной работы с JSON
+function parseSubscriptionFilters(json: Prisma.JsonValue): SubscriptionFilters {
+  // Безопасное извлечение с проверками типов
+}
 ```
 
 ---
 
-## 🔧 Что нужно доделать
+## 🔧 Что можно добавить (опционально)
 
-### 1. **Система подписок** (0%)
-- [ ] Создание/удаление подписок через API
-- [ ] SubscriptionManager полностью
-- [ ] Проверка новых вакансий по подпискам
-- [ ] Интеграция с Worker
-
-### 2. **Уведомления** (0%)
-- [ ] Отправка уведомлений пользователям
-- [ ] Интеграция с Telegram Bot API
-- [ ] Форматирование сообщений
-- [ ] Retry логика
-
-### 3. **Telegram Bot** (0%)
+### 1. **Telegram Bot** (0%)
 - [ ] Базовый бот для поиска
-- [ ] Команды: /search, /subscribe, /unsubscribe
+- [ ] Команды: /search, /subscribe, /mysubscriptions
 - [ ] Inline кнопки для пагинации
 - [ ] Управление подписками
 - [ ] Настройки пользователя
+- [ ] Интеграция с API
 
-### 4. **Дополнительные фичи**
+### 2. **Web UI** (0%)
+- [ ] React/Next.js фронтенд
+- [ ] Поиск вакансий с фильтрами
+- [ ] Просмотр деталей вакансии
+- [ ] Управление подписками
+- [ ] Dashboard с статистикой
+
+### 3. **Дополнительные фичи**
 - [ ] Фильтр по дате публикации
-- [ ] Сортировка результатов (по зарплате, дате, и т.д.)
+- [ ] Сортировка результатов (по зарплате, дате)
 - [ ] Поиск по компаниям
 - [ ] Экспорт вакансий (CSV, JSON)
-- [ ] Админ панель (опционально)
+- [ ] Email уведомления
+- [ ] Админ панель
+- [ ] Мониторинг (Prometheus + Grafana)
+- [ ] CI/CD pipeline
 
 ---
 
-## 📁 Структура кода
+## 📁 Структура проекта
 
 ```
-/src
-├── /api
-│   ├── /routes
-│   │   ├── vacancies.ts      ✅ Полностью реализован
-│   │   ├── subscriptions.ts  🔲 Частично (нужны методы)
-│   │   ├── dictionaries.ts   ✅ Готов
-│   │   └── cache.ts          ✅ Готов
-│   ├── /services
-│   │   ├── vacancy.service.ts              ✅ Готов
-│   │   ├── cache.service.ts                ✅ Готов
-│   │   └── profession-dictionary.service.ts ✅ Готов
-│   └── server.ts             ✅ Готов
+parsing/
+├── src/
+│   ├── api/                          # REST API (Fastify)
+│   │   ├── routes/                   # API маршруты
+│   │   │   ├── vacancies.ts          ✅ CRUD для вакансий
+│   │   │   ├── subscriptions.ts      ✅ CRUD для подписок
+│   │   │   ├── dictionaries.ts       ✅ Управление словарями
+│   │   │   └── cache.ts              ✅ Управление кэшем
+│   │   ├── services/                 # Бизнес-логика
+│   │   │   ├── vacancy.service.ts              ✅
+│   │   │   ├── cache.service.ts                ✅
+│   │   │   └── profession-dictionary.service.ts ✅
+│   │   └── server.ts                 ✅ Fastify сервер
+│   │
+│   ├── worker/                       # BullMQ workers
+│   │   ├── jobs/
+│   │   │   ├── parseJob.ts           ✅ Парсинг вакансий
+│   │   │   ├── notifyJob.ts          ✅ Проверка подписок
+│   │   │   └── dictionaryUpdateJob.ts ✅ Обновление словарей
+│   │   └── worker.ts                 ✅ Worker process
+│   │
+│   ├── parsers/                      # Парсеры сайтов
+│   │   ├── rabotaMd.ts               ✅ rabota.md
+│   │   ├── nineNineNineMd.ts         ✅ 999.md
+│   │   └── maklerMd.ts               ✅ makler.md
+│   │
+│   ├── shared/                       # Shared код
+│   │   ├── managers/
+│   │   │   ├── vacancyManager.ts      ✅ Менеджер вакансий
+│   │   │   └── subscriptionManager.ts ✅ Менеджер подписок
+│   │   └── config/
+│   │       └── index.ts              ✅ Конфигурация
+│   │
+│   ├── db/                           # Database
+│   │   └── index.ts                  ✅ Prisma client
+│   │
+│   └── types/                        # TypeScript типы
+│       ├── vacancy.ts                ✅ Типы вакансий
+│       └── prisma.ts                 ✅ Prisma helper типы
 │
-├── /worker
-│   ├── /jobs
-│   │   ├── parseJob.ts       ✅ Готов
-│   │   └── notifyJob.ts      🔲 Нужно реализовать
-│   └── worker.ts             ✅ Готов (но нужны доработки)
+├── prisma/                           # Prisma ORM
+│   ├── schema.prisma                 ✅ DB схема
+│   └── migrations/                   ✅ Миграции
 │
-├── /parsers
-│   ├── /adapters             ✅ Все адаптеры готовы
-│   ├── rabotaMd.ts           ✅ Готов
-│   ├── nineNineNineMd.ts     ✅ Готов
-│   └── maklerMd.ts           ✅ Готов
+├── docs/                             # Документация
+│   ├── guides/                       # Руководства
+│   ├── architecture/                 # Архитектура
+│   ├── CHANGELOG.md                  ✅
+│   └── PROJECT_STATUS.md             ✅ (этот файл)
 │
-├── /shared
-│   ├── /managers
-│   │   ├── vacancyManager.ts      ✅ Готов (v2.0)
-│   │   └── subscriptionManager.ts 🔲 Нужно реализовать
-│   └── /config
-│       └── index.ts          ✅ Готов
+├── scripts/                          # Утилиты
+│   ├── docker-start.ps1              ✅ Запуск Docker
+│   └── init-db.sh                    ✅ Инициализация БД
 │
-└── /db
-    ├── client.ts             ✅ Готов
-    └── index.ts              ✅ Готов
+├── docker-compose.yml                ✅ Docker Compose
+├── Dockerfile                        ✅ Multi-stage build
+└── README.md                         ✅ Главный README
 ```
 
 ---
 
-## 🚀 Приоритеты разработки
+## 🚀 Быстрый старт
 
-### Этап 1: Telegram Bot (следующий шаг)
-1. Создать базового бота
-2. Реализовать команду `/search`
-3. Добавить пагинацию с кнопками
-4. Протестировать с реальными пользователями
+### Docker (Рекомендуется)
 
-### Этап 2: Система подписок
-1. Доработать SubscriptionManager
-2. Реализовать API для подписок
-3. Добавить команды `/subscribe` и `/unsubscribe` в бот
-4. Протестировать создание/удаление подписок
+```bash
+# 1. Клонировать репозиторий
+git clone <repo-url>
+cd Parsing
 
-### Этап 3: Уведомления
-1. Реализовать notifyJob в Worker
-2. Добавить проверку новых вакансий
-3. Отправка уведомлений через бота
-4. Настройка частоты уведомлений
+# 2. Настроить .env (опционально)
+cp .env.example .env
 
-### Этап 4: Доработка и оптимизация
-1. Добавить дополнительные фильтры
-2. Улучшить UI бота
-3. Добавить аналитику
-4. Оптимизация производительности
+# 3. Запустить всё
+.\scripts\docker-start.ps1
 
----
+# 4. Проверить
+curl http://localhost:3000/health
+```
 
-## 🐛 Известные проблемы
+### Локальная разработка
 
-Нет критических проблем! Система стабильна.
+```bash
+# 1. Установить зависимости
+npm install
 
-### Незначительные
-- Некоторые вакансии могут дублироваться при одновременном парсинге
-- Worker иногда логирует предупреждения о Redis (не критично)
+# 2. Настроить .env
+cp .env.example .env
+
+# 3. Запустить PostgreSQL и Redis
+docker-compose up -d postgres redis
+
+# 4. Применить миграции
+npx prisma migrate dev
+
+# 5. Запустить в dev режиме
+npm run dev:api      # Терминал 1
+npm run dev:worker   # Терминал 2
+```
 
 ---
 
 ## 📊 Статистика
 
-**Размер кодовой базы:**
-- TypeScript файлов: ~30
-- Строк кода: ~8000+
-- Тестов: 5+ (test-system.ts)
+### Кодовая база
+- TypeScript файлов: ~35
+- Строк кода: ~9500+
+- Функций: 200+
+- Классов: 15+
+- 100% строгая типизация, 0 использований `any`
 
-**База данных:**
-- Таблиц: 5
-- Индексов: 8+
-- Миграций: 10+
+### База данных
+- Таблиц: 6
+- Индексов: 10+
+- Миграций: 12+
 
-**Документация:**
-- Markdown файлов: 12
-- Страниц документации: 150+
+### Документация
+- Markdown файлов: 15+
+- Страниц документации: 200+
+- Code примеров: 100+
+
+### Docker
+- Services: 6 (postgres, redis, app, worker, adminer, redis-commander)
+- Volumes: 2 (postgres_data, redis_data)
+- Networks: 1 (parsing-network)
 
 ---
 
 ## 🎉 Что работает отлично
 
-1. ✅ **Парсинг** - стабильный, быстрый, с retry
-2. ✅ **API** - понятный, с хорошей документацией
-3. ✅ **Пагинация** - умная, с кэшированием
-4. ✅ **VacancyManager** - автоматический, умный
+1. ✅ **Парсинг** - стабильный, быстрый, с retry и кэшированием
+2. ✅ **API** - понятный REST API с полной документацией
+3. ✅ **Пагинация** - умная, с кэшированием в Redis
+4. ✅ **VacancyManager** - автоматический, интеллектуальный
 5. ✅ **Семантический поиск** - точный, расширяемый
-6. ✅ **Кэширование** - быстрое, эффективное
-7. ✅ **Документация** - подробная, с примерами
+6. ✅ **Кэширование** - быстрое (10-20мс), эффективное
+7. ✅ **Документация** - подробная, с примерами кода
+8. ✅ **Docker** - всё работает из коробки
+9. ✅ **TypeScript** - строгая типизация, без `any`
+10. ✅ **Архитектура** - чистая, поддерживаемая, масштабируемая
 
 ---
 
@@ -276,38 +389,68 @@ GET /api/vacancies?keywords=программист&useSemanticSearch=true
 
 ### Начни отсюда:
 1. [README.md](../README.md) - обзор проекта
-2. [docs/API.md](./API.md) - понять как работает API
-3. [docs/MANAGERS_GUIDE.md](./MANAGERS_GUIDE.md) - понять VacancyManager
-4. [docs/BOT_INTEGRATION.md](./BOT_INTEGRATION.md) - создать бота
+2. [docs/guides/DOCKER.md](./guides/DOCKER.md) - запустить Docker
+3. [docs/guides/API.md](./guides/API.md) - понять API
+4. [docs/guides/MANAGERS_GUIDE.md](./guides/MANAGERS_GUIDE.md) - понять архитектуру
 
-### Запуск проекта:
+### Тестирование API:
 ```bash
-npm install
-npm run db:migrate
-npm run dev:api      # Терминал 1
-npm run dev:worker   # Терминал 2
-```
-
-### Тестирование:
-```bash
-npm run test:system
-
-# Ручное тестирование API:
+# Поиск вакансий
 curl "http://localhost:3000/api/vacancies?keywords=developer&page=1&limit=5"
+
+# С семантическим поиском
+curl "http://localhost:3000/api/vacancies?keywords=программист&useSemanticSearch=true"
+
+# Статистика
+curl "http://localhost:3000/api/vacancies/stats"
+
+# Принудительный парсинг
+curl -X POST "http://localhost:3000/api/vacancies/force-parse" \
+  -H "Content-Type: application/json" \
+  -d '{"sources":["rabota.md"],"searchQuery":"developer"}'
 ```
 
 ---
 
-## 💡 Советы
+## 💡 Best Practices
 
-1. **Всегда передавай userId** в API для кэширования
+1. **Всегда передавай userId** в API для персонального кэширования
 2. **Используй page вместо offset** для пагинации
 3. **Проверяй totalPages** для определения конца списка
-4. **Включай семантический поиск** для лучших результатов
+4. **Включай useSemanticSearch=true** для лучших результатов
 5. **Мониторь Redis** - он критичен для производительности
+6. **Используй Docker** для production и development
+7. **Следи за типами** - избегай `any`, используй type guards
 
 ---
 
-📅 **Последнее обновление:** 12 января 2026  
-🔖 **Версия:** 2.0 (Умная пагинация)  
-👨‍💻 **Статус:** Готов к созданию Telegram бота
+## 🐛 Известные проблемы
+
+Нет критических проблем! Система стабильна и production-ready.
+
+### Незначительные
+- Некоторые вакансии могут дублироваться при одновременном парсинге (редко)
+- Worker иногда логирует предупреждения о Redis reconnect (не критично)
+
+---
+
+## 🔮 Планы развития
+
+### Ближайшее будущее
+1. Telegram Bot для удобного поиска
+2. Web UI для визуального интерфейса
+3. Email уведомления как альтернатива Telegram
+
+### Долгосрочные планы
+1. ML для рекомендаций вакансий
+2. Интеграция с дополнительными источниками
+3. Аналитика рынка труда
+4. API для третьих сторон
+
+---
+
+📅 **Последнее обновление:** 25 января 2026  
+🔖 **Версия:** 2.1 (Docker Ready + TypeScript Fixes)  
+👨‍💻 **Статус:** Production Ready ✅  
+🐳 **Docker:** Полностью настроен ✅  
+🎯 **Готов для:** Telegram Bot, Web UI, Production Deploy

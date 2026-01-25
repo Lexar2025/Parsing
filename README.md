@@ -1,463 +1,373 @@
-# 🚀 Vacancy Parser & API System
+# 🔍 Vacancy Parser Platform
 
-**Полнофункциональная система парсинга вакансий с молдавских сайтов с автоматическим обновлением, API и поддержкой Telegram ботов.**
+> Платформа для автоматизированного парсинга вакансий с сайтов **rabota.md**, **999.md** и **makler.md** с поддержкой семантического поиска, подписок и уведомлений.
 
----
-
-## 📋 Содержание
-
-- [Обзор системы](#обзор-системы)
-- [Компоненты](#компоненты)
-- [Быстрый старт](#быстрый-старт)
-- [Архитектура](#архитектура)
-- [Документация](#документация)
-- [Разработка](#разработка)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-20-green)](https://nodejs.org/)
+[![Docker](https://img.shields.io/badge/Docker-ready-blue)](https://www.docker.com/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 ---
 
-## 🎯 Обзор системы
+## ✨ Особенности
 
-Это комплексная система, которая:
-
-1. **Парсит вакансии** с молдавских сайтов (rabota.md, 999.md, makler.md)
-2. **Унифицирует данные** в единый формат через адаптеры
-3. **Хранит в PostgreSQL** с удобным поиском и фильтрацией
-4. **Предоставляет REST API** для доступа к вакансиям с умной пагинацией
-5. **Кэширует результаты** в Redis для быстрой навигации по страницам
-6. **Автоматически обновляет** данные через фоновый Worker
-7. **Поддерживает семантический поиск** через словари профессий
-8. **Интегрируется с Telegram ботами** для уведомлений
+- 🤖 **Парсинг вакансий** с 3 основных источников Молдовы
+- 🧠 **Семантический поиск** - находит похожие профессии автоматически
+- 📊 **REST API** с умной пагинацией и кэшированием
+- 🔄 **Фоновые задачи** - автоматический парсинг и обновление
+- 🔔 **Система подписок** с уведомлениями о новых вакансиях
+- ⚡ **Быстрый поиск** - кэширование в Redis (10-20мс)
+- 🐳 **Docker-ready** - запуск одной командой
+- 💪 **TypeScript** - 100% строгая типизация, 0 использований `any`
 
 ---
 
-## 🏗️ Компоненты
+## 🚀 Быстрый старт
 
-### 1. **Парсеры** (`/src/parsers`)
-- Извлекают вакансии с веб-сайтов
-- Адаптеры унифицируют данные
-- Поддержка кэширования и rate limiting
-- 📖 [Документация по парсерам](./docs/PARSERS.md)
-
-### 2. **База данных** (`/src/db`, `/prisma`)
-- PostgreSQL с Prisma ORM
-- Унифицированная схема для всех источников
-- Поддержка полнотекстового поиска
-- 📖 [Документация по БД](./docs/DATABASE.md)
-
-### 3. **API Server** (`/src/api`)
-- REST API на Fastify
-- Умная пагинация по номеру страницы
-- Кэширование результатов в Redis
-- Фильтрация и семантический поиск вакансий
-- Управление подписками
-- 📖 [Документация по API](./docs/API.md)
-
-### 4. **Worker** (`/src/worker`)
-- Фоновые задачи на BullMQ
-- Автоматический парсинг по расписанию
-- Отправка уведомлений
-- 📖 [Документация по Worker](./docs/WORKER.md)
-
-### 5. **Кэширование** (`/src/api/services`)
-- Redis для быстрой пагинации
-- Персональные кэши для пользователей
-- Автоматическая инвалидация кэша
-- 📖 [Документация по API](./docs/API.md#пагинация)
-
----
-
-## ⚡ Быстрый старт
-
-### Предварительные требования
-
-- **Node.js** >= 22.11
-- **PostgreSQL** >= 13
-- **Redis** >= 6.0 (для Worker и кэширования)
-
-### 1. Установка
+### С Docker (рекомендуется)
 
 ```bash
-# Клонируй репозиторий (или уже есть)
-git clone <your-repo>
-cd Parsing
+# Windows
+.\scripts\docker-start.ps1
 
-# Установи зависимости
+# Linux/Mac
+docker-compose up -d
+```
+
+**Готово!** Все сервисы запущены.
+
+**Доступ:**
+- 🌐 API: http://localhost:3000
+- ✅ Health: http://localhost:3000/health
+- 💾 Adminer (БД): http://localhost:8080
+- 🔴 Redis UI: http://localhost:8081
+
+### Без Docker (локальная разработка)
+
+```bash
+# 1. Установить зависимости
 npm install
-```
 
-### 2. Настройка БД
-
-```bash
-# Создай базу данных в pgAdmin (например, 'vacancy')
-
-# Настрой .env файл
+# 2. Настроить окружение
 cp .env.example .env
-# Отредактируй DATABASE_URL
 
-# Примени миграции
-npm run db:migrate
+# 3. Запустить PostgreSQL и Redis
+docker-compose up -d postgres redis
+
+# 4. Применить миграции
+npx prisma migrate dev
+
+# 5. Запустить в dev режиме
+npm run dev:api     # Терминал 1 - API
+npm run dev:worker  # Терминал 2 - Worker
 ```
-
-### 3. Установка Redis
-
-**Через Docker (рекомендуется):**
-```bash
-docker run -d --name redis -p 6379:6379 redis:alpine
-```
-
-**Или для Windows:** 
-- Скачай Redis 6.0+: https://github.com/tporadowski/redis/releases
-- 📖 [Подробная инструкция](./docs/REDIS_SETUP.md)
-
-### 4. Тест системы
-
-```bash
-# Протестируй что все работает
-npm run test:system
-```
-
-Должно пройти:
-- ✅ Подключение к БД
-- ✅ Парсинг вакансий
-- ✅ Сохранение в БД
-- ✅ Поиск через API сервис
-
-### 5. Запуск
-
-```bash
-# Терминал 1: API Server
-npm run dev:api
-
-# Терминал 2: Worker
-npm run dev:worker
-```
-
-🎉 **Готово!** API доступно на `http://localhost:3000`
 
 ---
 
-## 🏛️ Архитектура
+## 📖 Документация
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Telegram Bot                          │
-│                  (будет создан далее)                    │
-└────────────────┬───────────────────────────────────────┘
-                 │ HTTP Requests
-                 ▼
-┌─────────────────────────────────────────────────────────┐
-│                  REST API (Fastify)                      │
-│  - GET /api/vacancies?page=1&limit=10                   │
-│  - GET /api/vacancies/:id                                │
-│  - POST /api/subscriptions (создать подписку)            │
-│  - GET /api/subscriptions/:userId                        │
-└────────┬──────────────────────────────┬────────────────┘
-         │                               │
-         ▼                               ▼
-┌──────────────────┐         ┌────────────────────────────┐
-│  Redis Cache     │         │     VacancyManager         │
-│  - Пагинация    │         │  - Умный поиск             │
-│  - Результаты   │         │  - Семантика               │
-│  - TTL: 30 мин  │         │  - Авто-парсинг            │
-└──────────────────┘         └────────────┬───────────────┘
-                                          │
-                                          ▼
-┌─────────────────────────────────────────────────────────┐
-│              PostgreSQL Database                         │
-│  Tables: User, Subscription, Vacancy, ParseLog,         │
-│          ProfessionDictionary                            │
-└────────────────┬───────────────────────────────────────┘
-                 ▲
-                 │ Write
-                 │
-┌────────────────┴───────────────────────────────────────┐
-│                  Worker (BullMQ)                         │
-│  - Периодический парсинг (каждые 6 часов)              │
-│  - Проверка подписок (каждые 2 часа)                   │
-│  - Отправка уведомлений                                  │
-└────────────────┬───────────────────────────────────────┘
-                 │
-                 ▼
-┌─────────────────────────────────────────────────────────┐
-│                    Parsers                               │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐             │
-│  │rabota.md │  │ 999.md   │  │makler.md │             │
-│  └────┬─────┘  └────┬─────┘  └────┬─────┘             │
-│       │             │             │                      │
-│       └─────────────┴─────────────┘                     │
-│                     │                                     │
-│              ┌──────▼──────┐                            │
-│              │  Adapters   │ (унификация данных)        │
-│              └─────────────┘                            │
-└─────────────────────────────────────────────────────────┘
-```
+### 🎯 Быстрые ссылки
+- [🐳 Docker Setup](docs/guides/DOCKER.md) - Запуск и настройка Docker
+- [🔌 API Reference](docs/guides/API.md) - Полная документация API
+- [❓ FAQ](docs/guides/FAQ.md) - Частые вопросы и ответы
 
-📖 [Подробная документация по архитектуре](./docs/architecture/OVERVIEW.md)
+### 📚 Полная документация
+- [📋 Индекс документации](docs/INDEX.md) - Навигация по всей документации
+- [📊 Project Status](docs/PROJECT_STATUS.md) - Что реализовано
+- [📝 Changelog](docs/CHANGELOG.md) - История изменений
+
+### 🏗️ Для разработчиков
+- [🏛️ Architecture](docs/architecture/ARCHITECTURE.md) - Архитектура системы
+- [💾 Database](docs/guides/DATABASE.md) - Схема БД и миграции
+- [🤖 Parsers](docs/guides/PARSERS.md) - Как работают парсеры
+- [⚙️ Workers](docs/guides/WORKER.md) - Фоновые задачи
+- [📊 Managers](docs/guides/MANAGERS_GUIDE.md) - Бизнес-логика
 
 ---
 
-## 📄 Пагинация в API
+## 💡 Примеры использования
 
-Система использует **умную пагинацию** с кэшированием:
-
-### Как это работает:
-
-1. **Первый запрос** (`page=1`):
-   - Собирает ВСЕ подходящие вакансии из БД
-   - Кэширует результаты в Redis (если указан `userId`)
-   - Возвращает первую страницу
-
-2. **Следующие запросы** (`page=2, 3, ...`):
-   - Берутся из Redis кэша (очень быстро!)
-   - Не нагружают БД
-
-3. **Мета-информация**:
-   ```json
-   {
-     "meta": {
-       "total": 150,           // Всего вакансий
-       "totalPages": 15,       // Всего страниц
-       "currentPage": 2,       // Текущая страница
-       "limit": 10             // Вакансий на странице
-     }
-   }
-   ```
-
-### Пример использования:
+### Поиск вакансий
 
 ```bash
-# Страница 1 (limit по умолчанию 10)
-curl "http://localhost:3000/api/vacancies?keywords=developer&page=1"
+# Простой поиск
+curl "http://localhost:3000/api/vacancies?keywords=developer&limit=5"
 
-# Страница 2 с userId для кэширования
-curl "http://localhost:3000/api/vacancies?keywords=developer&userId=telegram_123&page=2"
+# С пагинацией и кэшированием
+curl "http://localhost:3000/api/vacancies?keywords=nodejs&page=1&limit=10&userId=user123"
 
-# Последняя страница
-curl "http://localhost:3000/api/vacancies?keywords=developer&page=15"
+# Семантический поиск
+curl "http://localhost:3000/api/vacancies?keywords=программист&useSemanticSearch=true"
 ```
 
-### Для Telegram ботов:
+### Ответ API
 
-```typescript
-// Бот знает когда остановиться
-const response = await axios.get('/api/vacancies', {
-  params: {
-    keywords: 'developer',
-    userId: `telegram_${chatId}`,  // Важно!
-    page: currentPage,
-    limit: 10
+```json
+{
+  "data": [
+    {
+      "id": "123",
+      "title": "Node.js Developer",
+      "company": "Tech Company",
+      "salary": "2000 - 3000 EUR",
+      "location": "Chisinau",
+      "url": "https://rabota.md/...",
+      "source": "rabota.md"
+    }
+  ],
+  "meta": {
+    "total": 150,
+    "totalPages": 15,
+    "currentPage": 1,
+    "limit": 10,
+    "source": "cache-paginated"
   }
-});
-
-// Проверяем есть ли еще страницы
-if (currentPage < response.data.meta.totalPages) {
-  // Показываем кнопку "Следующая страница"
 }
 ```
 
-📖 [Подробная документация по пагинации](./docs/API.md#пагинация)
+---
+
+## 🛠️ Технологический стек
+
+### Backend
+- **Runtime**: Node.js 20
+- **Language**: TypeScript 5.7
+- **Framework**: Fastify 5.x
+- **ORM**: Prisma
+- **Validation**: TypeScript strict mode
+
+### Infrastructure
+- **Database**: PostgreSQL 16
+- **Cache**: Redis 7
+- **Queue**: BullMQ
+- **Container**: Docker + Docker Compose
+
+### Parsing
+- **Tools**: Puppeteer, JSDOM, Cheerio
+- **Concurrency**: p-limit
+- **Rate Limiting**: Built-in
 
 ---
 
-## 📚 Документация
+## 📁 Структура проекта
 
-| Раздел | Описание |
-|--------|----------|
-| [Архитектура](./docs/architecture/OVERVIEW.md) | Как работает система в целом |
-| [Парсеры](./docs/PARSERS.md) | Как работают парсеры и адаптеры |
-| [API](./docs/API.md) | REST API эндпоинты и пагинация |
-| [Worker](./docs/WORKER.md) | Фоновые задачи и расписание |
-| [Менеджеры](./docs/MANAGERS_GUIDE.md) | VacancyManager и SubscriptionManager |
-| [База данных](./docs/DATABASE.md) | Схема БД и работа с данными |
-| [Интеграция с ботом](./docs/BOT_INTEGRATION.md) | Как подключить Telegram бота |
-| [FAQ](./docs/FAQ.md) | Частые вопросы и решения |
+```
+parsing/
+├── src/
+│   ├── api/              # REST API (Fastify)
+│   │   ├── routes/       # API endpoints
+│   │   ├── services/     # Business logic
+│   │   └── server.ts     # Server setup
+│   ├── worker/           # Background jobs (BullMQ)
+│   │   ├── jobs/         # Job processors
+│   │   └── worker.ts     # Worker process
+│   ├── parsers/          # Site parsers
+│   │   ├── rabotaMd.ts
+│   │   ├── nineNineNineMd.ts
+│   │   └── maklerMd.ts
+│   ├── shared/           # Shared code
+│   │   ├── managers/     # VacancyManager, SubscriptionManager
+│   │   └── config/       # Configuration
+│   ├── db/               # Prisma client
+│   └── types/            # TypeScript types
+├── prisma/               # Database schema & migrations
+├── docs/                 # Documentation
+├── scripts/              # Utility scripts
+└── docker-compose.yml    # Docker configuration
+```
 
 ---
 
-## 🛠️ Разработка
+## 🔧 Основные команды
 
-### Доступные команды
-
+### Development
 ```bash
-# Development
-npm run dev:api          # Запустить API в dev режиме
-npm run dev:worker       # Запустить Worker в dev режиме
-npm run test:system      # Протестировать всю систему
+npm run dev:api          # Запуск API в dev режиме
+npm run dev:worker       # Запуск Worker в dev режиме
+npm run lint             # Проверка кода ESLint
+```
 
-# Production
-npm run build            # Собрать проект
-npm run start:api        # Запустить API (production)
-npm run start:worker     # Запустить Worker (production)
+### Build
+```bash
+npm run build            # Компиляция TypeScript
+npm start                # Запуск API (после build)
+npm run start:worker     # Запуск Worker (после build)
+```
 
-# Database
+### Database
+```bash
 npm run db:migrate       # Применить миграции
-npm run db:studio        # Открыть Prisma Studio (GUI для БД)
-npm run db:generate      # Сгенерировать Prisma Client
-
-# Парсинг вручную (старые скрипты)
-npm run parse            # Запустить парсинг вручную
-npm run manage           # Управление вакансиями
-
-# Code Quality
-npm run lint             # Проверить код
-npm run prettier         # Форматировать код
-npm test                 # Запустить тесты
+npm run db:studio        # Открыть Prisma Studio
+npm run db:generate      # Генерировать Prisma Client
 ```
 
-### Структура проекта
-
-```
-/Parsing
-├── /src
-│   ├── /api              # REST API сервер
-│   │   ├── /routes       # API маршруты
-│   │   ├── /services     # Бизнес-логика + кэширование
-│   │   └── server.ts     # Главный файл API
-│   ├── /worker           # Фоновые задачи
-│   │   ├── /jobs         # Определения задач
-│   │   └── worker.ts     # Главный файл worker
-│   ├── /parsers          # Парсеры вакансий
-│   │   ├── /adapters     # Адаптеры данных
-│   │   ├── rabotaMd.ts   # Парсер rabota.md
-│   │   ├── nineNineNineMd.ts  # Парсер 999.md
-│   │   └── maklerMd.ts   # Парсер makler.md
-│   ├── /db               # База данных
-│   │   └── client.ts     # Prisma client
-│   ├── /shared           # Общие модули
-│   │   ├── /config       # Конфигурация
-│   │   └── /managers     # VacancyManager, SubscriptionManager
-│   └── /types            # TypeScript типы
-├── /prisma
-│   ├── schema.prisma     # Схема БД
-│   └── /migrations       # Миграции
-├── /docs                 # Документация
-├── test-system.ts        # Тестовый скрипт
-├── .env                  # Переменные окружения
-└── package.json
-```
-
----
-
-## 🔧 Конфигурация
-
-Все настройки в файле `.env`:
-
-```env
-# Database
-DATABASE_URL="postgresql://user:password@localhost:5432/vacancy"
-
-# API
-API_PORT=3000
-API_HOST=0.0.0.0
-
-# Redis (обязательно для кэширования!)
-REDIS_HOST=localhost
-REDIS_PORT=6379
-
-# Worker
-WORKER_CONCURRENCY=3
-PARSE_INTERVAL=21600000   # 6 часов
-NOTIFY_INTERVAL=7200000   # 2 часа
-
-# Telegram (добавится при создании бота)
-TELEGRAM_BOT_TOKEN=
-
-# Environment
-NODE_ENV=development
-```
-
----
-
-## 🛡️ Система Менеджеров
-
-Система использует **умные менеджеры** для автоматической работы:
-
-### VacancyManager - Умный поиск
-- ✅ Проверяет актуальность данных в БД
-- ✅ Автоматически запускает парсинг при необходимости
-- ✅ Если БД пуста → парсит сейчас (синхронно)
-- ✅ Если данные старые → обновляет в фоне
-- ✅ Кэширует результаты для быстрой пагинации
-- ✅ Поддержка семантического поиска
-
-### SubscriptionManager - Подписки
-- ✅ Создание/удаление/обновление подписок
-- ✅ Проверка новых вакансий по фильтрам
-- ✅ Автоматические уведомления
-
-📚 [Полное руководство по менеджерам](./docs/MANAGERS_GUIDE.md)
-
----
-
-## 🎯 Следующие шаги
-
-- [x] ✅ База данных настроена
-- [x] ✅ API работает с пагинацией
-- [x] ✅ Redis кэширование
-- [x] ✅ Worker парсит вакансии
-- [x] ✅ Семантический поиск
-- [ ] 🔲 Создать Telegram бота
-- [ ] 🔲 Реализовать систему подписок
-- [ ] 🔲 Добавить уведомления
-
----
-
-## 🐛 Troubleshooting
-
-### Redis версия < 6.0
-
-BullMQ требует Redis >= 6.0. Если у тебя Redis 5.x:
-
-1. **Обнови Redis** (см. [docs/REDIS_SETUP.md](./docs/REDIS_SETUP.md))
-2. Или используй Docker: `docker run -d -p 6379:6379 redis:7-alpine`
-
-### Ошибки подключения к БД
-
-- Проверь `DATABASE_URL` в `.env`
-- Убедись что PostgreSQL запущен
-- Проверь что база данных создана в pgAdmin
-
-### Worker не запускается
-
-- Убедись что Redis запущен и версия >= 6.0
-- Проверь `REDIS_HOST` и `REDIS_PORT` в `.env`
-
-### Кэширование не работает
-
-- Убедись что Redis запущен
-- Проверь что передаешь `userId` в API запросах
-- Кэш автоматически очищается через 30 минут
-
----
-
-## 📈 Изменения в последней версии
-
-### v2.0 - Умная пагинация
-
-- ✅ Изменен параметр `offset` на `page` (номер страницы с 1)
-- ✅ Добавлено `totalPages` в мета-информации
-- ✅ Limit по умолчанию изменен с 50 на 10
-- ✅ Кэширование результатов в Redis для быстрой навигации
-- ✅ Поддержка `userId` для персональных кэшей
-- ✅ Обновлена документация API
-
-**Миграция:**
+### Docker
 ```bash
-# Было
-GET /api/vacancies?limit=50&offset=50
-
-# Стало  
-GET /api/vacancies?limit=10&page=6
+docker-compose up -d            # Запустить все сервисы
+docker-compose down             # Остановить все
+docker-compose logs -f          # Посмотреть логи
+docker-compose ps               # Статус контейнеров
+docker-compose restart app      # Перезапустить API
 ```
 
 ---
 
-## 📄 Лицензия
+## 🎯 Возможности API
 
-Apache-2.0
+### Вакансии
+- ✅ Поиск с фильтрацией (keywords, locations, salary, experience, schedule)
+- ✅ Умная пагинация по page (не offset)
+- ✅ Семантический поиск через словари
+- ✅ Кэширование результатов (10-20мс)
+- ✅ Детали вакансии по ID
+- ✅ Статистика по источникам
+- ✅ Принудительный парсинг
+
+### Подписки
+- ✅ Создание/обновление/удаление подписок
+- ✅ Получение активных подписок
+- ✅ Автоматическая проверка новых вакансий
+- ✅ Настройка фильтров
+
+### Словари профессий
+- ✅ Семантический поиск профессий
+- ✅ Статистика по словарям
+- ✅ Обновление словарей
+
+### Кэш
+- ✅ Персональные кэши для пользователей
+- ✅ Очистка кэша
+- ✅ Статистика кэша
 
 ---
 
-## 👥 Контакты
+## 🚀 Production Deployment
 
-Есть вопросы? Создай issue или смотри документацию в `/docs`!
+### Docker Deployment
+
+```bash
+# 1. Настроить production .env
+cp .env.example .env
+# Изменить пароли и настройки
+
+# 2. Запустить
+docker-compose up -d
+
+# 3. Проверить health
+curl http://your-domain.com/health
+```
+
+### Рекомендации
+- ✅ Используй HTTPS (nginx/traefik)
+- ✅ Настрой backups БД
+- ✅ Включи мониторинг
+- ✅ Настрой логирование
+- ✅ Ограничь ресурсы контейнеров
+
+Подробнее в [Docker Guide](docs/guides/DOCKER.md#-production-deployment).
+
+---
+
+## 📊 Статус проекта
+
+✅ **Production Ready**
+
+- [x] Парсеры для всех источников (rabota.md, 999.md, makler.md)
+- [x] REST API с полным функционалом
+- [x] Система подписок
+- [x] Семантический поиск
+- [x] Docker инфраструктура
+- [x] Кэширование и пагинация
+- [x] Фоновые задачи
+- [x] 100% TypeScript типизация
+- [x] Полная документация
+- [ ] Telegram Bot (в планах)
+- [ ] Web UI (в планах)
+
+Детали в [Project Status](docs/PROJECT_STATUS.md).
+
+---
+
+## 🤝 Для разработчиков
+
+### Установка для разработки
+
+```bash
+# 1. Клонировать
+git clone <repo-url>
+cd Parsing
+
+# 2. Установить зависимости
+npm install
+
+# 3. Настроить .env
+cp .env.example .env
+
+# 4. Запустить БД через Docker
+docker-compose up -d postgres redis
+
+# 5. Применить миграции
+npx prisma migrate dev
+
+# 6. Запустить dev серверы
+npm run dev:api     # Terminal 1
+npm run dev:worker  # Terminal 2
+```
+
+### Рекомендуемые расширения для VS Code
+
+- ESLint
+- Prettier
+- Docker
+- Prisma
+
+### Качество кода
+
+- ✅ TypeScript со строгой типизацией
+- ✅ ESLint для проверки кода
+- ✅ Prettier для форматирования
+- ✅ DRY принцип (без дублирования)
+- ✅ KISS принцип (простой код)
+- ✅ Type guards для безопасности
+
+---
+
+## 📝 Лицензия
+
+Apache-2.0 License - see [LICENSE](LICENSE) file for details.
+
+---
+
+## 🔗 Полезные ссылки
+
+- [📚 Полная документация](docs/INDEX.md)
+- [🐳 Docker Guide](docs/guides/DOCKER.md)
+- [🔌 API Reference](docs/guides/API.md)
+- [❓ FAQ](docs/guides/FAQ.md)
+- [📝 Changelog](docs/CHANGELOG.md)
+
+---
+
+## 💬 Поддержка
+
+Нужна помощь? 
+1. Проверь [FAQ](docs/guides/FAQ.md)
+2. Посмотри [Documentation](docs/INDEX.md)
+3. Открой Issue в репозитории
+
+---
+
+<div align="center">
+
+**Сделано с ❤️ для автоматизации поиска работы в Молдове**
+
+[Документация](docs/INDEX.md) • [API](docs/guides/API.md) • [Docker](docs/guides/DOCKER.md) • [FAQ](docs/guides/FAQ.md)
+
+</div>
+
+---
+
+📅 **Последнее обновление:** 25 января 2026  
+🔖 **Версия:** 2.1.0  
+🐳 **Docker:** Ready ✅  
+📚 **Документация:** Complete ✅
