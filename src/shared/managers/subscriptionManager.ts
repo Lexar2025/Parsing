@@ -4,6 +4,8 @@
 
 import { prisma } from '../../db/index.js';
 import { vacancyService } from '../../api/services/vacancy.service.js';
+import { SubscriptionWithUser } from '../../types/prisma.js';
+import { Prisma } from '@prisma/client';
 
 export interface SubscriptionFilters {
   keywords?: string[];
@@ -32,13 +34,33 @@ export class SubscriptionManager {
   }
 
   /**
+   * Безопасное извлечение фильтров из JSON поля Prisma
+   */
+  private parseSubscriptionFilters(jsonFilters: Prisma.JsonValue): SubscriptionFilters {
+    // Type guard для проверки что это объект
+    if (!jsonFilters || typeof jsonFilters !== 'object' || Array.isArray(jsonFilters)) {
+      return {};
+    }
+
+    const filters = jsonFilters as Record<string, unknown>;
+    
+    return {
+      keywords: Array.isArray(filters.keywords) ? filters.keywords as string[] : undefined,
+      locations: Array.isArray(filters.locations) ? filters.locations as string[] : undefined,
+      salaryMin: typeof filters.salaryMin === 'number' ? filters.salaryMin : undefined,
+      experience: Array.isArray(filters.experience) ? filters.experience as string[] : undefined,
+      schedule: Array.isArray(filters.schedule) ? filters.schedule as string[] : undefined,
+    };
+  }
+
+  /**
    * Создать подписку
    */
-  async create(data: CreateSubscriptionData): Promise<any> {
+  async create(data: CreateSubscriptionData): Promise<SubscriptionWithUser> {
     const subscription = await prisma.subscription.create({
       data: {
         userId: data.userId,
-        filters: data.filters as any,
+        filters: data.filters as Prisma.InputJsonValue,
         sources: data.sources,
         isActive: true
       },
@@ -60,7 +82,7 @@ export class SubscriptionManager {
   /**
    * Получить подписки пользователя
    */
-  async getUserSubscriptions(userId: string): Promise<any[]> {
+  async getUserSubscriptions(userId: string): Promise<Array<Prisma.SubscriptionGetPayload<object>>> {
     const subscriptions = await prisma.subscription.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' }
@@ -72,7 +94,15 @@ export class SubscriptionManager {
   /**
    * Получить все активные подписки
    */
-  async getActiveSubscriptions(): Promise<any[]> {
+  async getActiveSubscriptions(): Promise<Array<Prisma.SubscriptionGetPayload<{
+    include: {
+      user: {
+        include: {
+          settings: true;
+        };
+      };
+    };
+  }>>> {
     const subscriptions = await prisma.subscription.findMany({
       where: { isActive: true },
       include: {
@@ -90,11 +120,11 @@ export class SubscriptionManager {
   /**
    * Обновить подписку
    */
-  async update(subscriptionId: string, data: Partial<CreateSubscriptionData>): Promise<any> {
+  async update(subscriptionId: string, data: Partial<CreateSubscriptionData>): Promise<Prisma.SubscriptionGetPayload<object>> {
     const subscription = await prisma.subscription.update({
       where: { id: subscriptionId },
       data: {
-        filters: data.filters ? data.filters as any : undefined,
+        filters: data.filters ? data.filters as Prisma.InputJsonValue : undefined,
         sources: data.sources,
         updatedAt: new Date()
       }
@@ -106,7 +136,7 @@ export class SubscriptionManager {
   /**
    * Активировать/деактивировать подписку
    */
-  async toggle(subscriptionId: string, isActive: boolean): Promise<any> {
+  async toggle(subscriptionId: string, isActive: boolean): Promise<Prisma.SubscriptionGetPayload<object>> {
     const subscription = await prisma.subscription.update({
       where: { id: subscriptionId },
       data: { isActive }
@@ -131,14 +161,33 @@ export class SubscriptionManager {
   /**
    * Проверить подписки и найти новые вакансии
    */
-  async checkForUpdates(): Promise<Array<{ subscription: any; newVacancies: any[] }>> {
+  async checkForUpdates(): Promise<Array<{
+    subscription: Prisma.SubscriptionGetPayload<{
+      include: {
+        user: {
+          include: {
+            settings: true;
+          };
+        };
+      };
+    }>;
+    newVacancies: Array<Prisma.VacancyGetPayload<object>>;
+  }>> {
     const subscriptions = await this.getActiveSubscriptions();
 
     console.log(`🔔 Проверка ${subscriptions.length} активных подписок...`);
 
     interface SubscriptionUpdate {
-      subscription: any;
-      newVacancies: any[];
+      subscription: Prisma.SubscriptionGetPayload<{
+        include: {
+          user: {
+            include: {
+              settings: true;
+            };
+          };
+        };
+      }>;
+      newVacancies: Array<Prisma.VacancyGetPayload<object>>;
     }
     const updates: SubscriptionUpdate[] = [];
 
@@ -152,13 +201,11 @@ export class SubscriptionManager {
         // Ищем новые вакансии с момента последнего уведомления
         const since = sub.lastNotified || sub.createdAt;
 
-        const filters = sub.filters || {};
+        // Безопасно извлекаем фильтры из JSON поля
+        const filters = this.parseSubscriptionFilters(sub.filters);
+        
         const newVacancies = await vacancyService.findByFilters({
-          keywords: filters.keywords || [],
-          locations: filters.locations || [],
-          salaryMin: filters.salaryMin,
-          experience: filters.experience || [],
-          schedule: filters.schedule || [],
+          ...filters,
           sources: sub.sources || ['rabota.md', '999.md', 'makler.md'],
           publishedAfter: since,
           limit: sub.user.settings?.maxNotifications || 10,
@@ -194,7 +241,15 @@ export class SubscriptionManager {
   /**
    * Получить статистику по подпискам
    */
-  async getStats(): Promise<{ total: number; active: number; inactive: number; bySource: any[] }> {
+  async getStats(): Promise<{
+    total: number;
+    active: number;
+    inactive: number;
+    bySource: Array<{
+      sources: string[];
+      _count: number;
+    }>;
+  }> {
     const total = await prisma.subscription.count();
     const active = await prisma.subscription.count({
       where: { isActive: true }

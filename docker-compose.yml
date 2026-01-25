@@ -1,0 +1,162 @@
+version: '3.8'
+
+services:
+  # PostgreSQL база данных
+  postgres:
+    image: postgres:16-alpine
+    container_name: parsing-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-parsing}
+      POSTGRES_USER: ${POSTGRES_USER:-parser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-parser123}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-parser} -d ${POSTGRES_DB:-parsing}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - parsing-network
+
+  # Redis для кэша и очередей
+  redis:
+    image: redis:7-alpine
+    container_name: parsing-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis123}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - parsing-network
+
+  # Основное приложение (API)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: parsing-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      
+      # Database
+      DATABASE_URL: postgresql://${POSTGRES_USER:-parser}:${POSTGRES_PASSWORD:-parser123}@postgres:5432/${POSTGRES_DB:-parsing}?schema=public
+      
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis123}
+      
+      # API
+      PORT: 3000
+      API_URL: ${API_URL:-http://localhost:3000}
+      
+      # Puppeteer
+      PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium-browser
+    volumes:
+      - ./cache:/app/cache
+      - ./data:/app/data
+      - ./logs:/app/logs
+    ports:
+      - "${PORT:-3000}:3000"
+    networks:
+      - parsing-network
+    command: sh -c "npx prisma migrate deploy && node build/api/server.js"
+
+  # Worker для обработки фоновых задач
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: parsing-worker
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      app:
+        condition: service_started
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      
+      # Database
+      DATABASE_URL: postgresql://${POSTGRES_USER:-parser}:${POSTGRES_PASSWORD:-parser123}@postgres:5432/${POSTGRES_DB:-parsing}?schema=public
+      
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis123}
+      
+      # Puppeteer
+      PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium-browser
+      
+      # Worker settings
+      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-2}
+    volumes:
+      - ./cache:/app/cache
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - parsing-network
+    command: node build/worker/worker.js
+
+  # Adminer для управления БД (опционально, для разработки)
+  adminer:
+    image: adminer:latest
+    container_name: parsing-adminer
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: nette
+    networks:
+      - parsing-network
+    profiles:
+      - dev
+
+  # Redis Commander для управления Redis (опционально, для разработки)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: parsing-redis-commander
+    restart: unless-stopped
+    depends_on:
+      - redis
+    environment:
+      REDIS_HOSTS: local:redis:6379:0:${REDIS_PASSWORD:-redis123}
+    ports:
+      - "8081:8081"
+    networks:
+      - parsing-network
+    profiles:
+      - dev
+
+networks:
+  parsing-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local

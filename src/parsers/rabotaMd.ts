@@ -310,7 +310,7 @@ export class RabotaMdParser implements Parser {
     const cards = container.querySelectorAll('.vacancyCardItem');
     const vacancies: Vacancy[] = [];
 
-    cards.forEach((card) => {
+    cards.forEach((card: Element) => {
       try {
         const vacancy = this.extractVacancyFromCard(card);
         if (vacancy) {
@@ -357,7 +357,7 @@ export class RabotaMdParser implements Parser {
 
     const divs = infoBlock.querySelectorAll('div.flex.items-center');
 
-    for (const div of divs) {
+    for (const div of Array.from(divs)) {
       const svg = div.querySelector('svg use');
       const href = svg?.getAttribute('href') || '';
 
@@ -448,7 +448,7 @@ export class RabotaMdParser implements Parser {
 
     const labelNodes = document.querySelectorAll('.text-gray-400');
 
-    labelNodes.forEach((labelNode) => {
+    labelNodes.forEach((labelNode: Element) => {
       const label = labelNode.textContent?.trim().replace(':', '') || '';
       const valueNode = labelNode.parentElement?.querySelector('.text-gray-700');
       const value = valueNode?.textContent?.trim();

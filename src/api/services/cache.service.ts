@@ -27,7 +27,7 @@ export class CacheService {
       port: config.redis.port,
       password: config.redis.password,
       // Настройки для стабильности
-      retryStrategy: (times) => {
+      retryStrategy: (times: number): number | null => {
         if (times > 3) return null; // Прекратить после 3 попыток
         return Math.min(times * 100, 3000); // Экспоненциальная задержка
       },

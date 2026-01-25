@@ -5,7 +5,11 @@
 import { Job } from 'bullmq';
 import { subscriptionManager } from '../../shared/managers/subscriptionManager.js';
 
-export async function notifyJobProcessor(job: Job) {
+export async function notifyJobProcessor(job: Job): Promise<{
+  success: boolean;
+  checked: number;
+  notifications: number;
+}> {
   job.log('🔔 Начинаю проверку подписок...');
 
   try {

@@ -25,7 +25,7 @@ let parseWorker: Worker | null = null;
 let notifyWorker: Worker | null = null;
 let dictUpdateWorker: Worker | null = null;
 
-async function startWorker() {
+async function startWorker(): Promise<void> {
   try {
     console.log('🔄 Попытка подключения к Redis...');
     console.log(`   Host: ${connection.host}:${connection.port}`);
@@ -146,7 +146,7 @@ async function startWorker() {
     console.log(`🔔 Интервал проверки подписок: ${config.worker.notifyInterval / 1000 / 60} минут`);
 
     // Graceful shutdown
-    const shutdown = async () => {
+    const shutdown = async (): Promise<void> => {
       console.log('Останавливаю worker...');
       if (parseWorker) await parseWorker.close();
       if (notifyWorker) await notifyWorker.close();

@@ -6,7 +6,7 @@ import { updateAllDictionaries } from '../../utils/dictionaries/index.js';
  * Процессор задачи обновления словарей специальностей
  * Запускается раз в день
  */
-export async function dictionaryUpdateJobProcessor(job: Job) {
+export async function dictionaryUpdateJobProcessor(job: Job): Promise<{ success: boolean; timestamp: Date }> {
   try {
     log(`🔄 Обновление словарей специальностей (задача ${job.id})...`);
     
@@ -28,7 +28,7 @@ export async function dictionaryUpdateJobProcessor(job: Job) {
  */
 import { Queue } from 'bullmq';
 
-export async function addDictionaryUpdateJob(queue: Queue) {
+export async function addDictionaryUpdateJob(queue: Queue): Promise<void> {
   try {
     // Добавляем задачу с повторением раз в день
     await queue.add(

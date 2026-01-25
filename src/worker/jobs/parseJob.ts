@@ -16,7 +16,14 @@ interface ParseJobData {
   maxPages?: number;
 }
 
-export async function parseJobProcessor(job: Job<ParseJobData>) {
+export async function parseJobProcessor(job: Job<ParseJobData>): Promise<{
+  success: boolean;
+  source: string;
+  found: number;
+  created: number;
+  updated: number;
+  duration: number;
+}> {
   const { source, searchQuery, maxPages = 5 } = job.data;
   const startTime = Date.now();
 

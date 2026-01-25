@@ -30,7 +30,7 @@ export class ProfessionDictionaryService {
       vacancyCount?: number;
       lastCheckedAt?: Date;
     }>
-  ) {
+  ): Promise<{ successful: number; failed: number }> {
     console.log(`💾 Сохраняю ${professions.length} специальностей для ${source}`);
 
     const results = await Promise.allSettled(
@@ -109,7 +109,18 @@ export class ProfessionDictionaryService {
   /**
    * Получить все специальности для источника
    */
-  async getProfessionsBySource(source: string) {
+  async getProfessionsBySource(source: string): Promise<Array<{
+    id: string;
+    source: string;
+    profession: string;
+    professionId: string | null;
+    category: string | null;
+    synonyms: string[];
+    vacancyCount: number | null;
+    lastCheckedAt: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }>> {
     return prisma.professionDictionary.findMany({
       where: { source },
       orderBy: { profession: 'asc' }
@@ -119,13 +130,35 @@ export class ProfessionDictionaryService {
   /**
    * Получить все специальности (для всех источников)
    */
-  async getAllProfessions() {
+  async getAllProfessions(): Promise<Record<string, Array<{
+    id: string;
+    source: string;
+    profession: string;
+    professionId: string | null;
+    category: string | null;
+    synonyms: string[];
+    vacancyCount: number | null;
+    lastCheckedAt: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }>>> {
     const professions = await prisma.professionDictionary.findMany({
       orderBy: [{ source: 'asc' }, { profession: 'asc' }]
     });
 
     // Группируем по источникам
-    const grouped: Record<string, any[]> = {};
+    const grouped: Record<string, Array<{
+      id: string;
+      source: string;
+      profession: string;
+      professionId: string | null;
+      category: string | null;
+      synonyms: string[];
+      vacancyCount: number | null;
+      lastCheckedAt: Date | null;
+      createdAt: Date;
+      updatedAt: Date;
+    }>> = {};
     professions.forEach(prof => {
       if (!grouped[prof.source]) {
         grouped[prof.source] = [];
@@ -229,7 +262,11 @@ export class ProfessionDictionaryService {
   /**
    * Получить статистику по словарикам
    */
-  async getStats() {
+  async getStats(): Promise<Array<{
+    source: string;
+    count: number;
+    lastUpdated: Date | null;
+  }>> {
     const sources = ['rabota.md', '999.md', 'makler.md'];
     
     const stats = await Promise.all(
@@ -258,7 +295,7 @@ export class ProfessionDictionaryService {
   /**
    * Очистить словарик для источника
    */
-  async clearProfessions(source: string) {
+  async clearProfessions(source: string): Promise<number> {
     const result = await prisma.professionDictionary.deleteMany({
       where: { source }
     });

@@ -18,15 +18,33 @@ import { RabotaMdParser } from '../../parsers/rabotaMd.js';
 import { NineNineNineMdParser } from '../../parsers/nineNineNineMd.js';
 import { MaklerMdParser } from '../../parsers/maklerMd.js';
 import { Vacancy } from '../../types/vacancy.js';
+import { Prisma } from '@prisma/client';
 
 // Универсальная функция для маппинга Prisma модели вакансии в интерфейс Vacancy
-function mapPrismaToVacancy(prismaVacancy: any): Vacancy {
+function mapPrismaToVacancy(prismaVacancy: Prisma.VacancyGetPayload<object>): Vacancy {
   // Безопасное извлечение данных из rawData (JSON поля)
-  const getRawDataField = (field: string) => {
-    if (prismaVacancy.rawData && typeof prismaVacancy.rawData === 'object') {
-      return prismaVacancy.rawData[field] || undefined;
+  const getRawDataField = (field: string): unknown => {
+    if (prismaVacancy.rawData && typeof prismaVacancy.rawData === 'object' && !Array.isArray(prismaVacancy.rawData)) {
+      const rawData = prismaVacancy.rawData as Record<string, unknown>;
+      return rawData[field] || undefined;
     }
     return undefined;
+  };
+
+  // Helper для безопасного приведения типов
+  const getStringField = (field: string): string | undefined => {
+    const value = getRawDataField(field);
+    return typeof value === 'string' ? value : undefined;
+  };
+
+  const getBooleanField = (field: string): boolean | undefined => {
+    const value = getRawDataField(field);
+    return typeof value === 'boolean' ? value : undefined;
+  };
+
+  const getArrayField = (field: string): string[] | undefined => {
+    const value = getRawDataField(field);
+    return Array.isArray(value) ? value as string[] : undefined;
   };
 
   return {
@@ -36,24 +54,24 @@ function mapPrismaToVacancy(prismaVacancy: any): Vacancy {
     salary: prismaVacancy.salaryMin ? `${prismaVacancy.salaryMin} - ${prismaVacancy.salaryMax || prismaVacancy.salaryMin}` : undefined,
     location: prismaVacancy.location || undefined,
     description: prismaVacancy.description || undefined,
-    fullDescription: getRawDataField('fullDescription'),
+    fullDescription: getStringField('fullDescription'),
     url: prismaVacancy.sourceUrl,
     publishedAt: prismaVacancy.publishedAt || undefined,
-    education: getRawDataField('education'),
+    education: getStringField('education'),
     experience: prismaVacancy.experience || undefined,
     schedule: prismaVacancy.schedule || undefined,
-    workPlace: getRawDataField('workPlace'),
+    workPlace: getStringField('workPlace'),
     source: prismaVacancy.source as 'rabota.md' | '999.md' | 'makler.md' | 'other',
-    author: getRawDataField('author'),
-    seasonal: getRawDataField('seasonal'),
+    author: getStringField('author'),
+    seasonal: getBooleanField('seasonal'),
     employmentType: prismaVacancy.employment || undefined,
-    companyType: getRawDataField('companyType'),
-    languages: getRawDataField('languages'),
-    contactPerson: getRawDataField('contactPerson'),
-    region: getRawDataField('region'),
-    vacancyType: getRawDataField('vacancyType'),
-    industry: getRawDataField('industry'),
-    specialization: getRawDataField('specialization'),
+    companyType: getStringField('companyType'),
+    languages: getArrayField('languages'),
+    contactPerson: getStringField('contactPerson'),
+    region: getStringField('region'),
+    vacancyType: getStringField('vacancyType'),
+    industry: getStringField('industry'),
+    specialization: getStringField('specialization'),
     firstSeenAt: prismaVacancy.createdAt || undefined,
     lastSeenAt: prismaVacancy.updatedAt || undefined,
     isActive: true,
@@ -81,14 +99,22 @@ export interface SearchResult {
     lastUpdate: Date | null;
     updating: boolean;
     parseReason?: string;
-    semanticMappings?: any; // Результаты семантического поиска
+    semanticMappings?: {
+      searchQuery: string;
+      mappings: Array<{
+        source: string;
+        profession: string;
+        professionId?: string;
+        similarity: number;
+      }>;
+    };
   };
 }
 
 export class VacancyManager {
   private static instance: VacancyManager;
   private readonly STALE_THRESHOLD = 12 * 60 * 60 * 1000; // 12 часов
-  private parseQueue: any | null = null;
+  private parseQueue: { add: (name: string, data: { source: string; searchQuery: string; maxPages: number }, options?: { priority?: number; removeOnComplete?: boolean; jobId?: string }) => Promise<unknown> } | null = null;
 
   private constructor() {}
 
@@ -99,7 +125,7 @@ export class VacancyManager {
     return VacancyManager.instance;
   }
 
-  setQueue(queue: any): void {
+  setQueue(queue: { add: (name: string, data: { source: string; searchQuery: string; maxPages: number }, options?: { priority?: number; removeOnComplete?: boolean; jobId?: string }) => Promise<unknown> }): void {
     this.parseQueue = queue;
   }
 
@@ -227,7 +253,7 @@ export class VacancyManager {
       // Фоновое обновление если нужно
       if (sourcesToUpdate.length > 0) {
         console.log(`⏰ Запускаю фоновое обновление для: ${sourcesToUpdate.join(', ')}`);
-        this.scheduleBackgroundParsing(sourcesToUpdate as any, searchQuery);
+        this.scheduleBackgroundParsing(sourcesToUpdate, searchQuery);
       }
 
       const lastUpdate = parseHistory.reduce((latest, p) => {
@@ -253,9 +279,9 @@ export class VacancyManager {
     // 5. ЕСЛИ В БД НЕТ ДАННЫХ → парсим СЕЙЧАС
     console.log(`\n📭 Данных нет в БД, запускаю синхронный парсинг`);
     console.log(`   Источники: ${sources.join(', ')}`);
-    
-    await this.parseNow(sources as any, filters, searchQuery);
-    
+
+    await this.parseNow(sources, filters, searchQuery);
+
     // Получаем свежие данные
     const freshVacancies = await vacancyService.findByFilters({
       ...filters,
@@ -502,8 +528,8 @@ export class VacancyManager {
     console.log(`🚀 Запуск семантического парсинга`);
 
     // Группируем маппинги по источникам
-    const groupedMappings: Record<string, any[]> = {};
-    mappings.mappings.forEach((m: any) => {
+    const groupedMappings: Record<string, Array<{ source: string; profession: string; similarity: number }>> = {};
+    mappings.mappings.forEach((m: { source: string; profession: string; similarity: number }) => {
       if (!groupedMappings[m.source]) {
         groupedMappings[m.source] = [];
       }
@@ -591,7 +617,7 @@ export class VacancyManager {
     return log?.createdAt || null;
   }
 
-  private async parseNow(sources: string[], _filters: SearchFilters, searchQuery: string): Promise<any[]> {
+  private async parseNow(sources: string[], _filters: SearchFilters, searchQuery: string): Promise<Vacancy[]> {
     console.log(`\n🚀 Запуск парсинга: ${sources.join(', ')} для запроса "${searchQuery}"`);
     
     const startTime = Date.now();
@@ -602,7 +628,7 @@ export class VacancyManager {
     
     const results = await Promise.allSettled(parsePromises);
     
-    const allVacancies: any[] = [];
+    const allVacancies: Vacancy[] = [];
     results.forEach((result, index) => {
       if (result.status === 'fulfilled') {
         allVacancies.push(...result.value);
@@ -620,12 +646,12 @@ export class VacancyManager {
     source: string, 
     searchQuery: string,
     startTime: number
-  ): Promise<any[]> {
+  ): Promise<Vacancy[]> {
     try {
       console.log(`   🔍 Парсинг ${source} (запрос: "${searchQuery}")...`);
       
       let vacancies: Vacancy[] = [];
-      let parser: any = null;
+      let parser: { parse: (config: { baseUrl: string; searchQuery: string; maxPages: number }) => Promise<{ vacancies: Vacancy[] }> } | null = null;
     
     try {
       switch (source) {

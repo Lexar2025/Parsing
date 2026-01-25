@@ -53,7 +53,7 @@ export const config = {
 } as const;
 
 // Валидация обязательных переменных
-function validateConfig() {
+function validateConfig(): void {
   const required = ['DATABASE_URL'];
   const missing = required.filter(key => !process.env[key]);
   
