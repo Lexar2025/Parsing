@@ -11,7 +11,7 @@ import { professionDictionaryService } from '../../api/services/profession-dicti
 /**
  * Обновить все словарики
  */
-export async function updateAllDictionaries() {
+export async function updateAllDictionaries(): Promise<void> {
   console.log('🚀 Начинаю обновление словариков специальностей...\n');
 
   const sources = [
@@ -51,10 +51,15 @@ export async function updateAllDictionaries() {
 /**
  * Обновить словарик для одного источника
  */
-export async function updateDictionary(source: 'rabota.md' | '999.md' | 'makler.md') {
+export async function updateDictionary(source: 'rabota.md' | '999.md' | 'makler.md'): Promise<void> {
   console.log(`🚀 Обновление словарика для ${source}...\n`);
 
-  let parser: () => Promise<any[]>;
+  let parser: () => Promise<Array<{
+    profession: string;
+    professionId?: string;
+    category?: string;
+    vacancyCount?: number;
+  }>>;
 
   switch (source) {
     case 'rabota.md':

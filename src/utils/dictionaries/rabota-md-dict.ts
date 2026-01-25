@@ -1,6 +1,11 @@
 import puppeteer from 'puppeteer';
 
-export async function parseRabotaMdJobs() {
+export async function parseRabotaMdJobs(): Promise<Array<{
+  profession: string;
+  id?: string;
+  url?: string;
+  vacancyCount?: number;
+}>> {
   console.log('🔍 Парсинг справочника профессий с rabota.md...');
 
   const browser = await puppeteer.launch({ 
@@ -32,12 +37,25 @@ export async function parseRabotaMdJobs() {
         profession: string;
         id?: string;
         url?: string;
+        vacancyCount?: number;
       }> = [];
 
       cards.forEach(card => {
         // Название профессии находится во вложенном div с классом text-black
         const professionName = card.querySelector('.text-black')?.textContent?.trim() || '';
         const href = card.getAttribute('href') || '';
+        
+        // Количество вакансий находится в соседнем элементе
+        let vacancyCount: number | undefined = undefined;
+        const countElement = card.querySelector('.text-gray-400'); // Нацеливаемся на div
+          if (countElement) {
+          // Извлекаем текст и ищем первое число
+            const textContent = countElement.textContent?.trim() || '';
+            const match = textContent.match(/\d+/); // Находит первую последовательность цифр
+              if (match) {
+                vacancyCount = parseInt(match[0], 10); // Преобразуем найденную строку числа
+              }
+          }
 
         if (professionName && href) {
           // На этой странице нет числовых ID в ссылках (там слаги типа /jobs-moldova-Android-Developer)
@@ -46,8 +64,9 @@ export async function parseRabotaMdJobs() {
 
           results.push({
             profession: professionName,
-            id: slug, 
-            url: href.startsWith('http') ? href : 'https://www.rabota.md' + href
+            id: slug,
+            url: href.startsWith('http') ? href : 'https://www.rabota.md' + href, // Исправлен URL
+            vacancyCount // Теперь будет корректно заполнено или undefined
           });
         }
       });

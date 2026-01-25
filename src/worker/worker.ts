@@ -7,6 +7,7 @@ import { Worker, Queue } from 'bullmq';
 import { config } from '../shared/config/index.js';
 import { parseJobProcessor } from './jobs/parseJob.js';
 import { notifyJobProcessor } from './jobs/notifyJob.js';
+import { dictionaryUpdateJobProcessor } from './jobs/dictionaryUpdateJob.js';
 import { prisma } from '../db/index.js';
 import { vacancyManager } from '../shared/managers/vacancyManager.js';
 
@@ -19,8 +20,10 @@ const connection = {
 
 let parseQueue: Queue | null = null;
 let notifyQueue: Queue | null = null;
+let dictUpdateQueue: Queue | null = null;
 let parseWorker: Worker | null = null;
 let notifyWorker: Worker | null = null;
+let dictUpdateWorker: Worker | null = null;
 
 async function startWorker() {
   try {
@@ -32,6 +35,9 @@ async function startWorker() {
 
     // Создаем очередь для уведомлений
     notifyQueue = new Queue('notify', { connection });
+
+    // Создаем очередь для обновления словарей
+    dictUpdateQueue = new Queue('dictUpdate', { connection });
 
     // Проверяем подключение
     await parseQueue.waitUntilReady();
@@ -56,6 +62,12 @@ async function startWorker() {
       concurrency: 1, // По одному, чтобы не спамить
     });
 
+    // Создаем worker для обновления словарей
+    dictUpdateWorker = new Worker('dictUpdate', dictionaryUpdateJobProcessor, {
+      connection,
+      concurrency: 1, // Одновременно только одна задача обновления
+    });
+
     // Обработчики событий для парсинга
     parseWorker.on('completed', (job) => {
       console.log(`✅ Парсинг ${job.id} завершен:`, job.returnvalue);
@@ -76,6 +88,15 @@ async function startWorker() {
 
     notifyWorker.on('failed', (job, err) => {
       console.error(`❌ Проверка подписок ${job?.id} провалилась:`, err.message);
+    });
+
+    // Обработчики для обновления словарей
+    dictUpdateWorker.on('completed', (job) => {
+      console.log(`✅ Обновление словарей ${job.id} завершено:`, job.returnvalue);
+    });
+
+    dictUpdateWorker.on('failed', (job, err) => {
+      console.error(`❌ Обновление словарей ${job?.id} провалилось:`, err.message);
     });
 
     // Добавляем периодическую задачу парсинга (каждые 6 часов)
@@ -112,6 +133,12 @@ async function startWorker() {
       searchQuery: 'it',
       maxPages: 3,
     });
+
+    // Добавляем задачу обновления словарей (ежедневно)
+    if (dictUpdateQueue) {
+      const { addDictionaryUpdateJob } = await import('./jobs/dictionaryUpdateJob.js');
+      await addDictionaryUpdateJob(dictUpdateQueue);
+    }
 
     console.log('🔧 Worker запущен');
     console.log(`📊 Concurrency: ${config.worker.concurrency}`);

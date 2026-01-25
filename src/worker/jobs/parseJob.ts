@@ -8,6 +8,7 @@ import { NineNineNineMdParser } from '../../parsers/nineNineNineMd.js';
 import { MaklerMdParser } from '../../parsers/maklerMd.js';
 import { vacancyService } from '../../api/services/vacancy.service.js';
 import { prisma } from '../../db/index.js';
+import { Vacancy } from '../../types/vacancy.js';
 
 interface ParseJobData {
   source: 'rabota.md' | '999.md' | 'makler.md';
@@ -22,7 +23,7 @@ export async function parseJobProcessor(job: Job<ParseJobData>) {
   job.log(`Starting parse for ${source}`);
 
   try {
-    let vacancies: any[] = [];
+    let vacancies: Vacancy[] = [];
 
     // Выбираем парсер в зависимости от источника
     switch (source) {

@@ -4,7 +4,12 @@
 
 import puppeteer from 'puppeteer';
 
-export async function parseNineNineNineMdDictionary() {
+export async function parseNineNineNineMdDictionary(): Promise<Array<{
+  profession: string;
+  professionId?: string;
+  category?: string;
+  vacancyCount?: number;
+}>> {
   console.log('🔍 Парсинг словаря специальностей с 999.md...');
 
   const browser = await puppeteer.launch({ headless: true });
@@ -26,26 +31,36 @@ export async function parseNineNineNineMdDictionary() {
       timeout: 10000
     });
 
-    // Извлекаем подкатегории (специальности)
+    // Извлекаем подкатегории (специальности) с количеством вакансий
     const professions = await page.evaluate(() => {
       const results: Array<{
         profession: string;
         professionId?: string;
         category?: string;
+        vacancyCount?: number;
       }> = [];
 
-      const links = document.querySelectorAll('a[data-subcategory]');
+      const items = document.querySelectorAll('li');
 
-      links.forEach(link => {
-        const text = link.textContent?.trim();
-        const subcategoryId = link.getAttribute('data-subcategory');
-
-        if (text && text !== 'Все объявления') {
-          results.push({
-            profession: text,
-            professionId: subcategoryId || undefined,
-            category: 'Работа' // Общая категория
-          });
+      items.forEach(item => {
+        const link = item.querySelector('a[data-subcategory]');
+        const countSpan = item.querySelector('.styles_subcategory__count__6PvHA');
+        
+        if (link) {
+          const text = link.textContent?.trim();
+          const subcategoryId = link.getAttribute('data-subcategory');
+          
+          if (text && text !== 'Все объявления') {
+            const countText = countSpan?.textContent?.trim();
+            const vacancyCount = countText ? parseInt(countText) : undefined;
+            
+            results.push({
+              profession: text,
+              professionId: subcategoryId || undefined,
+              category: 'Работа',
+              vacancyCount
+            });
+          }
         }
       });
 

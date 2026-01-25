@@ -5,7 +5,11 @@
 
 import { MAKLER_PROFESSIONS } from '../../parsers/maklerMd.js';
 
-export async function parseMaklerMdDictionary() {
+export async function parseMaklerMdDictionary(): Promise<Array<{
+  profession: string;
+  professionId?: string;
+  category?: string;
+}>> {
   console.log('🔍 Получение словаря специальностей makler.md...');
 
   const professions = Object.entries(MAKLER_PROFESSIONS).map(([profession, professionId]) => ({

@@ -27,6 +27,8 @@ export class ProfessionDictionaryService {
       professionId?: string;
       category?: string;
       synonyms?: string[];
+      vacancyCount?: number;
+      lastCheckedAt?: Date;
     }>
   ) {
     console.log(`💾 Сохраняю ${professions.length} специальностей для ${source}`);
@@ -48,12 +50,16 @@ export class ProfessionDictionaryService {
             profession: prof.profession,
             professionId: prof.professionId,
             category: prof.category,
-            synonyms
+            synonyms,
+            vacancyCount: prof.vacancyCount,
+            lastCheckedAt: prof.lastCheckedAt
           },
           update: {
             professionId: prof.professionId,
             category: prof.category,
-            synonyms
+            synonyms,
+            vacancyCount: prof.vacancyCount,
+            lastCheckedAt: prof.lastCheckedAt
           }
         });
       })

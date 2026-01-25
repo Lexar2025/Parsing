@@ -105,6 +105,8 @@ model ProfessionDictionary {
   professionId    String?  // ID специальности на сайте (если есть)
   category        String?  // Категория (например, 'IT', 'Строительство')
   synonyms        String[] // Синонимы для семантического поиска
+  vacancyCount    Int?     // Количество вакансий по этой специальности
+  lastCheckedAt   DateTime? // Время последней проверки количества
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -112,4 +114,5 @@ model ProfessionDictionary {
   @@unique([source, profession])
   @@index([source])
   @@index([category])
+  @@index([vacancyCount])
 }
