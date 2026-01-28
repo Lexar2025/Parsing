@@ -1,214 +1,198 @@
-# 🚀 Краткое руководство: Интеграция hh.ru
+# 🚀 Быстрый старт с проектом
 
-## 📌 Суть проблемы
+## 📋 Что это за проект?
 
-Нужно объединить два проекта:
-- **Основной** (Parsing): парсеры локальных молдавских сайтов (rabota.md, 999.md, makler.md)
-- **Дополнительный** (hh.ru): API клиент для российского сайта вакансий hh.ru
+**Rabota MD Parser** - система автоматического парсинга вакансий с сайтов:
+- 📄 **rabota.md** - Rabota.md
+- 📄 **999.md** - 999.md  
+- 📄 **makler.md** - Makler.md
 
-**Бизнес-требование**: 
-- По умолчанию парсить только локальные сайты
-- При запросе "за рубежом" - включать поиск на hh.ru
-
-## 💡 Предложенное решение
-
-### Архитектура
-```
-Парсеры (единый интерфейс)
-├── Веб-парсеры (Puppeteer)
-│   ├── rabota.md
-│   ├── 999.md
-│   └── makler.md
-└── API-парсеры
-    └── hh.ru (НОВЫЙ)
-
-Адаптеры (унификация данных)
-├── rabota.adapter.ts
-├── 999.adapter.ts
-├── makler.adapter.ts
-└── hh.adapter.ts (НОВЫЙ)
-
-Стратегия поиска
-├── local (только локальные)
-├── international (только hh.ru)
-└── hybrid (все источники)
-```
-
-### Ключевые компоненты
-
-1. **HHClient** - клиент для работы с API hh.ru
-   - Рейт-лимитинг (100 запросов/мин)
-   - Обработка ошибок
-   - Кэширование
-
-2. **HHVacancyAdapter** - адаптер для унификации данных
-   - Преобразование формата hh.ru → общий формат
-   - Маппинг полей (опыт, занятость, график)
-
-3. **HHRuParser** - парсер для hh.ru
-   - Реализация интерфейса `Parser`
-   - Интеграция с адаптером
-   - Поддержка фильтров
-
-4. **SearchStrategy** - стратегия определения источников
-   - Автоматическое определение по ключевым словам
-   - Ручное управление
-   - Поддержка нескольких стратегий
-
-## 📋 Что нужно сделать
-
-### 1. Создать новые файлы (12 файлов)
-
-```
-src/
-├── types/hh/
-│   ├── vacancy.interface.ts          ✅
-│   ├── vacancy.response.ts           ✅
-│   ├── vacancy-search-filters.interface.ts ✅
-│   └── region.interface.ts           ✅
-├── api/services/hh/
-│   └── hh-api.service.ts             ✅
-├── parsers/adapters/
-│   └── hh.adapter.ts                 ✅
-├── parsers/api/
-│   └── hhRu.ts                       ✅
-└── settings/strategies/
-    └── search-strategy.ts            ✅
-```
-
-### 2. Обновить существующие файлы (4 файла)
-
-```
-├── src/settings/parsers.ts           ✅ (добавить конфиг для hh.ru)
-├── src/parse.ts                      ✅ (интеграция стратегий)
-├── prisma/schema.prisma              ✅ (новые поля)
-└── .env                              ✅ (переменные для hh.ru)
-```
-
-### 3. Выполнить миграцию БД
-
-```bash
-npx prisma migrate dev --name add_hh_ru_support
-npx prisma generate
-```
-
-## 🎯 Как это будет работать
-
-### Пример 1: Локальный поиск (по умолчанию)
-```bash
-npm run parse "программист" "программист"
-# Автоматически определит стратегию: local
-# Будет парсить: rabota.md, 999.md, makler.md
-```
-
-### Пример 2: Международный поиск
-```bash
-npm run parse "программист за рубежом" "программист"
-# Автоматически определит стратегию: international
-# Будет парсить: только hh.ru
-```
-
-### Пример 3: Явное указание стратегии
-```bash
-npm run parse "программист" "программист" "hybrid"
-# Явно указана стратегия: hybrid
-# Будет парсить: все источники
-```
-
-## ⚙️ Технические детали
-
-### Рейт-лимитинг API hh.ru
-```typescript
-// 100 запросов в минуту
-private rateLimit = 100;
-private requestsInWindow = 0;
-
-private async checkRateLimit(): Promise<void> {
-  if (this.requestsInWindow >= this.rateLimit) {
-    await sleep(60000); // Ждем минуту
-    this.requestsInWindow = 0;
-  }
-  this.requestsInWindow++;
-}
-```
-
-### Маппинг полей
-```typescript
-// Опыт работы
-hh.ru: "between1And3" → Общий: "between_1_and_3"
-
-// Тип занятости  
-hh.ru: "full" → Общий: "full"
-
-// График работы
-hh.ru: "remote" → Общий: "remote"
-```
-
-### Структура данных в БД
-```prisma
-model Vacancy {
-  // ... существующие поля ...
-  
-  // Новые поля для международного поиска
-  country        String?   // "Russia", "Moldova"
-  city           String?   // "Moscow", "Chisinau"
-  salaryFrom     Int?      // 100000
-  salaryTo       Int?      // 200000
-  salaryCurrency String?   // "RUR", "MDL"
-  
-  // hh.ru специфичные поля
-  hhId           String?   @unique
-  employerId     String?
-  premium        Boolean?  @default(false)
-  archived       Boolean?  @default(false)
-}
-```
-
-## 📊 Ожидаемые результаты
-
-### Производительность
-- **Локальный поиск**: ~2 минуты (3 сайта параллельно)
-- **Международный поиск**: ~5 минут (с учетом рейт-лимита)
-- **Гибридный поиск**: ~7 минут
-
-### Качество данных
-- **Покрытие**: +100% российский рынок
-- **Актуальность**: данные обновляются при каждом парсинге
-- **Качество**: валидация и нормализация данных
-
-## ⚠️ Важные замечания
-
-1. **Лимиты API**: Не превышать 100 запросов/мин
-2. **Обработка ошибок**: Реализовать повторные попытки
-3. **Кэширование**: Кэшировать ответы для оптимизации
-4. **Мониторинг**: Логировать все запросы и ошибки
-5. **Тестирование**: Протестировать все сценарии перед деплоем
-
-## 🚀 Следующие шаги
-
-1. **Прочитать полную документацию**:
-   - `INTEGRATION_ANALYSIS.md` - детальный анализ
-   - `INTEGRATION_STEP_BY_STEP.md` - пошаговое руководство
-   - `INTEGRATION_CHECKLIST.md` - чек-лист задач
-   - `FINAL_RECOMMENDATIONS.md` - итоговые рекомендации
-
-2. **Начать реализацию** согласно чек-листу
-
-3. **Тестировать на каждом этапе**
-
-4. **Документировать изменения**
-
-## 💬 Поддержка
-
-При возникновении вопросов:
-1. Проверить документацию
-2. Посмотреть примеры кода
-3. Провести тестирование
-4. Обратиться за помощью
+С функциями:
+- 🔍 Умный поиск с пагинацией
+- 🧠 Семантический поиск через словари
+- 🔔 Система подписок
+- ⚡ Кэширование в Redis
+- 🔄 Фоновые задачи
 
 ---
 
-**Статус**: Готово к реализации ✅  
-**Сложность**: Средняя  
-**Оценка времени**: 10-12 рабочих дней  
-**Приоритет**: Высокий
+## 🎯 Быстрый запуск (3 шага)
+
+### Вариант 1: С Docker (рекомендуется)
+
+```powershell
+# Windows
+.\scripts\docker-start.ps1
+
+# Linux/Mac
+docker-compose up -d
+```
+
+**Готово!** Через 1-2 минуты система будет доступна:
+
+- 🌐 **API**: http://localhost:3000
+- ✅ **Health**: http://localhost:3000/health
+- 💾 **Adminer** (БД): http://localhost:8080
+- 🔴 **Redis UI**: http://localhost:8081
+
+### Вариант 2: Без Docker (локальная разработка)
+
+```powershell
+# 1. Установить зависимости
+npm install
+
+# 2. Настроить окружение
+cp .env.example .env
+# Отредактировать .env (настроить БД и Redis)
+
+# 3. Запустить БД через Docker (если нет локальной)
+docker-compose up -d postgres redis
+
+# 4. Применить миграции БД
+npm run db:migrate
+
+# 5. Запустить в 2 терминалах:
+# Терминал 1:
+npm run dev:api      # API сервер
+
+# Терминал 2:
+npm run dev:worker   # Worker для фоновых задач
+```
+
+---
+
+## 📖 Основные команды
+
+### Разработка
+```bash
+npm run dev:api      # API сервер (http://localhost:3000)
+npm run dev:worker   # Worker для очередей
+npm run dict:update  # Обновить словарики профессий
+```
+
+### Сборка и запуск
+```bash
+npm run build        # Собрать TypeScript → build/
+npm start            # Запустить основное приложение
+npm run start:api    # Запустить только API
+npm run start:worker # Запустить только Worker
+```
+
+### База данных
+```bash
+npm run db:migrate   # Применить миграции
+npm run db:studio    # Открыть Prisma Studio (UI для БД)
+npm run db:generate  # Перегенерировать Prisma Client
+```
+
+### Docker
+```bash
+docker-compose up -d            # Запустить все сервисы
+docker-compose down             # Остановить все
+docker-compose logs -f app      # Смотреть логи API
+docker-compose ps               # Статус контейнеров
+docker-compose restart app      # Перезапустить API
+```
+
+---
+
+## 🧪 Тестирование API
+
+### Health Check
+```bash
+curl http://localhost:3000/health
+```
+
+### Поиск вакансий
+```bash
+# Простой поиск
+curl "http://localhost:3000/api/vacancies?keywords=developer&limit=5"
+
+# С пагинацией
+curl "http://localhost:3000/api/vacancies?keywords=nodejs&page=1&limit=10"
+
+# Семантический поиск
+curl "http://localhost:3000/api/vacancies?keywords=программист&useSemanticSearch=true"
+
+# С кэшированием для пользователя
+curl "http://localhost:3000/api/vacancies?keywords=javascript&userId=user123&page=1&limit=10"
+```
+
+### Принудительный парсинг
+```bash
+curl -X POST "http://localhost:3000/api/vacancies/parse?sources=rabota.md,999.md&searchQuery=developer"
+```
+
+---
+
+## 📊 Структура проекта
+
+```
+Parsing/
+├── src/              # Исходный код TypeScript
+│   ├── api/         # API сервер (роуты, сервисы)
+│   ├── parsers/     # Парсеры сайтов (rabota.md, 999.md, makler.md)
+│   ├── worker/      # Worker для фоновых задач
+│   ├── shared/      # Общие компоненты (менеджеры, конфиг)
+│   └── db/          # Подключение к БД
+├── build/           # Скомпилированный JavaScript
+├── prisma/          # Схема БД и миграции
+├── tests/           # Тесты
+└── docs/            # Документация
+```
+
+---
+
+## 🔧 Технологии
+
+- **Node.js** 22.12.0
+- **TypeScript** 5.7
+- **Fastify** 5.6.2 (API)
+- **Prisma** 6.19.1 (ORM)
+- **BullMQ** 5.66.4 (очереди)
+- **Redis** 7 (кэш, очереди)
+- **PostgreSQL** 16 (БД)
+- **Puppeteer** 24.34.0 (парсинг)
+
+---
+
+## 📚 Документация
+
+- 📘 [Полная документация](docs/INDEX.md)
+- 🐳 [Docker Setup](docs/guides/DOCKER.md)
+- 🔌 [API Reference](docs/guides/API.md)
+- ❓ [FAQ](docs/guides/FAQ.md)
+- 📊 [Project Status](docs/PROJECT_STATUS.md)
+
+---
+
+## 🆘 Возникли проблемы?
+
+1. **API не запускается** → Проверьте `.env` файл, убедитесь что БД и Redis запущены
+2. **Ошибка подключения к БД** → Запустите `docker-compose up -d postgres redis`
+3. **Нет вакансий** → Выполните парсинг: `npm run parse` или через API
+4. **Ошибки типов TypeScript** → Выполните `npm run build` для проверки
+
+---
+
+## ✅ Проверка работоспособности
+
+```bash
+# 1. Проверить здоровье системы
+curl http://localhost:3000/health
+
+# 2. Проверить вакансии
+curl http://localhost:3000/api/vacancies?limit=1
+
+# 3. Проверить статистику словариков
+curl http://localhost:3000/api/dictionaries/stats
+```
+
+Если все команды возвращают данные → система работает! 🎉
+
+---
+
+**Готово!** Проект подключен и готов к работе.
+
+📅 **Дата:** 29 января 2026  
+🎯 **Статус:** ✅ Production Ready

@@ -575,18 +575,7 @@ export class MaklerMdParser implements Parser {
       }
 
       // Парсим вакансии
-      interface MaklerVacancyPreview {
-        id: string;
-        title: string;
-        description?: string;
-        location?: string;
-        url: string;
-        publishedAt?: string;
-        contactPerson?: string;
-        source: 'makler.md';
-        }
-
-        const vacancies = await page.$$eval('article', (articles): MaklerVacancyPreview[] => {
+      const vacancies = await page.$eval('article', (articles) => {
           return articles.map((article) => {
         try {
         // Время публикации
@@ -629,12 +618,12 @@ export class MaklerMdParser implements Parser {
         publishedAt: timeText,
         contactPerson: phone,
         source: 'makler.md',
-        } as MaklerVacancyPreview;
+        };
         } catch (error) {
         console.error('Ошибка при парсинге карточки вакансии:', error);
         return null;
         }
-        }).filter((v): v is MaklerVacancyPreview => v !== null);
+        }).filter((v): v is NonNullable<typeof v> => v !== null);
         });
 
       await page.close();
@@ -775,20 +764,8 @@ export class MaklerMdParser implements Parser {
       });
 
       // Парсим дополнительные поля с детальной страницы
-      interface MaklerVacancyDetails {
-        employmentType?: string;
-        schedule?: string;
-        education?: string;
-        vacancyType?: string;
-        industry?: string;
-        specialization?: string;
-        fullDescription?: string;
-        salary?: string;
-        company?: string;
-      }
-
-      const detailsData = await page.evaluate((): MaklerVacancyDetails => {
-        const result: MaklerVacancyDetails = {};
+      const detailsData = await page.evaluate((): Partial<Vacancy> => {
+        const result: Partial<Vacancy> = {};
         
         // Парсим таблицу с деталями
         const itemTable = document.querySelector('ul.itemtable.box-columns');
@@ -824,7 +801,8 @@ export class MaklerMdParser implements Parser {
                     result.specialization = value;
                     break;
                   case 'Расположение вакансии':
-                    // location уже есть в основных данных
+                    // Сохраняем тип локации (внутри страны/за границей)
+                    result.workLocationType = value;
                     break;
                 }
               }

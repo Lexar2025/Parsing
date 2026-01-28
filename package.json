@@ -49,7 +49,11 @@
     "test:coverage": "vitest run unit --config tests/vitest.config.ts --coverage.enabled --coverage.all",
     "prettier": "prettier \"{src,__{tests}__}/**/*.{ts,mts}\" --config .prettierrc --write",
     "prettier:check": "prettier \"{src,__{tests}__}/**/*.{ts,mts}\" --config .prettierrc --check",
-    "test:watch": "vitest unit"
+    "test:watch": "vitest unit",
+    "mode": "tsx scripts/switch-mode.ts",
+    "mode:dev": "tsx scripts/switch-mode.ts dev",
+    "mode:prod": "tsx scripts/switch-mode.ts prod",
+    "init": "tsx scripts/init.ts"
   },
   "author": "",
   "license": "Apache-2.0",

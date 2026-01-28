@@ -71,7 +71,9 @@ model Vacancy {
   publishedAt     DateTime
   
   rawData         Json
-  
+
+  workLocationType String? // Тип локации (внутренняя/международная) - НОВОЕ ПОЛЕ
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   

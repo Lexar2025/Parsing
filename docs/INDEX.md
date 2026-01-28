@@ -22,6 +22,7 @@
 - [🔌 **API Reference**](guides/API.md) - Документация REST API
 - [💾 **Database**](guides/DATABASE.md) - Схема БД и миграции
 - [❓ **FAQ**](guides/FAQ.md) - Частые вопросы и ответы
+- [🔄 **Modes**](guides/MODES_INDEX.md) - Управление режимами (dev/prod)
 
 ### Компоненты системы
 - [🤖 **Parsers**](guides/PARSERS.md) - Как работают парсеры

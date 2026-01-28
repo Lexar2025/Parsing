@@ -29,6 +29,7 @@ export interface Vacancy {
   vacancyType?: string; // Тип вакансии (Прямая/Агентство)
   industry?: string; // Сферы деятельности
   specialization?: string; // Специализация
+  workLocationType?: string; // Тип локации (внутри страны или за границей) - НОВОЕ ПОЛЕ
   // Поля для отслеживания актуальности
   firstSeenAt?: Date | string; // Когда впервые найдена
   lastSeenAt?: Date | string; // Когда найдена в последний раз

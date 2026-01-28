@@ -82,6 +82,9 @@ export class MaklerMdAdapter extends BaseVacancyAdapter {
         sourceUrl: vacancy.url.trim(),
         publishedAt: publishedAt,
         
+        // Поле, специфичное для makler.md
+        workLocationType: vacancy.workLocationType?.trim() || null,
+        
         // Сырые данные для дополнительных полей makler.md
         rawData: {
           vacancyType: vacancy.vacancyType?.trim() || null,
@@ -92,6 +95,7 @@ export class MaklerMdAdapter extends BaseVacancyAdapter {
           firstSeenAt: vacancy.firstSeenAt ? new Date(vacancy.firstSeenAt) : null,
           lastSeenAt: vacancy.lastSeenAt ? new Date(vacancy.lastSeenAt) : null,
           isActive: typeof vacancy.isActive === 'boolean' ? vacancy.isActive : true,
+          contactPerson: vacancy.contactPerson?.trim() || null,
         } satisfies Prisma.InputJsonValue,
       };
     } catch (error: unknown) {
