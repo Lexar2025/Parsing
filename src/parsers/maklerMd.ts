@@ -646,7 +646,7 @@ export class MaklerMdParser implements Parser {
         source: 'makler.md',
       }));
 
-    } catch (error: unknown) {
+    } catch (error) {
     await page.close();
     const errorMessage = error instanceof Error ? error.message : String(error);
       log(`⚠️ Ошибка при парсинге страницы вакансий ${url}:`, errorMessage);
@@ -729,7 +729,7 @@ export class MaklerMdParser implements Parser {
             }
 
             return { ...v, ...extra };
-          } catch (err: unknown) {
+          } catch (err) {
             const errorInfo = err instanceof Error ? {
               name: err.name,
               message: err.message,
@@ -857,7 +857,7 @@ export class MaklerMdParser implements Parser {
       Object.assign(details, detailsData);
 
       await page.close();
-    } catch (error: unknown) {
+    } catch (error) {
       await page.close();
       const errorMessage = error instanceof Error ? error.message : String(error);
       log(`⚠️ Ошибка при парсинге деталей вакансии ${url}:`, errorMessage);
