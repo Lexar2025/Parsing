@@ -575,7 +575,7 @@ export class MaklerMdParser implements Parser {
       }
 
       // Парсим вакансии
-      const vacancies = await page.$eval('article', (articles) => {
+      const vacancies = await page.$$eval('article', (articles) => {
           return articles.map((article) => {
         try {
         // Время публикации

@@ -2,7 +2,7 @@ generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
+datasource vacancy {
   provider = "postgresql"
   url      = env("DATABASE_URL")  // ← ВЕРНИ ЭТУ СТРОКУ
 }
@@ -55,7 +55,7 @@ model Vacancy {
   
   title           String
   company         String
-  description     String   @db.Text
+  description     String   @vacancy.Text
   location        String?
   salaryMin       Int?
   salaryMax       Int?
@@ -92,7 +92,7 @@ model ParseLog {
   vacanciesFound  Int      @default(0)
   vacanciesNew    Int      @default(0)
   duration        Int
-  error           String?  @db.Text
+  error           String?  @vacancy.Text
   
   createdAt       DateTime @default(now())
   

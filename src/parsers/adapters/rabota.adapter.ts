@@ -2,13 +2,23 @@
  * Адаптер для преобразования вакансий с rabota.md в формат БД
  */
 
+// src/adapters/rabota.adapter.ts
+
+/**
+ * Адаптер для преобразования вакансий с rabota.md в формат БД
+ */
 import { BaseVacancyAdapter } from './base.adapter.js';
 import { Vacancy as ParsedVacancy } from '../../types/vacancy.js';
 import { Prisma } from '@prisma/client';
 
 export class RabotaMdAdapter extends BaseVacancyAdapter {
   sourceName = 'rabota.md';
-  
+
+  // Обновляем конструктор, чтобы он мог принимать ExchangeRateProvider
+  constructor(args?: ConstructorParameters<typeof BaseVacancyAdapter>[0]) {
+    super(args);
+  }
+
   toPrisma(vacancy: ParsedVacancy): Prisma.VacancyCreateInput {
     try {
       // Валидация обязательных полей
@@ -48,7 +58,7 @@ export class RabotaMdAdapter extends BaseVacancyAdapter {
         // Простой парсинг навыков из описания
         const fullDesc = vacancy.fullDescription.toLowerCase();
         const skillKeywords = ['javascript', 'python', 'java', 'c#', 'c++', 'typescript', 'react', 'vue', 'angular', 'node.js', 'html', 'css', 'sql', 'mysql', 'postgresql', 'mongodb', 'docker', 'kubernetes', 'aws', 'azure', 'git'];
-        
+
         skillKeywords.forEach(skill => {
           if (fullDesc.includes(skill)) {
             skills.push(skill);
@@ -56,32 +66,38 @@ export class RabotaMdAdapter extends BaseVacancyAdapter {
         });
       }
 
+      // --- Используем новые методы конвертации ---
+      const currencyInfo = this.extractSourceAndTargetCurrency(vacancy.salary);
+      const convertedMinSalary = this.extractAndConvertSalaryMin(vacancy.salary);
+      const convertedMaxSalary = this.extractAndConvertSalaryMax(vacancy.salary);
+
       return {
         // Унифицированные поля
         title: vacancy.title.trim(),
         company: company,
         description: description,
         location: location,
-        
-        // Зарплата
-        salaryMin: this.extractSalaryMin(vacancy.salary),
-        salaryMax: this.extractSalaryMax(vacancy.salary),
-        salaryCurrency: this.extractCurrency(vacancy.salary) || 'MDL',
-        
+
+        // Зарплата - теперь в конвертированной валюте
+        salaryMin: convertedMinSalary,
+        salaryMax: convertedMaxSalary,
+        // Сохраняем исходную валюту
+        salaryCurrency: currencyInfo?.source || 'MDL',
+
         // Опыт и тип работы
         experience: this.mapExperience(vacancy.experience),
         employment: this.mapEmployment(vacancy.schedule),
         schedule: this.mapSchedule(vacancy.workPlace),
-        
+
         // Навыки
         skills: skills,
-        
+
         // Мета-данные
         source: this.sourceName,
         sourceId: vacancy.id.trim(),
         sourceUrl: vacancy.url.trim(),
         publishedAt: publishedAt,
-        
+
         // Сырые данные для отладки и дополнительных полей
         rawData: {
           education: vacancy.education?.trim() || null,
@@ -89,6 +105,12 @@ export class RabotaMdAdapter extends BaseVacancyAdapter {
           firstSeenAt: vacancy.firstSeenAt ? new Date(vacancy.firstSeenAt) : null,
           lastSeenAt: vacancy.lastSeenAt ? new Date(vacancy.lastSeenAt) : null,
           isActive: typeof vacancy.isActive === 'boolean' ? vacancy.isActive : true,
+          // --- Добавляем информацию о конвертации ---
+          originalSalary: vacancy.salary, // Сохраняем оригинальную строку
+          convertedSalaryMin: convertedMinSalary,
+          convertedSalaryMax: convertedMaxSalary,
+          conversionSourceCurrency: currencyInfo?.source,
+          conversionTargetCurrency: currencyInfo?.target,
         } satisfies Prisma.InputJsonValue,
       };
     } catch (error: unknown) {

@@ -1,6 +1,4 @@
-/**
- * Адаптер для преобразования вакансий с makler.md в формат БД
- */
+// src/adapters/makler.adapter.ts
 
 import { BaseVacancyAdapter } from './base.adapter.js';
 import { Vacancy as ParsedVacancy } from '../../types/vacancy.js';
@@ -8,15 +6,18 @@ import { Prisma } from '@prisma/client';
 
 export class MaklerMdAdapter extends BaseVacancyAdapter {
   sourceName = 'makler.md';
-  
+
+  // Обновляем конструктор, чтобы он мог принимать ExchangeRateProvider
+  constructor(args?: ConstructorParameters<typeof BaseVacancyAdapter>[0]) {
+    super(args);
+  }
+
   toPrisma(vacancy: ParsedVacancy): Prisma.VacancyCreateInput {
     try {
-      // Валидация обязательных полей
       if (!vacancy.title || !vacancy.url || !vacancy.id) {
         throw new Error(`Отсутствуют обязательные поля для вакансии: ${vacancy.id}`);
       }
 
-      // Обработка даты публикации
       let publishedAt: Date;
       if (vacancy.publishedAt) {
         if (vacancy.publishedAt instanceof Date) {
@@ -33,13 +34,9 @@ export class MaklerMdAdapter extends BaseVacancyAdapter {
         publishedAt = new Date();
       }
 
-      // Обработка компании
       const company = vacancy.company?.trim() || 'Не указана';
-
-      // Обработка локации
       const location = vacancy.location?.trim() || null;
 
-      // Обработка описания
       let description = '';
       if (vacancy.fullDescription) {
         description = vacancy.fullDescription.trim();
@@ -47,7 +44,6 @@ export class MaklerMdAdapter extends BaseVacancyAdapter {
         description = vacancy.description.trim();
       }
 
-      // Обработка навыков (можно извлечь из описания или специализации)
       const skills: string[] = [];
       if (vacancy.specialization) {
         skills.push(vacancy.specialization.trim());
@@ -56,36 +52,36 @@ export class MaklerMdAdapter extends BaseVacancyAdapter {
         skills.push(vacancy.industry.trim());
       }
 
+      // --- Используем новые методы конвертации ---
+      const currencyInfo = this.extractSourceAndTargetCurrency(vacancy.salary);
+      const convertedMinSalary = this.extractAndConvertSalaryMin(vacancy.salary);
+      const convertedMaxSalary = this.extractAndConvertSalaryMax(vacancy.salary);
+
       return {
-        // Унифицированные поля
         title: vacancy.title.trim(),
         company: company,
         description: description,
         location: location,
-        
-        // Зарплата
-        salaryMin: this.extractSalaryMin(vacancy.salary),
-        salaryMax: this.extractSalaryMax(vacancy.salary),
-        salaryCurrency: this.extractCurrency(vacancy.salary) || 'MDL',
-        
-        // Опыт и тип работы
+
+        // Зарплата в целевой валюте ('RUB_PMR' по умолчанию)
+        salaryMin: convertedMinSalary,
+        salaryMax: convertedMaxSalary,
+        // Исходная валюта (для справки, сохраняем как есть)
+        salaryCurrency: currencyInfo?.source || 'MDL',
+
         experience: this.mapExperience(vacancy.experience),
         employment: this.mapEmployment(vacancy.schedule),
         schedule: this.mapSchedule(vacancy.workPlace),
-        
-        // Навыки
+
         skills: skills,
-        
-        // Мета-данные
+
         source: this.sourceName,
         sourceId: vacancy.id.trim(),
         sourceUrl: vacancy.url.trim(),
         publishedAt: publishedAt,
-        
-        // Поле, специфичное для makler.md
+
         workLocationType: vacancy.workLocationType?.trim() || null,
-        
-        // Сырые данные для дополнительных полей makler.md
+
         rawData: {
           vacancyType: vacancy.vacancyType?.trim() || null,
           industry: vacancy.industry?.trim() || null,
@@ -96,6 +92,12 @@ export class MaklerMdAdapter extends BaseVacancyAdapter {
           lastSeenAt: vacancy.lastSeenAt ? new Date(vacancy.lastSeenAt) : null,
           isActive: typeof vacancy.isActive === 'boolean' ? vacancy.isActive : true,
           contactPerson: vacancy.contactPerson?.trim() || null,
+          // Добавим информацию об исходной валюте и конвертации в rawData
+          originalSalary: vacancy.salary, // Сохраняем оригинальную строку
+          convertedSalaryMin: convertedMinSalary,
+          convertedSalaryMax: convertedMaxSalary,
+          conversionSourceCurrency: currencyInfo?.source,
+          conversionTargetCurrency: currencyInfo?.target,
         } satisfies Prisma.InputJsonValue,
       };
     } catch (error: unknown) {
