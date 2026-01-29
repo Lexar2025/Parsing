@@ -52,19 +52,11 @@ export class RabotaMdAdapter extends BaseVacancyAdapter {
       // Обработка описания
       const description = vacancy.description?.trim() || '';
 
-      // Обработка навыков (можно извлечь из описания или полных данных)
-      const skills: string[] = [];
-      if (vacancy.fullDescription) {
-        // Простой парсинг навыков из описания
-        const fullDesc = vacancy.fullDescription.toLowerCase();
-        const skillKeywords = ['javascript', 'python', 'java', 'c#', 'c++', 'typescript', 'react', 'vue', 'angular', 'node.js', 'html', 'css', 'sql', 'mysql', 'postgresql', 'mongodb', 'docker', 'kubernetes', 'aws', 'azure', 'git'];
-
-        skillKeywords.forEach(skill => {
-          if (fullDesc.includes(skill)) {
-            skills.push(skill);
-          }
-        });
-      }
+      // --- Улучшенное извлечение навыков с помощью fuzzy-matcher ---
+      const skills = this.extractNormalizedSkills(
+        vacancy.description,
+        vacancy.fullDescription
+      );
 
       // --- Используем новые методы конвертации ---
       const currencyInfo = this.extractSourceAndTargetCurrency(vacancy.salary);
@@ -84,10 +76,10 @@ export class RabotaMdAdapter extends BaseVacancyAdapter {
         // Сохраняем исходную валюту
         salaryCurrency: currencyInfo?.source || 'MDL',
 
-        // Опыт и тип работы
-        experience: this.mapExperience(vacancy.experience),
-        employment: this.mapEmployment(vacancy.schedule),
-        schedule: this.mapSchedule(vacancy.workPlace),
+        // Опыт и тип работы - используем новые методы с fuzzy-matching
+        experience: this.extractNormalizedExperience(vacancy.experience),
+        employment: this.extractNormalizedEmployment(vacancy.schedule),
+        schedule: this.extractNormalizedSchedule(vacancy.workPlace),
 
         // Навыки
         skills: skills,
@@ -105,12 +97,16 @@ export class RabotaMdAdapter extends BaseVacancyAdapter {
           firstSeenAt: vacancy.firstSeenAt ? new Date(vacancy.firstSeenAt) : null,
           lastSeenAt: vacancy.lastSeenAt ? new Date(vacancy.lastSeenAt) : null,
           isActive: typeof vacancy.isActive === 'boolean' ? vacancy.isActive : true,
-          // --- Добавляем информацию о конвертации ---
-          originalSalary: vacancy.salary, // Сохраняем оригинальную строку
+          // --- Добавляем информацию о конвертации и нормализации ---
+          originalSalary: vacancy.salary,
           convertedSalaryMin: convertedMinSalary,
           convertedSalaryMax: convertedMaxSalary,
           conversionSourceCurrency: currencyInfo?.source,
           conversionTargetCurrency: currencyInfo?.target,
+          normalizedExperience: this.extractNormalizedExperience(vacancy.experience),
+          normalizedEmployment: this.extractNormalizedEmployment(vacancy.schedule),
+          normalizedSchedule: this.extractNormalizedSchedule(vacancy.workPlace),
+          normalizedCurrency: this.extractNormalizedCurrency(vacancy.salary),
         } satisfies Prisma.InputJsonValue,
       };
     } catch (error: unknown) {

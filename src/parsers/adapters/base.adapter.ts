@@ -9,6 +9,14 @@ import { Vacancy as ParsedVacancy } from '../../types/vacancy.js';
 import { Prisma } from '@prisma/client';
 import { ExchangeRateProvider } from './exchange-rate-provider.interface.js'; // Путь к интерфейсу
 import { StaticExchangeRateProvider } from './static-exchange-rate-provider.js'; // Путь к статической реализации
+import {
+  findMatchingSkills,
+  findMatchingExperience,
+  findMatchingEmployment,
+  findMatchingCurrency,
+  findMatchingSchedule,
+  extractSkillsFromDescription
+} from '../../utils/fuzzy-matcher.js';
 
 export interface VacancyAdapter {
   /**
@@ -229,4 +237,117 @@ export abstract class BaseVacancyAdapter implements VacancyAdapter {
     return { source: sourceCurrency, target: targetCurrency };
   }
   // --- Конец новых методов ---
+
+  // --- Методы с использованием fuzzy-matcher ---
+  /**
+   * Извлекает нормализованный опыт работы с помощью fuzzy-matching
+   * @param experience Строка с опытом работы
+   * @returns Нормализованное значение опыта или undefined
+   */
+  protected extractNormalizedExperience(experience?: string): string | undefined {
+    if (!experience) return undefined;
+    
+    // Сначала пробуем fuzzy-matching
+    const fuzzyMatch = findMatchingExperience(experience);
+    if (fuzzyMatch) return fuzzyMatch;
+    
+    // Если fuzzy не дал результата, используем старую логику как резервную
+    return this.mapExperience(experience);
+  }
+
+  /**
+   * Извлекает нормализованный тип занятости с помощью fuzzy-matching
+   * @param employment Строка с типом занятости
+   * @returns Нормализованное значение типа занятости или undefined
+   */
+  protected extractNormalizedEmployment(employment?: string): string | undefined {
+    if (!employment) return undefined;
+    
+    // Сначала пробуем fuzzy-matching
+    const fuzzyMatch = findMatchingEmployment(employment);
+    if (fuzzyMatch) return fuzzyMatch;
+    
+    // Если fuzzy не дал результата, используем старую логику как резервную
+    return this.mapEmployment(employment);
+  }
+
+  /**
+   * Извлекает нормализованный график работы с помощью fuzzy-matching
+   * @param schedule Строка с графиком работы
+   * @returns Нормализованное значение графика или undefined
+   */
+  protected extractNormalizedSchedule(schedule?: string): string | undefined {
+    if (!schedule) return undefined;
+    
+    // Сначала пробуем fuzzy-matching
+    const fuzzyMatch = findMatchingSchedule(schedule);
+    if (fuzzyMatch) return fuzzyMatch;
+    
+    // Если fuzzy не дал результата, используем старую логику как резервную
+    return this.mapSchedule(schedule);
+  }
+
+  /**
+   * Извлекает нормализованную валюту с помощью fuzzy-matching
+   * @param currencyStr Строка с валютой
+   * @returns Нормализованное значение валюты или undefined
+   */
+  protected extractNormalizedCurrency(currencyStr?: string): string | undefined {
+    if (!currencyStr) return undefined;
+    
+    // Сначала пробуем fuzzy-matching
+    const fuzzyMatch = findMatchingCurrency(currencyStr);
+    if (fuzzyMatch) return fuzzyMatch;
+    
+    // Если fuzzy не дал результата, используем старую логику как резервную
+    return this.extractCurrency(currencyStr);
+  }
+
+  /**
+   * Извлекает навыки из описания вакансии с помощью fuzzy-matching
+   * @param description Описание вакансии
+   * @param additionalText Дополнительный текст для анализа (например, fullDescription)
+   * @returns Массив нормализованных навыков
+   */
+  protected extractNormalizedSkills(
+    description?: string,
+    additionalText?: string
+  ): string[] {
+    const skills = new Set<string>();
+    
+    // Извлекаем навыки из описания
+    if (description) {
+      const descSkills = extractSkillsFromDescription(description);
+      descSkills.forEach(skill => skills.add(skill));
+    }
+    
+    // Извлекаем навыки из дополнительного текста
+    if (additionalText) {
+      const additionalSkills = extractSkillsFromDescription(additionalText);
+      additionalSkills.forEach(skill => skills.add(skill));
+    }
+    
+    return Array.from(skills);
+  }
+
+  /**
+   * Находит навыки по входной строке с помощью fuzzy-matching
+   * Полезно когда у вас уже есть список навыков в виде строк
+   * @param skillsArray Массив строк с навыками
+   * @returns Массив нормализованных навыков
+   */
+  protected matchSkills(skillsArray: string[]): string[] {
+    if (!skillsArray || skillsArray.length === 0) return [];
+    
+    const skills = new Set<string>();
+    
+    skillsArray.forEach(skill => {
+      if (!skill?.trim()) return;
+      const matches = findMatchingSkills(skill);
+      matches.forEach(match => skills.add(match));
+    });
+    
+    return Array.from(skills);
+  }
+  // --- Конец методов с fuzzy-matcher ---
 }
