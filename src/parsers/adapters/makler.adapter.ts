@@ -1,5 +1,4 @@
 // src/adapters/makler.adapter.ts
-
 import { BaseVacancyAdapter } from './base.adapter.js';
 import { Vacancy as ParsedVacancy } from '../../types/vacancy.js';
 import { Prisma } from '@prisma/client';
@@ -7,7 +6,6 @@ import { Prisma } from '@prisma/client';
 export class MaklerMdAdapter extends BaseVacancyAdapter {
   sourceName = 'makler.md';
 
-  // Обновляем конструктор, чтобы он мог принимать ExchangeRateProvider
   constructor(args?: ConstructorParameters<typeof BaseVacancyAdapter>[0]) {
     super(args);
   }
@@ -34,9 +32,20 @@ export class MaklerMdAdapter extends BaseVacancyAdapter {
         publishedAt = new Date();
       }
 
-      const company = vacancy.company?.trim() || 'Не указана';
+      // --- Обработка компании ---
+      let company = vacancy.company?.trim() || 'Не указана';
+      // Если парсер не нашел компанию, ищем в описании
+      const fullDescriptionText = vacancy.fullDescription || vacancy.description || '';
+      if (company === 'Не указана' && fullDescriptionText) {
+        const extractedCompany = this.extractCompanyFromText(fullDescriptionText);
+        if (extractedCompany) {
+          company = extractedCompany;
+        }
+      }
+
       const location = vacancy.location?.trim() || null;
 
+      // --- Обработка описания ---
       let description = '';
       if (vacancy.fullDescription) {
         description = vacancy.fullDescription.trim();
@@ -44,36 +53,25 @@ export class MaklerMdAdapter extends BaseVacancyAdapter {
         description = vacancy.description.trim();
       }
 
-      // --- Улучшенное извлечение навыков с помощью fuzzy-matcher ---
-      let skills = this.extractNormalizedSkills(
-        description,
-        vacancy.fullDescription
-      );
-      
-      // Добавляем специализацию и индустрию как навыки
-      const additionalSkills: string[] = [];
-      if (vacancy.specialization) {
-        const specSkills = this.matchSkills([vacancy.specialization.trim()]);
-        additionalSkills.push(...specSkills);
-        // Также добавляем как есть, если не нашлось соответствие
-        if (specSkills.length === 0) {
-          additionalSkills.push(vacancy.specialization.trim());
-        }
+      // --- Обработка зарплаты ---
+      let salary = vacancy.salary;
+      // Если парсер не нашел зарплату, ищем в описании
+      if (!salary && fullDescriptionText) {
+        salary = this.extractSalaryFromText(fullDescriptionText);
       }
-      if (vacancy.industry) {
-        const indSkills = this.matchSkills([vacancy.industry.trim()]);
-        additionalSkills.push(...indSkills);
-        if (indSkills.length === 0) {
-          additionalSkills.push(vacancy.industry.trim());
-        }
-      }
-      
-      skills = [...new Set([...skills, ...additionalSkills])];
+
+      // --- Извлечение навыков ТОЛЬКО из описания ---
+      const skills = this.extractNormalizedSkills(description, vacancy.fullDescription);
 
       // --- Используем новые методы конвертации ---
-      const currencyInfo = this.extractSourceAndTargetCurrency(vacancy.salary);
-      const convertedMinSalary = this.extractAndConvertSalaryMin(vacancy.salary);
-      const convertedMaxSalary = this.extractAndConvertSalaryMax(vacancy.salary);
+      const currencyInfo = this.extractSourceAndTargetCurrency(salary);
+      const convertedMinSalary = this.extractAndConvertSalaryMin(salary);
+      const convertedMaxSalary = this.extractAndConvertSalaryMax(salary);
+
+      // --- Используем новые методы нормализации ---
+      const normalizedExperience = this.extractNormalizedExperience(vacancy.experience);
+      const normalizedEmployment = this.extractNormalizedEmployment(vacancy.schedule);
+      const normalizedSchedule = this.extractNormalizedSchedule(vacancy.workPlace);
 
       return {
         title: vacancy.title.trim(),
@@ -84,13 +82,12 @@ export class MaklerMdAdapter extends BaseVacancyAdapter {
         // Зарплата в целевой валюте ('RUB_PMR' по умолчанию)
         salaryMin: convertedMinSalary,
         salaryMax: convertedMaxSalary,
-        // Исходная валюта (для справки, сохраняем как есть)
+        // Исходная валюта (для справки)
         salaryCurrency: currencyInfo?.source || 'MDL',
 
-        // Опыт и тип работы - используем новые методы с fuzzy-matching
-        experience: this.extractNormalizedExperience(vacancy.experience),
-        employment: this.extractNormalizedEmployment(vacancy.schedule),
-        schedule: this.extractNormalizedSchedule(vacancy.workPlace),
+        experience: normalizedExperience,
+        employment: normalizedEmployment,
+        schedule: normalizedSchedule,
 
         skills: skills,
 
@@ -111,16 +108,16 @@ export class MaklerMdAdapter extends BaseVacancyAdapter {
           lastSeenAt: vacancy.lastSeenAt ? new Date(vacancy.lastSeenAt) : null,
           isActive: typeof vacancy.isActive === 'boolean' ? vacancy.isActive : true,
           contactPerson: vacancy.contactPerson?.trim() || null,
-          // --- Добавляем информацию о конвертации и нормализации ---
-          originalSalary: vacancy.salary,
+          // --- Добавляем информацию о конвертации ---
+          originalSalary: salary,
           convertedSalaryMin: convertedMinSalary,
           convertedSalaryMax: convertedMaxSalary,
           conversionSourceCurrency: currencyInfo?.source,
           conversionTargetCurrency: currencyInfo?.target,
-          normalizedExperience: this.extractNormalizedExperience(vacancy.experience),
-          normalizedEmployment: this.extractNormalizedEmployment(vacancy.schedule),
-          normalizedSchedule: this.extractNormalizedSchedule(vacancy.workPlace),
-          normalizedCurrency: this.extractNormalizedCurrency(vacancy.salary),
+          // --- Добавляем информацию о нормализации ---
+          normalizedExperience: normalizedExperience,
+          normalizedEmployment: normalizedEmployment,
+          normalizedSchedule: normalizedSchedule,
         } satisfies Prisma.InputJsonValue,
       };
     } catch (error: unknown) {

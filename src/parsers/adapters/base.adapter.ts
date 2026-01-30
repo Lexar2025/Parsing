@@ -1,14 +1,11 @@
 /**
- * Базовый интерфейс адаптера для парсеров
- * Каждый парсер должен иметь адаптер, который преобразует данные в единый формат для БД
- */
-
-// src/adapters/base.adapter.ts
-
+Базовый интерфейс адаптера для парсеров
+Каждый парсер должен иметь адаптер, который преобразует данные в единый формат для БД
+*/
 import { Vacancy as ParsedVacancy } from '../../types/vacancy.js';
 import { Prisma } from '@prisma/client';
-import { ExchangeRateProvider } from './exchange-rate-provider.interface.js'; // Путь к интерфейсу
-import { StaticExchangeRateProvider } from './static-exchange-rate-provider.js'; // Путь к статической реализации
+import { ExchangeRateProvider } from './exchange-rate-provider.interface.js';
+import { StaticExchangeRateProvider } from './static-exchange-rate-provider.js';
 import {
   findMatchingSkills,
   findMatchingExperience,
@@ -19,32 +16,19 @@ import {
 } from '../../utils/fuzzy-matcher.js';
 
 export interface VacancyAdapter {
-  /**
-   * Имя источника (должно совпадать с source в Vacancy)
-   */
   sourceName: string;
-  
-  /**
-   * Преобразует вакансию из формата парсера в формат БД Prisma
-   */
   toPrisma(vacancy: ParsedVacancy): Prisma.VacancyCreateInput;
-  
-  /**
-   * Преобразует множество вакансий
-   */
   toPrismaMany(vacancies: ParsedVacancy[]): Prisma.VacancyCreateInput[];
 }
-// Обновляем интерфейс BaseVacancyAdapter
+
 export interface BaseVacancyAdapterConstructorArgs {
-  exchangeRateProvider?: ExchangeRateProvider; // Необязательный параметр для обратной совместимости
+  exchangeRateProvider?: ExchangeRateProvider;
 }
 
 export abstract class BaseVacancyAdapter implements VacancyAdapter {
   protected readonly exchangeRateProvider: ExchangeRateProvider;
 
-  // Обновляем конструктор
   constructor(args?: BaseVacancyAdapterConstructorArgs) {
-    // Используем переданный провайдер или создаем статический по умолчанию
     this.exchangeRateProvider = args?.exchangeRateProvider ?? new StaticExchangeRateProvider();
   }
 
@@ -55,7 +39,7 @@ export abstract class BaseVacancyAdapter implements VacancyAdapter {
     return vacancies.map(v => this.toPrisma(v));
   }
 
-  // --- Старые методы остаются без изменений ---
+  // --- Методы извлечения зарплаты (без дублирования) ---
   protected extractSalaryMin(salary?: string): number | undefined {
     if (!salary) return undefined;
     try {
@@ -84,19 +68,109 @@ export abstract class BaseVacancyAdapter implements VacancyAdapter {
     }
   }
 
-  protected extractCurrency(salary?: string): string | undefined {
-    if (!salary) return undefined;
-    if (salary.includes('MDL') || salary.includes('lei')) return 'MDL';
-    if (salary.includes('USD') || salary.includes('$')) return 'USD';
-    if (salary.includes('EUR') || salary.includes('€')) return 'EUR';
-    if (salary.includes('RUB') || salary.includes('₽')) return 'RUB'; // Добавим RUB
-    return 'MDL'; // по умолчанию для молдавских сайтов
+  // --- Методы конвертации валюты ---
+  protected convertSalary(amount: number, fromCurrency: string, toCurrency: string): number | undefined {
+    const rate = this.exchangeRateProvider.getExchangeRate(fromCurrency, toCurrency);
+    if (rate === undefined) {
+      console.warn(`⚠️ Неизвестен курс конвертации из ${fromCurrency} в ${toCurrency} для суммы ${amount}`);
+      return undefined;
+    }
+    return amount * rate;
   }
 
-  protected mapExperience(experience?: string): string | undefined {
+  protected extractAndConvertSalaryMin(salary?: string, targetCurrency: string = 'RUB_PMR'): number | undefined {
+    const minAmount = this.extractSalaryMin(salary);
+    if (minAmount === undefined) return undefined;
+    
+    const sourceCurrency = this.extractNormalizedCurrency(salary);
+    if (!sourceCurrency) {
+      console.warn(`⚠️ Не удалось определить исходную валюту для '${salary}'`);
+      return undefined;
+    }
+
+    return this.convertSalary(minAmount, sourceCurrency, targetCurrency);
+  }
+
+  protected extractAndConvertSalaryMax(salary?: string, targetCurrency: string = 'RUB_PMR'): number | undefined {
+    const maxAmount = this.extractSalaryMax(salary);
+    if (maxAmount === undefined) return undefined;
+    
+    const sourceCurrency = this.extractNormalizedCurrency(salary);
+    if (!sourceCurrency) {
+      console.warn(`⚠️ Не удалось определить исходную валюту для '${salary}'`);
+      return undefined;
+    }
+
+    return this.convertSalary(maxAmount, sourceCurrency, targetCurrency);
+  }
+
+  protected extractSourceAndTargetCurrency(salary?: string, targetCurrency: string = 'RUB_PMR'): { source: string; target: string } | undefined {
+    const sourceCurrency = this.extractNormalizedCurrency(salary);
+    if (!sourceCurrency) {
+      console.warn(`⚠️ Не удалось определить исходную валюту для '${salary}'`);
+      return undefined;
+    }
+    return { source: sourceCurrency, target: targetCurrency };
+  }
+
+  // --- Методы нормализации через fuzzy-matcher (основные) ---
+  protected extractNormalizedExperience(experience?: string): string | undefined {
+    if (!experience) return undefined;
+    return findMatchingExperience(experience) || this.fallbackMapExperience(experience);
+  }
+
+  protected extractNormalizedEmployment(employment?: string): string | undefined {
+    if (!employment) return undefined;
+    return findMatchingEmployment(employment) || this.fallbackMapEmployment(employment);
+  }
+
+  protected extractNormalizedSchedule(schedule?: string): string | undefined {
+    if (!schedule) return undefined;
+    return findMatchingSchedule(schedule) || this.fallbackMapSchedule(schedule);
+  }
+
+  protected extractNormalizedCurrency(currencyStr?: string): string | undefined {
+    if (!currencyStr) return undefined;
+    return findMatchingCurrency(currencyStr) || this.fallbackExtractCurrency(currencyStr);
+  }
+
+  protected extractNormalizedSkills(
+    description?: string,
+    additionalText?: string
+  ): string[] {
+    const skills = new Set<string>();
+    
+    if (description) {
+      const descSkills = extractSkillsFromDescription(description);
+      descSkills.forEach(skill => skills.add(skill));
+    }
+
+    if (additionalText) {
+      const additionalSkills = extractSkillsFromDescription(additionalText);
+      additionalSkills.forEach(skill => skills.add(skill));
+    }
+
+    return Array.from(skills);
+  }
+
+  protected matchSkills(skillsArray: string[]): string[] {
+    if (!skillsArray || skillsArray.length === 0) return [];
+    const skills = new Set<string>();
+
+    skillsArray.forEach(skill => {
+      if (!skill?.trim()) return;
+      const matches = findMatchingSkills(skill);
+      matches.forEach(match => skills.add(match));
+    });
+
+    return Array.from(skills);
+  }
+
+  // --- Fallback методы (только для резервного варианта) ---
+  private fallbackMapExperience(experience?: string): string | undefined {
     if (!experience) return undefined;
     const exp = experience.toLowerCase().trim();
-
+    
     if (exp.includes('без опыта') || exp.includes('fără experiență') || exp.includes('no experience')) {
       return 'no_experience';
     }
@@ -113,18 +187,10 @@ export abstract class BaseVacancyAdapter implements VacancyAdapter {
     return this.normalizeExperience(experience);
   }
 
-  private normalizeExperience(experience: string): string {
-    return experience
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, '_')
-      .replace(/[^a-z0-9_]/g, '');
-  }
-
-  protected mapEmployment(schedule?: string): string | undefined {
+  private fallbackMapEmployment(schedule?: string): string | undefined {
     if (!schedule) return undefined;
     const s = schedule.toLowerCase().trim();
-
+    
     if (s.includes('полная') || s.includes('full time') || s.includes('full')) return 'full';
     if (s.includes('частичная') || s.includes('part time') || s.includes('part')) return 'part';
     if (s.includes('проект') || s.includes('project') || s.includes('contract')) return 'project';
@@ -133,18 +199,10 @@ export abstract class BaseVacancyAdapter implements VacancyAdapter {
     return this.normalizeEmployment(schedule);
   }
 
-  private normalizeEmployment(employment: string): string {
-    return employment
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, '_')
-      .replace(/[^a-z0-9_]/g, '');
-  }
-
-  protected mapSchedule(workPlace?: string): string | undefined {
+  private fallbackMapSchedule(workPlace?: string): string | undefined {
     if (!workPlace) return undefined;
     const wp = workPlace.toLowerCase().trim();
-
+    
     if (wp.includes('удален') || wp.includes('remote') || wp.includes('la distanță') || wp.includes('distanță')) {
       return 'remote';
     }
@@ -158,196 +216,113 @@ export abstract class BaseVacancyAdapter implements VacancyAdapter {
     return this.normalizeSchedule(workPlace);
   }
 
+  private fallbackExtractCurrency(salary?: string): string | undefined {
+    if (!salary) return undefined;
+    if (salary.includes('MDL') || salary.includes('lei')) return 'MDL';
+    if (salary.includes('USD') || salary.includes('$')) return 'USD';
+    if (salary.includes('EUR') || salary.includes('€')) return 'EUR';
+    if (salary.includes('RUB') || salary.includes('₽')) return 'RUB';
+    return 'MDL';
+  }
+
+  // --- Вспомогательные методы нормализации ---
+  private normalizeExperience(experience: string): string {
+    return experience.toLowerCase().trim().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+  }
+
+  private normalizeEmployment(employment: string): string {
+    return employment.toLowerCase().trim().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+  }
+
   private normalizeSchedule(schedule: string): string {
-    return schedule
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, '_')
-      .replace(/[^a-z0-9_]/g, '');
+    return schedule.toLowerCase().trim().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
   }
-  // --- Конец старых методов ---
 
-  // --- Новые методы для конвертации ---
+  // --- Методы извлечения из текста ---
   /**
-   * Конвертирует значение зарплаты из одной валюты в другую.
-   * @param amount Сумма в исходной валюте.
-   * @param fromCurrency Исходная валюта (например, 'MDL').
-   * @param toCurrency Целевая валюта (например, 'RUB_PMR').
-   * @returns Конвертированную сумму или undefined, если курс недоступен.
+   * Пытается извлечь строку с зарплатой из произвольного текста.
    */
-  protected convertSalary(amount: number, fromCurrency: string, toCurrency: string): number | undefined {
-    const rate = this.exchangeRateProvider.getExchangeRate(fromCurrency, toCurrency);
-    if (rate === undefined) {
-      console.warn(`⚠️ Неизвестен курс конвертации из ${fromCurrency} в ${toCurrency} для суммы ${amount}`);
-      return undefined; // Не возвращаем исходную сумму, если курс неизвестен
+  // Улучшаем базовые методы для большей гибкости
+protected extractSalaryFromText(text?: string): string | undefined {
+  if (!text) return undefined;
+  const lowerText = text.toLowerCase();
+
+  // Ключевые слова на 3 языках
+  const salaryKeywords = [
+    // Русский
+    'з/п', 'зарплата', 'оклад', 'доход', 'оплата', 'зп', 'плата',
+    // Румынский
+    'salariu', 'venit', 'plată', 'plata', 'remunerație', 'remuneratie',
+    // Английский
+    'salary', 'wage', 'pay', 'compensation', 'income'
+  ];
+
+  for (const keyword of salaryKeywords) {
+    const keywordIndex = lowerText.indexOf(keyword);
+    if (keywordIndex !== -1) {
+      const snippet = text.substring(
+        keywordIndex,
+        Math.min(keywordIndex + 150, text.length)
+      );
+      
+      // Ищем числа в локальных форматах: 4500, 4.500, 4,500, 4 500
+      // Румынский формат: 4.500 (точка как разделитель тысяч)
+      // Русский формат: 4 500 (пробел)
+      const numberPattern = /(?:\d{1,3}(?:[.,\s]\d{3})*(?:[.,]\d+)?|\d+)/;
+      const match = snippet.match(numberPattern);
+      
+      if (match) {
+        const numberStart = snippet.indexOf(match[0]);
+        const contextStart = Math.max(0, numberStart - 5);
+        const contextEnd = Math.min(snippet.length, numberStart + match[0].length + 25);
+        return snippet.substring(contextStart, contextEnd).trim();
+      }
+      
+      // Возвращаем сниппет даже без цифр (для логгирования и ручного анализа)
+      return snippet.trim();
     }
-    return amount * rate;
   }
 
-  /**
-   * Извлекает и конвертирует минимальную зарплату в целевую валюту.
-   * @param salary Строка с зарплатой (например, '1000 - 1500 MDL').
-   * @param targetCurrency Целевая валюта (например, 'RUB_PMR').
-   * @returns Конвертированную минимальную сумму или undefined.
-   */
-  protected extractAndConvertSalaryMin(salary?: string, targetCurrency: string = 'RUB_PMR'): number | undefined {
-    const minAmount = this.extractSalaryMin(salary);
-    if (minAmount === undefined) return undefined;
+  // Резерв: число с валютой (поддержка 3 языков)
+  const currencyPattern = /(\d[\d\s.,]*\s*(?:MDL|lei|л|леев|лей|\$|USD|€|EUR|руб|₽|RUB|euro|dollar))/i;
+  const match = text.match(currencyPattern);
+  return match ? match[0].trim() : undefined;
+}
 
-    const sourceCurrency = this.extractCurrency(salary);
-    if (!sourceCurrency) {
-      console.warn(`⚠️ Не удалось определить исходную валюту для '${salary}'`);
-      return undefined;
+protected extractCompanyFromText(text?: string): string | undefined {
+  if (!text) return undefined;
+  
+  // Шаблон 1: "Агентство/Агенция/Agency "Название""
+  const agencyPattern = /(?:агентство|агенция|фирма|компания|организация|agency|firm|company|organizație|organizatie)[\s:]*["«“'„]([^"»”'„]+?)["»”'„]/i;
+  const agencyMatch = text.match(agencyPattern);
+  if (agencyMatch?.[1]) {
+    return agencyMatch[1].trim();
+  }
+
+  // Шаблон 2: после ключевых слов (3 языка)
+  const companyKeywords = [
+    'агентство', 'агенция', 'компания', 'фирма', 'работодатель', 'мы',
+    'agency', 'company', 'firm', 'employer', 'we',
+    'agentie', 'companie', 'firma', 'angajator', 'noi'
+  ];
+  
+  for (const keyword of companyKeywords) {
+    // Безопасные границы для кириллицы/латиницы
+    const regex = new RegExp(
+      `(?:^|\\s|[,.;:!?()«»"'\\[\\]])${keyword}(?:$|\\s|[,.;:!?()«»"'\\[\\]])`,
+      'i'
+    );
+    const match = text.match(regex);
+    if (match) {
+      const keywordIndex = match.index!;
+      const afterKeyword = text.substring(keywordIndex + keyword.length).trim();
+      
+      // Берем первые 1-3 слова как название компании
+      const companyWords = afterKeyword.split(/\s+/).slice(0, 3).join(' ');
+      return companyWords.replace(/[.,;:!?]+$/, '').trim() || undefined;
     }
-
-    return this.convertSalary(minAmount, sourceCurrency, targetCurrency);
   }
 
-  /**
-   * Извлекает и конвертирует максимальную зарплату в целевую валюту.
-   * @param salary Строка с зарплатой (например, '1000 - 1500 MDL').
-   * @param targetCurrency Целевая валюта (например, 'RUB_PMR').
-   * @returns Конвертированную максимальную сумму или undefined.
-   */
-  protected extractAndConvertSalaryMax(salary?: string, targetCurrency: string = 'RUB_PMR'): number | undefined {
-    const maxAmount = this.extractSalaryMax(salary);
-    if (maxAmount === undefined) return undefined;
-
-    const sourceCurrency = this.extractCurrency(salary);
-    if (!sourceCurrency) {
-      console.warn(`⚠️ Не удалось определить исходную валюту для '${salary}'`);
-      return undefined;
-    }
-
-    return this.convertSalary(maxAmount, sourceCurrency, targetCurrency);
-  }
-
-  /**
-   * Извлекает исходную валюту и целевую валюту.
-   * @param salary Строка с зарплатой.
-   * @param targetCurrency Целевая валюта (например, 'RUB_PMR').
-   * @returns Объект с исходной и целевой валютой или undefined.
-   */
-  protected extractSourceAndTargetCurrency(salary?: string, targetCurrency: string = 'RUB_PMR'): { source: string; target: string } | undefined {
-    const sourceCurrency = this.extractCurrency(salary);
-    if (!sourceCurrency) {
-      console.warn(`⚠️ Не удалось определить исходную валюту для '${salary}'`);
-      return undefined;
-    }
-    return { source: sourceCurrency, target: targetCurrency };
-  }
-  // --- Конец новых методов ---
-
-  // --- Методы с использованием fuzzy-matcher ---
-  /**
-   * Извлекает нормализованный опыт работы с помощью fuzzy-matching
-   * @param experience Строка с опытом работы
-   * @returns Нормализованное значение опыта или undefined
-   */
-  protected extractNormalizedExperience(experience?: string): string | undefined {
-    if (!experience) return undefined;
-    
-    // Сначала пробуем fuzzy-matching
-    const fuzzyMatch = findMatchingExperience(experience);
-    if (fuzzyMatch) return fuzzyMatch;
-    
-    // Если fuzzy не дал результата, используем старую логику как резервную
-    return this.mapExperience(experience);
-  }
-
-  /**
-   * Извлекает нормализованный тип занятости с помощью fuzzy-matching
-   * @param employment Строка с типом занятости
-   * @returns Нормализованное значение типа занятости или undefined
-   */
-  protected extractNormalizedEmployment(employment?: string): string | undefined {
-    if (!employment) return undefined;
-    
-    // Сначала пробуем fuzzy-matching
-    const fuzzyMatch = findMatchingEmployment(employment);
-    if (fuzzyMatch) return fuzzyMatch;
-    
-    // Если fuzzy не дал результата, используем старую логику как резервную
-    return this.mapEmployment(employment);
-  }
-
-  /**
-   * Извлекает нормализованный график работы с помощью fuzzy-matching
-   * @param schedule Строка с графиком работы
-   * @returns Нормализованное значение графика или undefined
-   */
-  protected extractNormalizedSchedule(schedule?: string): string | undefined {
-    if (!schedule) return undefined;
-    
-    // Сначала пробуем fuzzy-matching
-    const fuzzyMatch = findMatchingSchedule(schedule);
-    if (fuzzyMatch) return fuzzyMatch;
-    
-    // Если fuzzy не дал результата, используем старую логику как резервную
-    return this.mapSchedule(schedule);
-  }
-
-  /**
-   * Извлекает нормализованную валюту с помощью fuzzy-matching
-   * @param currencyStr Строка с валютой
-   * @returns Нормализованное значение валюты или undefined
-   */
-  protected extractNormalizedCurrency(currencyStr?: string): string | undefined {
-    if (!currencyStr) return undefined;
-    
-    // Сначала пробуем fuzzy-matching
-    const fuzzyMatch = findMatchingCurrency(currencyStr);
-    if (fuzzyMatch) return fuzzyMatch;
-    
-    // Если fuzzy не дал результата, используем старую логику как резервную
-    return this.extractCurrency(currencyStr);
-  }
-
-  /**
-   * Извлекает навыки из описания вакансии с помощью fuzzy-matching
-   * @param description Описание вакансии
-   * @param additionalText Дополнительный текст для анализа (например, fullDescription)
-   * @returns Массив нормализованных навыков
-   */
-  protected extractNormalizedSkills(
-    description?: string,
-    additionalText?: string
-  ): string[] {
-    const skills = new Set<string>();
-    
-    // Извлекаем навыки из описания
-    if (description) {
-      const descSkills = extractSkillsFromDescription(description);
-      descSkills.forEach(skill => skills.add(skill));
-    }
-    
-    // Извлекаем навыки из дополнительного текста
-    if (additionalText) {
-      const additionalSkills = extractSkillsFromDescription(additionalText);
-      additionalSkills.forEach(skill => skills.add(skill));
-    }
-    
-    return Array.from(skills);
-  }
-
-  /**
-   * Находит навыки по входной строке с помощью fuzzy-matching
-   * Полезно когда у вас уже есть список навыков в виде строк
-   * @param skillsArray Массив строк с навыками
-   * @returns Массив нормализованных навыков
-   */
-  protected matchSkills(skillsArray: string[]): string[] {
-    if (!skillsArray || skillsArray.length === 0) return [];
-    
-    const skills = new Set<string>();
-    
-    skillsArray.forEach(skill => {
-      if (!skill?.trim()) return;
-      const matches = findMatchingSkills(skill);
-      matches.forEach(match => skills.add(match));
-    });
-    
-    return Array.from(skills);
-  }
-  // --- Конец методов с fuzzy-matcher ---
+  return undefined;
+}
 }

@@ -592,8 +592,8 @@ export class MaklerMdParser implements Parser {
         }
 
         // Описание
-        const descElement = article.querySelector('.subfir');
-        const description = descElement?.textContent?.trim() || undefined;
+        const descriptionBlock = document.querySelector('.subfir');
+        const description = descriptionBlock?.textContent?.trim() || undefined;
 
         // Локация и телефон
         const infoBlock = article.querySelector('.ls-detail_anData');
@@ -809,25 +809,12 @@ export class MaklerMdParser implements Parser {
             }
           });
         }
-        
+
         // Парсим полное описание если есть
-        const descriptionBlock = document.querySelector('.article_content, .ann_full_descr, .full-description');
+        const descriptionBlock = document.querySelector('#anText');
         if (descriptionBlock) {
           result.fullDescription = descriptionBlock.textContent?.trim() || undefined;
         }
-        
-        // Парсим зарплату если есть
-        const salaryElement = document.querySelector('.salary, .ann_salary');
-        if (salaryElement) {
-          result.salary = salaryElement.textContent?.trim() || undefined;
-        }
-        
-        // Парсим компанию если есть
-        const companyElement = document.querySelector('.company-name, .ann_company');
-        if (companyElement) {
-          result.company = companyElement.textContent?.trim() || undefined;
-        }
-        
         return result;
       });
 

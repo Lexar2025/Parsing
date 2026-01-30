@@ -929,7 +929,7 @@ const SKILL_SYNONYMS: SkillEntry[] = [
     normalized: 'Discipline',
     synonyms: [
       'discipline', 'disciplined', 'дисциплинированность', 'дисциплина',
-      'disciplina', 'disciplinat', 'seriozitate'
+      'disciplina', 'disciplinat', 'seriozitate', 'Дисциплина труда'
     ]
   },
   {
@@ -1214,16 +1214,131 @@ const SKILL_SYNONYMS: SkillEntry[] = [
     synonyms: [
       'category b', 'cat. b', 'категория b', 'права b', 'права категории b',
       'водительское удостоверение', 'permis de conducere', 'categoria b',
-      'permis auto', 'auto propriu', 'личный автомобиль'
+      'permis auto', 'auto propriu', 'личный автомобиль', 'категория B'
     ]
   },
   {
     normalized: 'Driving License C/E',
     synonyms: [
       'category c', 'category e', 'cat. c', 'грузоперевозки', 'категория с',
-      'дальнобойщик', 'sofer expeditie', 'tir', 'camion'
+      'дальнобойщик', 'sofer expeditie', 'tir', 'camion', 'категория C'
     ]
   },
+  // ==================================================
+  // ДОПОЛНИТЕЛЬНЫЕ SOFT SKILLS И ОБЩИЕ НАВЫКИ (GENERAL)
+  // ==================================================
+
+  // --- Организация работы и Мышление ---
+  {
+    normalized: 'Multitasking',
+    synonyms: [
+      'multitasking', 'multi-tasking', 'многозадачность', 'режим многозадачности',
+      'выполнение нескольких задач', 'sarcini multiple', 'abilitatea de a face mai multe lucruri',
+      'lucru concomitent'
+    ]
+  },
+  {
+    normalized: 'Problem Solving',
+    synonyms: [
+      'problem solving', 'решение проблем', 'находчивость', 'умение находить выход',
+      'rezolvarea problemelor', 'soluționarea problemelor', 'orientare spre solutii',
+      'смекалка'
+    ]
+  },
+  {
+    normalized: 'Critical Thinking',
+    synonyms: [
+      'critical thinking', 'analitical skills', 'аналитический склад ума', 'аналитическое мышление',
+      'gandire critica', 'gandire analitica', 'analiza'
+    ]
+  },
+
+  // --- Компьютерная грамотность (Базовая) ---
+  // Решает проблему: "умение работать с ПК", "знание компьютера"
+  {
+    normalized: 'Computer Literacy',
+    synonyms: [
+      'computer literacy', 'pc user', 'computer skills', 'уверенный пользователь пк',
+      'знание пк', 'умение работать с пк', 'работа на компьютере', 'владение пк',
+      'utilizator pc', 'cunostinte pc', 'operare pc', 'computer', 'calculator',
+      'navigare internet', 'пользователь интернет'
+    ]
+  },
+  // Microsoft Office уже был, но усилим его для примера 2
+  {
+    normalized: 'Microsoft Office Suite',
+    synonyms: [
+      'microsoft office', 'ms office', 'office packet', 'пакет офис',
+      'word', 'excel', 'powerpoint', 'ворд', 'эксель', 'офисные программы',
+      'programe de oficiu'
+    ]
+  },
+
+  // --- Трудовая этика и Личные качества ---
+  {
+    normalized: 'Hardworking',
+    synonyms: [
+      'hardworking', 'diligence', 'трудолюбие', 'работоспособность', 'усердие',
+      'muncitor', 'harnic', 'sarguinta', 'sarguinciozitate', 'lucrator',
+      'умение много работать'
+    ]
+  },
+  {
+    normalized: 'Motivation', // Для "Желание работать"
+    synonyms: [
+      'motivation', 'motivated', 'desire to work', 'desire to learn',
+      'желание работать', 'желание зарабатывать', 'интерес к работе', 'энтузиазм',
+      'dorinta de a lucra', 'dorinta de a invata', 'motivat', 'interes'
+    ]
+  },
+  {
+    normalized: 'No Bad Habits', // Для "без вредных привычек"
+    synonyms: [
+      'no bad habits', 'healthy lifestyle', 'без вредных привычек', 'зож',
+      'некурящий', 'fara vicii', 'fara obiceiuri proaste', 'mod de viata sanatos',
+      'nepumator'
+    ]
+  },
+  {
+    normalized: 'Politeness', // Для "гостеприимная атмосфера"
+    synonyms: [
+      'polite', 'politeness', 'courtesy', 'вежливость', 'учтивость', 'доброжелательность',
+      'amabil', 'amabilitate', 'politete', 'buna crestere', 'улыбчивость'
+    ]
+  },
+  {
+    normalized: 'Appearance', // Часто пишут "приятная внешность", "опрятность"
+    synonyms: [
+      'good looking', 'tidy', 'neat', 'опрятность', 'аккуратный внешний вид',
+      'prezentabil', 'aspect fizic placut', 'ingrijit', 'aspect ingrijit'
+    ]
+  },
+
+  // --- Сервис и Клиенты (Для общепита и продаж) ---
+  {
+    normalized: 'Customer Service', // Для "достойный уровень сервиса"
+    synonyms: [
+      'customer service', 'client service', 'сервис', 'обслуживание клиентов',
+      'качественный сервис', 'deservire clienti', 'servicii clienti',
+      'orientare catre client', 'клиентоориентированность', 'забота о клиенте'
+    ]
+  },
+  {
+    normalized: 'Conflict Resolution', // Часто нужно в общепите
+    synonyms: [
+      'conflict resolution', 'стрессоустойчивость в конфликтах', 'работа с возражениями',
+      'решение конфликтов', 'soluționarea conflictelor', 'lucru cu obiectiile',
+      'улаживание споров'
+    ]
+  },
+  {
+    normalized: 'Staff Organization', // Для "организовывать работу официантов"
+    synonyms: [
+      'staff organization', 'team coordination', 'организация работы', 'координация смены',
+      'распределение задач', 'organizarea lucrului', 'coordonare echipa',
+      'контроль персонала'
+    ]
+  }
 ];
 
 // ===========================
@@ -1650,30 +1765,30 @@ export function findMatchingSchedule(input: string, threshold: number = 0.3): st
  * @param description Текст описания вакансии
  * @returns Массив нормализованных навыков
  */
+// Исправляем ТОЛЬКО эту функцию - она используется везде
 export function extractSkillsFromDescription(description: string): string[] {
   if (!description) return [];
-  
   const lowerDesc = description.toLowerCase();
   const matchedSkills = new Set<string>();
-  
-  // Проходим по всем навыкам и проверяем, упоминаются ли их синонимы в тексте
+
   SKILL_SYNONYMS.forEach(skill => {
     const foundSynonym = skill.synonyms.some(synonym => {
       const lowerSynonym = synonym.toLowerCase();
-      
-      // Экранируем специальные символы для регулярного выражения
-      const escapedSynonym = lowerSynonym.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      
-      // Используем \b (word boundary) для поиска только целых слов
-      const regex = new RegExp(`\\b${escapedSynonym}\\b`, 'i');
+      // Исправление: безопасные границы для кириллицы
+      const escaped = lowerSynonym.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      // Границы: начало строки ИЛИ пробел/пунктуация, затем слово, затем конец ИЛИ пробел/пунктуация
+      const regex = new RegExp(
+        `(?:^|\\s|[,.;:!?()«»"'\\[\\]])${escaped}(?:$|\\s|[,.;:!?()«»"'\\[\\]])`,
+        'i'
+      );
       return regex.test(lowerDesc);
     });
-    
+
     if (foundSynonym) {
       matchedSkills.add(skill.normalized);
     }
   });
-  
+
   return Array.from(matchedSkills);
 }
 /**
