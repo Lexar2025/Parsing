@@ -666,7 +666,6 @@ export class VacancyManager {
         case '999.md':
           parser = new NineNineNineMdParser({
             parseDetails: true,
-            cacheEnabled: true,
             concurrency: 3
           });
           break;

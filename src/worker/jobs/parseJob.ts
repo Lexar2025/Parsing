@@ -53,9 +53,8 @@ export async function parseJobProcessor(job: Job<ParseJobData>): Promise<{
       case '999.md': {
         const parser = new NineNineNineMdParser({
           parseDetails: true,
-          cacheEnabled: true,
           headless: true,
-          concurrency: 3
+          concurrency: 3,
         });
 
         const result = await parser.parse({

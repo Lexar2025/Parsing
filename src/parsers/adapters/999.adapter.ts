@@ -1,23 +1,12 @@
 /**
  * Адаптер для преобразования вакансий с 999.md в формат БД
  */
-
-// src/adapters/999.adapter.ts
-
-/**
- * Адаптер для преобразования вакансий с 999.md в формат БД
- */
 import { BaseVacancyAdapter } from './base.adapter.js';
 import { Vacancy as ParsedVacancy } from '../../types/vacancy.js';
 import { Prisma } from '@prisma/client';
 
 export class NineNineNineMdAdapter extends BaseVacancyAdapter {
   sourceName = '999.md';
-
-  // Обновляем конструктор, чтобы он мог принимать ExchangeRateProvider
-  constructor(args?: ConstructorParameters<typeof BaseVacancyAdapter>[0]) {
-    super(args);
-  }
 
   toPrisma(vacancy: ParsedVacancy): Prisma.VacancyCreateInput {
     try {
@@ -69,8 +58,7 @@ export class NineNineNineMdAdapter extends BaseVacancyAdapter {
       let salary = vacancy.salary;
       // Если зарплаты нет — ищем в описании или полном описании
       if (!salary && (vacancy.description || vacancy.fullDescription)) {
-      salary = this.extractSalaryFromText(
-      vacancy.description || vacancy.fullDescription);
+        salary = this.extractSalaryFromText(vacancy.description || vacancy.fullDescription);
       }
       
       // --- Используем новые методы конвертации ---
