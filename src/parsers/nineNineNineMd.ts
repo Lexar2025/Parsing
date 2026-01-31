@@ -17,7 +17,7 @@ type ParserOptions = {
   cacheDir?: string;
   cacheTTLSeconds?: number;
   headless?: boolean;
-  parseDetails?: boolean; // Парсить ли детали каждой вакансии
+  parseDetails?: boolean;
 };
 
 export class NineNineNineMdParser implements Parser {
@@ -30,7 +30,7 @@ export class NineNineNineMdParser implements Parser {
       concurrency: opts?.concurrency ?? 3,
       cacheEnabled: opts?.cacheEnabled ?? true,
       cacheDir: opts?.cacheDir ?? path.resolve(process.cwd(), 'cache', '999-md'),
-      cacheTTLSeconds: opts?.cacheTTLSeconds ?? 60 * 60 * 24, // 24 часа
+      cacheTTLSeconds: opts?.cacheTTLSeconds ?? 60 * 60 * 24,
       headless: opts?.headless ?? true,
       parseDetails: opts?.parseDetails ?? true,
     };
@@ -128,7 +128,7 @@ export class NineNineNineMdParser implements Parser {
         page: 1,
         hasNextPage: false,
       };
-    } catch (error: unknown) {
+    } catch (error) {
       log('❌ Ошибка при парсинге:', error instanceof Error ? error.message : String(error));
       throw error;
     } finally {
@@ -165,7 +165,7 @@ export class NineNineNineMdParser implements Parser {
             }
             
             return { ...v, ...extra };
-          } catch (err: unknown) {
+          } catch (err) {
             const errorInfo = err instanceof Error ? {
               name: err.name,
               message: err.message,
@@ -236,7 +236,7 @@ export class NineNineNineMdParser implements Parser {
   /**
    * Парсинг детальной страницы вакансии
    */
-  async parseVacancyDetails(url: string): Promise<Partial<Vacancy>> {
+    async parseVacancyDetails(url: string): Promise<Partial<Vacancy>> {
     if (!this.browser) {
       await this.initBrowser();
     }
@@ -249,37 +249,15 @@ export class NineNineNineMdParser implements Parser {
       await this.setupPage(page);
       await page.goto(url, { waitUntil: 'networkidle2', timeout: 40000 });
 
-      // Ждем загрузки контейнера с деталями
       await page.waitForSelector('.styles_features__Ws32g', { timeout: 15000 });
-
-      // Дополнительная задержка для загрузки всех элементов
       await pause(500);
 
-      // Извлекаем данные с правильной типизацией
-      interface NineNineNineVacancyDetails {
-        author?: string;
-        education?: string;
-        experience?: string;
-        salary?: string;
-        schedule?: string;
-        employmentType?: string;
-        companyType?: string;
-        contactPerson?: string;
-        company?: string;
-        seasonal?: boolean;
-        languages?: string[];
-        region?: string;
-        location?: string;
-        description?: string;
-      }
+      // ✅ ИСПРАВЛЕНО: используем Partial<Vacancy> вместо локального интерфейса
+      const details = await page.evaluate((): Partial<Vacancy> => {
+        const result: Partial<Vacancy> = {};
 
-      const details = await page.evaluate((): NineNineNineVacancyDetails => {
-        const result: NineNineNineVacancyDetails = {};
-
-        // Получаем все features
         const features = document.querySelectorAll('.styles_group__feature__5ZWJy');
         
-        // Создаем Map для быстрого поиска
         const featureMap = new Map<string, string>();
         features.forEach((feature) => {
           const keyEl = feature.querySelector('.styles_group__key__uRhnQ');
@@ -291,7 +269,7 @@ export class NineNineNineMdParser implements Parser {
           }
         });
 
-        // Извлекаем значения
+        // ✅ ИСПРАВЛЕНО: используем поля из общего интерфейса Vacancy
         result.author = featureMap.get('Автор') || undefined;
         result.education = featureMap.get('Образование') || undefined;
         result.experience = featureMap.get('Стаж работы') || undefined;
@@ -301,8 +279,9 @@ export class NineNineNineMdParser implements Parser {
         result.companyType = featureMap.get('Тип компании') || undefined;
         result.contactPerson = featureMap.get('Контактное лицо') || undefined;
         result.company = featureMap.get('Название компании') || undefined;
+        // ✅ ДОБАВЛЕНО: новое поле для разделения "В Молдове" / "За границей"
+        result.workLocationType = featureMap.get('Место работы') || undefined;
         
-        // Сезонная работа
         const seasonalText = featureMap.get('Сезонная работа');
         result.seasonal = seasonalText === 'Да';
 
@@ -328,8 +307,8 @@ export class NineNineNineMdParser implements Parser {
           }
         }
 
-        // Описание (если есть)
-        const descriptionEl = document.querySelector('.styles_adPage__description__qDkzc');
+        // Описание
+        const descriptionEl = document.querySelector('.styles_textcontent__XH6FS.styles_desktop__d_kP8');
         if (descriptionEl) {
           result.description = descriptionEl.textContent?.trim() || undefined;
         }
@@ -338,7 +317,7 @@ export class NineNineNineMdParser implements Parser {
       });
 
       return details;
-    } catch (error: unknown) {
+    } catch (error) {
       const errorInfo = error instanceof Error ? {
         name: error.name,
         message: error.message,
@@ -424,48 +403,64 @@ export class NineNineNineMdParser implements Parser {
     }
   }
 
-  /**
-   * Определение общего количества страниц
-   */
-  private async getTotalPages(firstPageUrl: string): Promise<number> {
-    if (!this.browser) throw new Error('Браузер не инициализирован');
+/**
+ * Определение общего количества страниц
+ */
+private async getTotalPages(firstPageUrl: string): Promise<number> {
+  if (!this.browser) throw new Error('Браузер не инициализирован');
 
-    const page = await this.browser.newPage();
+  const page = await this.browser.newPage();
 
-    try {
-      await this.setupPage(page);
-      await page.goto(firstPageUrl, { waitUntil: 'networkidle2', timeout: 40000 });
+  try {
+    await this.setupPage(page);
+    await page.goto(firstPageUrl, { waitUntil: 'networkidle2', timeout: 40000 });
 
-      // Ищем пагинацию
-      const totalPages = await page.evaluate(() => {
-        // Ищем все ссылки пагинации
-        const paginationLinks = document.querySelectorAll('.paginator a');
-        let maxPage = 1;
+    // Новый селектор для пагинации 999.md
+    const totalPages = await page.evaluate(() => {
+      // Ищем контейнер пагинации
+      const paginationContainer = document.querySelector('.Pagination_pagination__container__xR1GS');
+      if (!paginationContainer) {
+        return 1; // Пагинации нет
+      }
 
-        paginationLinks.forEach((link) => {
-          const href = link.getAttribute('href');
-          if (href) {
-            const match = href.match(/[?&]page=(\d+)/);
-            if (match) {
-              const pageNum = parseInt(match[1], 10);
-              if (pageNum > maxPage) {
-                maxPage = pageNum;
-              }
-            }
+      // Ищем все кнопки страниц с атрибутом data-test-page-value
+      const pageButtons = paginationContainer.querySelectorAll('[data-test-page-value]');
+      
+      if (pageButtons.length === 0) {
+        return 1;
+      }
+
+      // Извлекаем максимальное значение из атрибутов
+      let maxPage = 1;
+      pageButtons.forEach((button) => {
+        const pageValue = button.getAttribute('data-test-page-value');
+        if (pageValue) {
+          const pageNum = parseInt(pageValue, 10);
+          if (pageNum > maxPage) {
+            maxPage = pageNum;
           }
-        });
-
-        return maxPage;
+        }
       });
 
-      return totalPages;
-    } catch (error: unknown) {
-      log('⚠️ Не удалось определить количество страниц:', error instanceof Error ? error.message : String(error));
-      return 10; // По умолчанию
-    } finally {
-      await page.close();
-    }
+      // Проверяем, есть ли кнопка "далее" (значит страниц больше, чем отображено)
+      const nextButton = paginationContainer.querySelector('.Pagination_pagination__container__buttons__wrapper__icon__next__A22Rc');
+      if (nextButton && !nextButton.hasAttribute('disabled')) {
+        // Есть кнопка "далее" и она активна → страниц больше
+        // Возвращаем увеличенное значение
+        return Math.max(maxPage, 20);
+      }
+
+      return maxPage;
+    });
+
+    return totalPages;
+  } catch (error) {
+    log('⚠️ Не удалось определить количество страниц:', error instanceof Error ? error.message : String(error));
+    return 10; // По умолчанию
+  } finally {
+    await page.close();
   }
+}
 
   /**
    * Парсинг всех страниц с вакансиями
@@ -503,7 +498,7 @@ export class NineNineNineMdParser implements Parser {
         if (currentPage < pagesToParse) {
           await pause(delay);
         }
-      } catch (error: unknown) {
+      } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         log(`   ❌ Ошибка при парсинге страницы ${currentPage}:`, errorMessage);
 
@@ -519,7 +514,7 @@ export class NineNineNineMdParser implements Parser {
               allVacancies.push(...vacancies);
               log(`   ✅ Повторная попытка успешна: ${vacancies.length} вакансий`);
             }
-          } catch (retryError: unknown) {
+          } catch (retryError) {
             const retryMessage = retryError instanceof Error ? retryError.message : String(retryError);
             log(`   ❌ Повторная попытка не удалась:`, retryMessage);
           }
@@ -540,49 +535,30 @@ export class NineNineNineMdParser implements Parser {
 
     try {
       await this.setupPage(page);
-
-      // Увеличенный таймаут для медленных страниц
       await page.goto(url, { waitUntil: 'networkidle2', timeout: 40000 });
-
-      // Ждём загрузки контейнера с вакансиями
       await page.waitForSelector('.styles_adlist__3YsgA', { timeout: 15000 });
-
-      // Ждём загрузки карточек вакансий (даём дополнительное время на JS)
-      await page
-        .waitForSelector('article.AdVacancies_wrapper__oZp_b', {
-          timeout: 10000,
-        })
-        .catch(() => {
-          // Карточек может не быть на странице
-        });
-
-      // Дополнительная задержка для загрузки всех карточек
+      await page.waitForSelector('article.AdVacancies_wrapper__oZp_b', { timeout: 10000 }).catch(() => {});
       await pause(1000);
 
-      // Извлекаем данные вакансий
       const vacancies = await page.$$eval('article.AdVacancies_wrapper__oZp_b', (cards) =>
         cards
           .map((card) => {
             try {
-              // Заголовок и ссылка
               const titleLink = card.querySelector('h5.AdVacancies_title__link__V9IOY a');
               const title = titleLink?.textContent?.trim() || '';
               const url = titleLink?.getAttribute('href') || '';
 
               if (!title || !url) return null;
 
-              // Характеристики вакансии
               const features = card.querySelectorAll('.AdVacancies_features__item__IBTIr');
-
-              // Обычно: [график работы, опыт работы, образование]
               const schedule = features[0]?.textContent?.trim() || undefined;
               const experience = features[1]?.textContent?.trim() || undefined;
               const education = features[2]?.textContent?.trim() || undefined;
 
-              // Извлекаем ID из URL
               const idMatch = url.match(/\/(\d+)/);
               const id = idMatch ? idMatch[1] : url;
 
+              // ✅ ИСПРАВЛЕНО: убрал лишние пробелы в URL
               return {
                 id,
                 title,
@@ -604,6 +580,7 @@ export class NineNineNineMdParser implements Parser {
       await page.close();
     }
   }
+
 
   /**
    * Настройка страницы (User-Agent, viewport)

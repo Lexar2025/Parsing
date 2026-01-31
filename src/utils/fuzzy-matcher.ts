@@ -1445,9 +1445,9 @@ const EMPLOYMENT_SYNONYMS: CategoryEntry[] = [
     normalized: 'part',
     synonyms: [
       // Русский
-      'частичная занятость', 'частичная', 'неполный день', 'part time',
+      'частичная занятость', 'частичная', 'не полный день', 'part time',
       'part-time', 'неполное рабочее время', 'по совместительству',
-      'подработка', 'временная работа',
+      'подработка', 'временная работа', 'По выходным', 'Неполная занятость',
       // Румынский
       'normă parțială', 'norma partiala', 'angajare cu normă parțială',
       'angajare part-time', 'part time', 'cu normă parțială',
@@ -1465,7 +1465,7 @@ const EMPLOYMENT_SYNONYMS: CategoryEntry[] = [
       // Русский
       'проектная работа', 'по проекту', 'контракт', 'contract', 'проект',
       'работа по контракту', 'фриланс', 'freelance', 'временная работа',
-      'срочный контракт', 'проектная деятельность',
+      'срочный контракт', 'проектная деятельность',  'Волонтерство', 'Разовое задание',
       // Румынский
       'muncă pe proiect', 'munca pe proiect', 'contract pe proiect',
       'contract temporar', 'freelance', 'freelancer', 'pe bază de contract',
@@ -1599,7 +1599,8 @@ const SCHEDULE_SYNONYMS: CategoryEntry[] = [
     synonyms: [
       // Русский
       'офис', 'в офисе', 'работа в офисе', 'офисная работа',
-      'на месте', 'стационарно', 'on-site', 'он-сайт', 'в здании компании',
+      'на месте', 'стационарно', 'on-site', 'он-сайт', 'в здании компании', 
+      'По месту нахождения работодателя', 'На постоянной основе',
       // Румынский
       'birou', 'la birou', 'muncă la birou', 'munca la birou',
       'la sediu', 'sediu', 'la fața locului', 'la fata locului',
@@ -1652,7 +1653,7 @@ const SCHEDULE_SYNONYMS: CategoryEntry[] = [
     synonyms: [
       // Русский
       'сменный график', 'посменно', 'смены', 'shift', 'график смен',
-      '2/2', '5/2', 'сутки через трое', 'вахта', 'вахтовый метод',
+      '2/2', '5/2', 'сутки через трое', 'вахта', 'вахтовый метод', 'В полевых условиях',
       // Румынский
       'program pe schimburi', 'în schimburi', 'in schimburi',
       'schimburi', 'tură', 'tura', 'rotație', 'rotatie',

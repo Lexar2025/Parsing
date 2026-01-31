@@ -325,4 +325,26 @@ protected extractCompanyFromText(text?: string): string | undefined {
 
   return undefined;
 }
+protected normalizeWorkLocationType(location?: string): string {
+  // Если поле отсутствует или пустое - считаем, что в Молдове
+  if (!location || location.trim() === '') {
+    return 'В Молдове';
+  }
+  
+  const lowerLocation = location.toLowerCase();
+  
+  // Если явно указана Молдова или Приднестровье
+  if (lowerLocation.includes('молдова') || 
+      lowerLocation.includes('приднестровье') || 
+      lowerLocation.includes('transnistria') ||
+      lowerLocation.includes('кишинев') ||
+      lowerLocation.includes('кишинёв') ||
+      lowerLocation.includes('chișinău')) {
+    return 'В Молдове';
+  }
+  
+  // Любое другое значение = за границей
+  return 'За границей';
+}
+
 }

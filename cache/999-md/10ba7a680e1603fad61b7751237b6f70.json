@@ -1,1 +1,16 @@
-{}
+{
+  "author": "Физическое лицо",
+  "education": "Среднее профессиональное",
+  "experience": "От 1 года до 3 лет",
+  "schedule": "Гибкий",
+  "employmentType": "Полная занятость",
+  "contactPerson": "STEPAN",
+  "seasonal": false,
+  "languages": [
+    "Румынский",
+    "Русский"
+  ],
+  "region": "Кишинёв мун., Кишинёв, Ботаника",
+  "location": "Кишинёв мун., Кишинёв, Ботаника",
+  "description": "Oferim:\n- Contract de muncă\n- Salariu + beneficii \n- Bonusuri în funcție de performanțele;\n- Mediu de lucru plăcut și colegial;\n- Formare profesională permanentă.\n\nCerințe:\n- cunoștințe în domeniu;\n- responsabil față de lucru\n- respectabil cu clienții;\n- fară obiceiuri negative"
+}

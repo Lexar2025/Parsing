@@ -1,0 +1,20 @@
+{
+  "author": "Юридическое лицо",
+  "education": "Высшее",
+  "experience": "Не имеет значения",
+  "salary": "6500 MDL",
+  "schedule": "Полный день",
+  "employmentType": "Полная занятость",
+  "contactPerson": "CAUTA AURICA",
+  "company": "TransLang",
+  "seasonal": false,
+  "languages": [
+    "Румынский",
+    "Русский",
+    "Английский",
+    "Французский"
+  ],
+  "region": "Кишинёв мун., Кишинёв, Центр",
+  "location": "Кишинёв мун., Кишинёв, Центр",
+  "description": "Полный рабочий день"
+}

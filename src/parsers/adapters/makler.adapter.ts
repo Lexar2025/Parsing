@@ -70,8 +70,8 @@ export class MaklerMdAdapter extends BaseVacancyAdapter {
 
       // --- Используем новые методы нормализации ---
       const normalizedExperience = this.extractNormalizedExperience(vacancy.experience);
-      const normalizedEmployment = this.extractNormalizedEmployment(vacancy.schedule);
-      const normalizedSchedule = this.extractNormalizedSchedule(vacancy.workPlace);
+      const normalizedEmployment = this.extractNormalizedEmployment(vacancy.employmentType);
+      const normalizedSchedule = this.extractNormalizedSchedule(vacancy.schedule);
 
       return {
         title: vacancy.title.trim(),

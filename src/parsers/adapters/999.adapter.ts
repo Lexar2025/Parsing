@@ -65,11 +65,19 @@ export class NineNineNineMdAdapter extends BaseVacancyAdapter {
         const languageSkills = this.matchSkills(vacancy.languages.filter(lang => lang?.trim()));
         skills = [...new Set([...skills, ...languageSkills])];
       }
-
+      // --- Обработка зарплаты ---
+      let salary = vacancy.salary;
+      // Если зарплаты нет — ищем в описании или полном описании
+      if (!salary && (vacancy.description || vacancy.fullDescription)) {
+      salary = this.extractSalaryFromText(
+      vacancy.description || vacancy.fullDescription);
+      }
+      
       // --- Используем новые методы конвертации ---
-      const currencyInfo = this.extractSourceAndTargetCurrency(vacancy.salary);
-      const convertedMinSalary = this.extractAndConvertSalaryMin(vacancy.salary);
-      const convertedMaxSalary = this.extractAndConvertSalaryMax(vacancy.salary);
+      const currencyInfo = this.extractSourceAndTargetCurrency(salary);
+      const convertedMinSalary = this.extractAndConvertSalaryMin(salary);
+      const convertedMaxSalary = this.extractAndConvertSalaryMax(salary);
+      const rawScheduleField = vacancy.schedule; // содержит "полный день" или "удаленно"
 
       return {
         // Унифицированные поля
@@ -86,8 +94,13 @@ export class NineNineNineMdAdapter extends BaseVacancyAdapter {
 
         // Опыт и тип работы - используем новые методы с fuzzy-matching
         experience: this.extractNormalizedExperience(vacancy.experience),
-        employment: this.extractNormalizedEmployment(vacancy.employmentType),
-        schedule: this.extractNormalizedSchedule(vacancy.workPlace),
+
+        // ✅ ПРАВИЛЬНО (обрабатываем оба поля из vacancy.schedule):
+        employment: this.extractNormalizedEmployment(rawScheduleField) || 
+            this.extractNormalizedEmployment(vacancy.employmentType),
+
+        schedule: this.extractNormalizedSchedule(rawScheduleField) || 'office',
+        workLocationType: this.normalizeWorkLocationType(vacancy.workLocationType),
 
         // Навыки (из языков если есть)
         skills: skills,
@@ -104,14 +117,14 @@ export class NineNineNineMdAdapter extends BaseVacancyAdapter {
           seasonal: typeof vacancy.seasonal === 'boolean' ? vacancy.seasonal : null,
           employmentType: vacancy.employmentType?.trim() || null,
           companyType: vacancy.companyType?.trim() || null,
-          languages: skills,
+          languages: vacancy.languages?.map(lang => lang.trim()) || null,
           contactPerson: vacancy.contactPerson?.trim() || null,
           region: vacancy.region?.trim() || null,
           education: vacancy.education?.trim() || null,
-          fullDescription: vacancy.fullDescription?.trim() || null,
           firstSeenAt: vacancy.firstSeenAt ? new Date(vacancy.firstSeenAt) : null,
           lastSeenAt: vacancy.lastSeenAt ? new Date(vacancy.lastSeenAt) : null,
           isActive: typeof vacancy.isActive === 'boolean' ? vacancy.isActive : true,
+          originalWorkLocation: vacancy.workLocationType?.trim() || null,
           // --- Добавляем информацию о конвертации и нормализации ---
           originalSalary: vacancy.salary,
           convertedSalaryMin: convertedMinSalary,
@@ -120,11 +133,11 @@ export class NineNineNineMdAdapter extends BaseVacancyAdapter {
           conversionTargetCurrency: currencyInfo?.target,
           normalizedExperience: this.extractNormalizedExperience(vacancy.experience),
           normalizedEmployment: this.extractNormalizedEmployment(vacancy.employmentType),
-          normalizedSchedule: this.extractNormalizedSchedule(vacancy.workPlace),
+          normalizedSchedule: this.extractNormalizedSchedule(vacancy.schedule),
           normalizedCurrency: this.extractNormalizedCurrency(vacancy.salary),
         } satisfies Prisma.InputJsonValue,
       };
-    } catch (error: unknown) {
+    } catch (error) {
       console.error(`❌ Ошибка в адаптере 999.md для вакансии ${vacancy.id}:`, {
         error: error instanceof Error ? error.message : String(error),
         vacancy: {

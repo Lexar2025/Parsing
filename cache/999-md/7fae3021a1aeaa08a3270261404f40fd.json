@@ -1,0 +1,16 @@
+{
+  "author": "Юридическое лицо",
+  "education": "Среднее профессиональное",
+  "experience": "От 1 года до 3 лет",
+  "schedule": "Полный день",
+  "employmentType": "Полная занятость",
+  "contactPerson": "Родика",
+  "seasonal": false,
+  "languages": [
+    "Румынский",
+    "Русский"
+  ],
+  "region": "Бельцы мун.",
+  "location": "Бельцы мун.",
+  "description": "Опыт работы в сфере продаж"
+}

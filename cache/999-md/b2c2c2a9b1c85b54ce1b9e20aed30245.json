@@ -1,0 +1,19 @@
+{
+  "author": "Юридическое лицо",
+  "education": "Не требуется или не указано",
+  "experience": "От 1 года до 3 лет",
+  "salary": "от 10000 до 20000 MDL",
+  "schedule": "Полный день",
+  "employmentType": "Полная занятость",
+  "contactPerson": "Victor",
+  "company": "autovic srl",
+  "seasonal": false,
+  "languages": [
+    "Румынский",
+    "Русский",
+    "Другое"
+  ],
+  "region": "Страшены, Страшены, Центр, str. Ştefan cel Mare și Sfînt, 202a",
+  "location": "Страшены, Страшены, Центр, str. Ştefan cel Mare și Sfînt, 202a",
+  "description": "Mecanici auto"
+}
