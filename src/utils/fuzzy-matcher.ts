@@ -1599,8 +1599,8 @@ const SCHEDULE_SYNONYMS: CategoryEntry[] = [
     synonyms: [
       // Русский
       'офис', 'в офисе', 'работа в офисе', 'офисная работа',
-      'на месте', 'стационарно', 'on-site', 'он-сайт', 'в здании компании', 
-      'По месту нахождения работодателя', 'На постоянной основе',
+      'на месте', 'стационарно', 'on-site', 'он-сайт', 'в здании компании',
+      'По месту нахождения работодателя', 'На постоянной основе', 'На территории работодателя',
       // Румынский
       'birou', 'la birou', 'muncă la birou', 'munca la birou',
       'la sediu', 'sediu', 'la fața locului', 'la fata locului',
@@ -1749,8 +1749,20 @@ export function findMatchingEmployment(input: string, threshold: number = 0.3): 
 /**
  * Находит подходящую валюту
  */
-export function findMatchingCurrency(input: string, threshold: number = 0.3): string | undefined {
-  return findMatchingCategory(input, CURRENCY_SYNONYMS, threshold);
+export function findMatchingCurrency(input: string): string | undefined {
+  if (!input) return undefined;
+  const lowerInput = input.toLowerCase();
+  
+  for (const currency of CURRENCY_SYNONYMS) {
+    for (const synonym of currency.synonyms) {
+      const lowerSynonym = synonym.toLowerCase();
+      if (lowerInput.includes(lowerSynonym)) {
+        return currency.normalized;
+      }
+    }
+  }
+  
+  return undefined;
 }
 
 /**

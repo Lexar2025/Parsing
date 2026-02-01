@@ -130,9 +130,15 @@ export abstract class BaseVacancyAdapter implements VacancyAdapter {
   }
 
   protected extractNormalizedCurrency(currencyStr?: string): string | undefined {
-    if (!currencyStr) return undefined;
-    return findMatchingCurrency(currencyStr) || this.fallbackExtractCurrency(currencyStr);
-  }
+  if (!currencyStr) return undefined;
+  
+  // Для валюты используем простой поиск подстроки (не Fuse)
+  const currency = findMatchingCurrency(currencyStr);
+  if (currency) return currency;
+  
+  // Резервный вариант
+  return this.fallbackExtractCurrency(currencyStr);
+}
 
   protected extractNormalizedSkills(
     description?: string,
@@ -217,13 +223,26 @@ export abstract class BaseVacancyAdapter implements VacancyAdapter {
   }
 
   private fallbackExtractCurrency(salary?: string): string | undefined {
-    if (!salary) return undefined;
-    if (salary.includes('MDL') || salary.includes('lei')) return 'MDL';
-    if (salary.includes('USD') || salary.includes('$')) return 'USD';
-    if (salary.includes('EUR') || salary.includes('€')) return 'EUR';
-    if (salary.includes('RUB') || salary.includes('₽')) return 'RUB';
+  if (!salary) return undefined;
+  
+  const lowerSalary = salary.toLowerCase();
+  
+  // Проверяем в порядке приоритета
+  if (lowerSalary.includes('eur') || lowerSalary.includes('евро') || lowerSalary.includes('€')) {
+    return 'EUR';
+  }
+  if (lowerSalary.includes('usd') || lowerSalary.includes('доллар') || lowerSalary.includes('$')) {
+    return 'USD';
+  }
+  if (lowerSalary.includes('mdl') || lowerSalary.includes('lei') || lowerSalary.includes('ле')) {
     return 'MDL';
   }
+  if (lowerSalary.includes('rub') || lowerSalary.includes('руб') || lowerSalary.includes('₽')) {
+    return 'RUB';
+  }
+  
+  return 'MDL'; // По умолчанию
+}
 
   // --- Вспомогательные методы нормализации ---
   private normalizeExperience(experience: string): string {
@@ -333,9 +352,17 @@ protected normalizeWorkLocationType(location?: string): string {
   
   const lowerLocation = location.toLowerCase();
   
+  // Сначала проверяем на "за границей"
+  if (lowerLocation.includes('за границей') || 
+      lowerLocation.includes('foreign') || 
+      lowerLocation.includes('abroad') ||
+      lowerLocation.includes('international')) {
+    return 'За границей';
+  }
+  
   // Если явно указана Молдова или Приднестровье
-  if (lowerLocation.includes('молдова') || 
-      lowerLocation.includes('приднестровье') || 
+  if (lowerLocation.includes('молдова') ||
+      lowerLocation.includes('приднестровье') ||
       lowerLocation.includes('transnistria') ||
       lowerLocation.includes('кишинев') ||
       lowerLocation.includes('кишинёв') ||
