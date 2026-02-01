@@ -390,6 +390,41 @@ export class RabotaMdParser implements Parser {
 
     const details: Partial<Vacancy> = {};
 
+    // --- Извлечение описания (два типа страниц: VIP и free) ---
+    // VIP: контейнер .vacancy-content.inbody внутри .vip-vacancy-content
+    const vipDesc = document.querySelector(
+      '.vip-vacancy-content .vacancy-content.inbody'
+    );
+
+    // Free: div.text-black внутри контейнера с calc-шириной в .free-vacancy-content
+    let freeDesc: Element | null = null;
+    const freeContainer = document.querySelector('.free-vacancy-content');
+    if (freeContainer) {
+      const allDivs = freeContainer.querySelectorAll('div');
+      for (const div of Array.from(allDivs)) {
+        const hasCalcWidth = Array.from(div.classList).some(
+          (c) => c.startsWith('w-[calc(') && c.includes('66.666')
+        );
+        if (hasCalcWidth) {
+          const textBlack = div.querySelector('div > div.text-black');
+          if (textBlack) {
+            freeDesc = textBlack;
+            break;
+          }
+        }
+      }
+    }
+
+    const descriptionEl = vipDesc || freeDesc;
+    if (descriptionEl) {
+      const text = descriptionEl.textContent?.trim();
+      if (text) {
+        details.description = text;
+        details.fullDescription = text;
+      }
+    }
+
+    // --- Извлечение полей из таблицы деталей ---
     const labelNodes = document.querySelectorAll('.text-gray-400');
 
     labelNodes.forEach((labelNode: Element) => {
@@ -403,6 +438,10 @@ export class RabotaMdParser implements Parser {
         case 'Город':
           details.location = value;
           break;
+        case 'Главный офис':
+          // Адрес головного офиса — используется как location когда город = "За границей"
+          details.workPlace = value;
+          break;
         case 'Образование':
           details.education = value;
           break;
@@ -413,9 +452,13 @@ export class RabotaMdParser implements Parser {
           details.salary = value;
           break;
         case 'График работы':
+          // Значения: "На постоянной основе", "Неполная занятость", "Посменно" и др.
+          // Адаптер маппит это в наш employment (full/part/project)
           details.schedule = value;
           break;
         case 'Рабочее место':
+          // Значения: "По месту нахождения работодателя", "Удаленный", "Гибридный режим" и др.
+          // Адаптер маппит это в наш schedule (office/remote/hybrid)
           details.employmentType = value;
           break;
       }
