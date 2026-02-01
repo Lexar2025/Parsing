@@ -37,7 +37,6 @@ export async function parseJobProcessor(job: Job<ParseJobData>): Promise<{
       case 'rabota.md': {
         const parser = new RabotaMdParser({
           parseDetails: true,
-          cacheEnabled: true,
         });
 
         const result = await parser.parse({
@@ -70,9 +69,8 @@ export async function parseJobProcessor(job: Job<ParseJobData>): Promise<{
       case 'makler.md': {
         const parser = new MaklerMdParser({
           parseDetails: true,
-          cacheEnabled: true,
           headless: true,
-          concurrency: 3
+          concurrency: 3,
         });
 
         const result = await parser.parse({

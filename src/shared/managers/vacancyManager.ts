@@ -658,7 +658,6 @@ export class VacancyManager {
         case 'rabota.md':
           parser = new RabotaMdParser({
             parseDetails: true,
-            cacheEnabled: true,
             concurrency: 3
           });
           break;
@@ -673,7 +672,6 @@ export class VacancyManager {
         case 'makler.md':
           parser = new MaklerMdParser({
             parseDetails: true,
-            cacheEnabled: true,
             concurrency: 3
           });
           break;

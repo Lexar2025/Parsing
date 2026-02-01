@@ -1,22 +1,15 @@
 /**
  * Парсер для сайта rabota.md
- * Версия с проверкой дубликатов ID + парсинг деталей + кэш + VacancyManager
  */
 
 import axios, { AxiosInstance } from 'axios';
 import { JSDOM } from 'jsdom';
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import crypto from 'crypto';
 import pLimit from 'p-limit';
 import { Parser, ParserConfig, ParseResult, Vacancy } from '../types/vacancy.js';
 import { log, pause } from '../utils/helpers.js';
 
 type ParserOptions = {
   concurrency?: number;
-  cacheEnabled?: boolean;
-  cacheDir?: string;
-  cacheTTLSeconds?: number;
   parseDetails?: boolean;
 };
 
@@ -28,9 +21,6 @@ export class RabotaMdParser implements Parser {
   constructor(opts?: ParserOptions) {
     this.options = {
       concurrency: opts?.concurrency ?? 3,
-      cacheEnabled: opts?.cacheEnabled ?? true,
-      cacheDir: opts?.cacheDir ?? path.resolve(process.cwd(), 'cache', 'rabota-md'),
-      cacheTTLSeconds: opts?.cacheTTLSeconds ?? 60 * 60 * 24,
       parseDetails: opts?.parseDetails ?? true,
     };
 
@@ -122,25 +112,17 @@ export class RabotaMdParser implements Parser {
   }
 
   /**
-   * Парсинг деталей для массива вакансий с кэшированием
+   * Парсинг деталей для массива вакансий
    */
   private async parseVacanciesDetails(vacancies: Vacancy[]): Promise<Vacancy[]> {
-    if (this.options.cacheEnabled) {
-      try {
-        await fs.mkdir(this.options.cacheDir, { recursive: true });
-      } catch {
-        log('⚠️ Не удалось создать директорию кэша:', this.options.cacheDir);
-      }
-    }
-
     const limit = pLimit(this.options.concurrency);
     let processed = 0;
 
-    const detailed = await Promise.all(
+    return Promise.all(
       vacancies.map((v) =>
         limit(async () => {
           try {
-            const extra = await this.parseVacancyDetailsWithCache(v.url);
+            const extra = await this.parseVacancyDetails(v.url);
             processed++;
 
             if (processed % 10 === 0 || processed === vacancies.length) {
@@ -155,8 +137,6 @@ export class RabotaMdParser implements Parser {
         }),
       ),
     );
-
-    return detailed;
   }
 
   /**
@@ -403,42 +383,6 @@ export class RabotaMdParser implements Parser {
     return match ? match[1] : url;
   }
 
-  private async parseVacancyDetailsWithCache(url: string): Promise<Partial<Vacancy>> {
-    if (!this.options.cacheEnabled) {
-      return this.parseVacancyDetails(url);
-    }
-
-    const key = this.hash(url);
-    const filePath = path.join(this.options.cacheDir, `${key}.json`);
-
-    try {
-      const stat = await fs.stat(filePath).catch(() => null);
-      if (stat) {
-        const now = Date.now();
-        const mtime = stat.mtime.getTime();
-        const ageSeconds = (now - mtime) / 1000;
-
-        if (ageSeconds < this.options.cacheTTLSeconds) {
-          const raw = await fs.readFile(filePath, 'utf-8');
-          const parsed = JSON.parse(raw) as Partial<Vacancy>;
-          return parsed;
-        }
-      }
-    } catch {
-      // Игнорируем
-    }
-
-    const details = await this.parseVacancyDetails(url);
-
-    try {
-      await fs.writeFile(filePath, JSON.stringify(details, null, 2), 'utf-8');
-    } catch {
-      log('⚠️ Не удалось записать кэш:', filePath);
-    }
-
-    return details;
-  }
-
   async parseVacancyDetails(url: string): Promise<Partial<Vacancy>> {
     const html = await this.fetchPage(url);
     const dom = new JSDOM(html);
@@ -471,8 +415,8 @@ export class RabotaMdParser implements Parser {
         case 'График работы':
           details.schedule = value;
           break;
-        case 'Место работы':
-          details.workPlace = value;
+        case 'Рабочее место':
+          details.employmentType = value;
           break;
       }
     });
@@ -480,7 +424,4 @@ export class RabotaMdParser implements Parser {
     return details;
   }
 
-  private hash(input: string): string {
-    return crypto.createHash('md5').update(input).digest('hex');
-  }
 }

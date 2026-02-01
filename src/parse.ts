@@ -23,7 +23,6 @@ function getParser(site: string): Parser {
       return new MaklerMdParser({
         headless: true,      // false = видно браузер для отладки
         parseDetails: true,  // Не парсить детали (они не нужны)
-        cacheEnabled: true,
       });
     default:
       throw new Error(`Unknown parser: ${site}`);
