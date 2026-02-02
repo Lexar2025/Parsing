@@ -36,6 +36,9 @@ export class HHRuParser implements Parser {
         text: config.searchQuery,
         per_page: 100, // Максимум 100 за запрос
         page: 0,
+        // HH требует эти параметры для корректной работы
+        only_with_salary: false,
+        // Ищем везде по умолчанию (можно потом добавить фильтр по странам)
       };
 
       const allVacancies: Vacancy[] = [];
@@ -138,6 +141,10 @@ export class HHRuParser implements Parser {
    */
   private async fetchVacancies(params: HHSearchParams): Promise<HHVacancyResponse> {
     try {
+      // Логируем точный запрос для отладки
+      const queryParams = new URLSearchParams(params as Record<string, string>).toString();
+      log(`   🌐 Запрос: ${this.baseUrl}/vacancies?${queryParams}`);
+
       const response = await this.axiosInstance.get<HHVacancyResponse>('/vacancies', {
         params,
       });
@@ -145,8 +152,18 @@ export class HHRuParser implements Parser {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         log(`❌ Ошибка HTTP: ${error.message}`);
+        
+        // Логируем детали ошибки
+        if (error.response) {
+          log(`   Статус: ${error.response.status}`);
+          log(`   Данные ошибки:`, error.response.data);
+        }
+        
         if (error.response?.status === 429) {
           throw new Error('Rate limit exceeded. Попробуйте позже.');
+        }
+        if (error.response?.status === 400) {
+          throw new Error(`Некорректные параметры запроса: ${JSON.stringify(error.response.data)}`);
         }
       }
       throw error;

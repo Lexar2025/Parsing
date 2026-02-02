@@ -21,7 +21,7 @@ interface VacancyQuery {
   page?: number;    // Номер страницы (начиная с 1)
 }
 
-type VacancySource = 'rabota.md' | '999.md' | 'makler.md';
+type VacancySource = 'rabota.md' | '999.md' | 'makler.md' | 'hh.ru';
 
 export async function vacancyRoutes(fastify: FastifyInstance): Promise<void> {
   // GET /vacancies - Умный поиск через VacancyManager
@@ -110,7 +110,7 @@ export async function vacancyRoutes(fastify: FastifyInstance): Promise<void> {
           success: true,
           message: 'Parsing completed',
           data: {
-            sources: sources || ['rabota.md', '999.md', 'makler.md'],
+            sources: sources || ['rabota.md', '999.md', 'makler.md', 'hh.ru'],
             searchQuery: searchQuery || 'работа',
             vacanciesParsed: result.results.length
           }

@@ -17,6 +17,7 @@ import { cacheService } from '../../api/services/cache.service.js';
 import { RabotaMdParser } from '../../parsers/rabotaMd.js';
 import { NineNineNineMdParser } from '../../parsers/nineNineNineMd.js';
 import { MaklerMdParser } from '../../parsers/maklerMd.js';
+import { HHRuParser } from '../../parsers/hhRu.js';
 import { Vacancy } from '../../types/vacancy.js';
 import { Prisma } from '@prisma/client';
 
@@ -61,7 +62,7 @@ function mapPrismaToVacancy(prismaVacancy: Prisma.VacancyGetPayload<object>): Va
     experience: prismaVacancy.experience || undefined,
     schedule: prismaVacancy.schedule || undefined,
     workPlace: getStringField('workPlace'),
-    source: prismaVacancy.source as 'rabota.md' | '999.md' | 'makler.md' | 'other',
+    source: prismaVacancy.source as 'rabota.md' | '999.md' | 'makler.md' | 'hh.ru' | 'other',
     author: getStringField('author'),
     seasonal: getBooleanField('seasonal'),
     employmentType: prismaVacancy.employment || undefined,
@@ -84,7 +85,7 @@ export interface SearchFilters {
   salaryMin?: number;
   experience?: string[];
   schedule?: string[];
-  sources?: ('rabota.md' | '999.md' | 'makler.md')[];
+  sources?: ('rabota.md' | '999.md' | 'makler.md' | 'hh.ru')[];
   limit?: number;
   page?: number;          // Номер страницы (начиная с 1)
   useSemanticSearch?: boolean; // Использовать семантический поиск
@@ -675,6 +676,10 @@ export class VacancyManager {
             concurrency: 3
           });
           break;
+
+        case 'hh.ru':
+          parser = new HHRuParser();
+          break;
           
         default:
           console.log(`   ⚠️  Парсер для ${source} не реализован`);
@@ -689,7 +694,8 @@ export class VacancyManager {
       const result = await parser.parse({
         baseUrl: source === 'rabota.md' ? 'https://www.rabota.md' : 
                  source === '999.md' ? 'https://999.md' :
-                 'https://makler.md',
+                 source === 'makler.md' ? 'https://makler.md' :
+                 'https://api.hh.ru',
         searchQuery,
         maxPages: 10
       });
@@ -786,7 +792,7 @@ export class VacancyManager {
   }
 
   async getStats(): Promise<Array<{ source: string; count: number; lastParse: Date | null; isStale: boolean; status: string }>> {
-    const sources = ['rabota.md', '999.md', 'makler.md'];
+    const sources = ['rabota.md', '999.md', 'makler.md', 'hh.ru'];
     
     const stats = await Promise.all(
       sources.map(async (source) => {

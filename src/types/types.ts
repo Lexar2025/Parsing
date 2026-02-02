@@ -66,4 +66,7 @@ export interface HHSearchParams {
   experience?: string;
   per_page?: number;
   page?: number;
+  only_with_salary?: boolean;
+  search_field?: string;
+  [key: string]: string | number | boolean | undefined; // Для других параметров HH API
 }
