@@ -22,7 +22,10 @@ export class HHRuParser implements Parser {
     this.axiosInstance = axios.create({
       baseURL: this.baseUrl,
       headers: {
-        'User-Agent': 'JobAggregator/1.0 (your-email@example.com)',
+    // Обязательный заголовок согласно документации
+    'User-Agent': 'JobSearchParser/1.0 (karam.alesha@mail.ru)',
+    'Accept': 'application/json',
+    'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7'
       },
       timeout: 10000,
     });
