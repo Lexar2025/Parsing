@@ -6,12 +6,13 @@ import { Job } from 'bullmq';
 import { RabotaMdParser } from '../../parsers/rabotaMd.js';
 import { NineNineNineMdParser } from '../../parsers/nineNineNineMd.js';
 import { MaklerMdParser } from '../../parsers/maklerMd.js';
+import { HHRuParser } from '../../parsers/hhRu.js';
 import { vacancyService } from '../../api/services/vacancy.service.js';
 import { prisma } from '../../db/index.js';
 import { Vacancy } from '../../types/vacancy.js';
 
 interface ParseJobData {
-  source: 'rabota.md' | '999.md' | 'makler.md';
+  source: 'rabota.md' | '999.md' | 'makler.md' | 'hh.ru';
   searchQuery?: string;
   maxPages?: number;
 }
@@ -77,6 +78,20 @@ export async function parseJobProcessor(job: Job<ParseJobData>): Promise<{
           baseUrl: 'https://makler.md',
           searchQuery: searchQuery || 'работа',
           maxPages,
+        });
+
+        vacancies = result.vacancies;
+        break;
+      }
+      
+      case 'hh.ru': {
+        const parser = new HHRuParser();
+
+        const result = await parser.parse({
+          baseUrl: 'https://api.hh.ru',
+          searchQuery: searchQuery || 'программист',
+          maxPages,
+          delay: 1000,
         });
 
         vacancies = result.vacancies;

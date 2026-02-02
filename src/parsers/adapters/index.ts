@@ -6,19 +6,22 @@ export { BaseVacancyAdapter, type VacancyAdapter } from './base.adapter.js';
 export { RabotaMdAdapter } from './rabota.adapter.js';
 export { NineNineNineMdAdapter } from './999.adapter.js';
 export { MaklerMdAdapter } from './makler.adapter.js';
+export { HHRuAdapter } from './hh.adapter.js';
 
 // Фабрика адаптеров
 import { RabotaMdAdapter } from './rabota.adapter.js';
 import { NineNineNineMdAdapter } from './999.adapter.js';
 import { MaklerMdAdapter } from './makler.adapter.js';
+import { HHRuAdapter } from './hh.adapter.js';
 import { VacancyAdapter } from './base.adapter.js';
 
-type SourceName = 'rabota.md' | '999.md' | 'makler.md';
+type SourceName = 'rabota.md' | '999.md' | 'makler.md' | 'hh.ru';
 
 const adapters: Record<SourceName, VacancyAdapter> = {
   'rabota.md': new RabotaMdAdapter(),
   '999.md': new NineNineNineMdAdapter(),
   'makler.md': new MaklerMdAdapter(),
+  'hh.ru': new HHRuAdapter(),
 };
 
 /**
