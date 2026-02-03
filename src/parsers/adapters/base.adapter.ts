@@ -69,14 +69,20 @@ export abstract class BaseVacancyAdapter implements VacancyAdapter {
   }
 
   // --- Методы конвертации валюты ---
-  protected convertSalary(amount: number, fromCurrency: string, toCurrency: string): number | undefined {
-    const rate = this.exchangeRateProvider.getExchangeRate(fromCurrency, toCurrency);
-    if (rate === undefined) {
-      console.warn(`⚠️ Неизвестен курс конвертации из ${fromCurrency} в ${toCurrency} для суммы ${amount}`);
-      return undefined;
-    }
-    return amount * rate;
+protected convertSalary(amount: number, fromCurrency: string, toCurrency: string): number | undefined {
+  const rate = this.exchangeRateProvider.getExchangeRate(fromCurrency, toCurrency);
+  if (rate === undefined) {
+    console.warn(`⚠️ Неизвестен курс конвертации из ${fromCurrency} в ${toCurrency} для суммы ${amount}`);
+    return undefined;
   }
+  if (rate <= 0) {
+    console.error(`❌ Некорректный курс: ${fromCurrency}_${toCurrency} = ${rate}`);
+    return undefined;
+  }
+  const result = amount * rate;
+  console.debug(`💱 Конвертация: ${amount} ${fromCurrency} × ${rate} = ${result.toFixed(2)} ${toCurrency}`);
+  return result;
+}
 
   protected extractAndConvertSalaryMin(salary?: string, targetCurrency: string = 'RUB_PMR'): number | undefined {
     const minAmount = this.extractSalaryMin(salary);

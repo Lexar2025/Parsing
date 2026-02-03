@@ -12,6 +12,7 @@ export class StaticExchangeRateProvider implements ExchangeRateProvider {
     'USD_RUB_PMR': 16.30, // 1 USD = 16.30 RUB_PMR (условно)
     'EUR_RUB_PMR': 19.15, // 1 EUR = 19.15 RUB_PMR (условно)
     'RUB_RUB_PMR': 0.198, // 1 RUB_RU = 0.198 RUB_PMR (условно)
+    'BYN_RUB_PMR': 145.0, // 1 BYN = ~145 RUB_PMR (условный курс)
     // Добавьте другие курсы по необходимости
   };
 
