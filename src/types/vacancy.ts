@@ -30,7 +30,10 @@ export interface Vacancy {
   vacancyType?: string; // Тип вакансии (Прямая/Агентство)
   industry?: string; // Сферы деятельности
   specialization?: string; // Специализация
-  workLocationType?: string; // Тип локации (внутри страны или за границей) - НОВОЕ ПОЛЕ
+  workLocationType?: string; // Тип локации (внутри страны или за границей)
+  // Поля для категоризации через словарики (гибридная схема)
+  category?: string; // Каноническое название профессии для быстрого поиска
+  professionDictionaryIds?: string[]; // Ссылки на словарики источников
   // Поля для отслеживания актуальности
   firstSeenAt?: Date | string; // Когда впервые найдена
   lastSeenAt?: Date | string; // Когда найдена в последний раз

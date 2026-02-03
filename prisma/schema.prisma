@@ -72,7 +72,11 @@ model Vacancy {
   
   rawData         Json
 
-  workLocationType String? // Тип локации (внутренняя/международная) - НОВОЕ ПОЛЕ
+  workLocationType String? // Тип локации (внутренняя/международная)
+  
+  // === НОВЫЕ ПОЛЯ ДЛЯ СЛОВАРИКОВ (гибридная схема) ===
+  category                String?  // Каноническое название профессии для быстрого поиска
+  professionDictionaryIds String[] @default([]) // Ссылки на словарики источников
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -81,6 +85,9 @@ model Vacancy {
   @@index([source, publishedAt])
   @@index([location])
   @@index([salaryMin, salaryMax])
+  @@index([category])  // Для быстрого поиска по категории
+  @@index([workLocationType])  // Для фильтрации по локации (Молдова/за границей)
+  @@index([professionDictionaryIds])  // Для поиска вакансий по словарикам
 }
 
 // ============ LOGS ============
