@@ -17,7 +17,7 @@ interface VacancyQuery {
   sources?: string; // Несколько источников
   useSemanticSearch?: string; // Семантический поиск
   searchBy?: 'title' | 'category'; // Новый параметр: поиск по названию или категории
-  locationType?: 'moldova' | 'abroad'; // Новый параметр: локация (Молдова/за границей)
+  locationType?: 'moldova' | 'abroad' | 'aboard'; // Новый параметр: локация (Молдова/за границей), поддержка 'aboard'
   userId?: string;  // ID пользователя для кэширования (для бота)
   limit?: number;
   page?: number;    // Номер страницы (начиная с 1)
@@ -49,13 +49,17 @@ export async function vacancyRoutes(fastify: FastifyInstance): Promise<void> {
 
         // Определяем источники на основе locationType
         let sourcesArray: VacancySource[] | undefined = undefined;
+        let workLocationType: 'moldova' | 'abroad' | 'international' | undefined = undefined;
         
-        if (locationType === 'abroad') {
+        // Поддерживаем оба варианта: 'abroad' и 'aboard' (опечатка)
+        if (locationType === 'abroad' || locationType === 'aboard') {
           // Работа за границей - все 4 источника
           sourcesArray = ['rabota.md', '999.md', 'makler.md', 'hh.ru'];
+          workLocationType = 'abroad'; // Или 'international' - зависит от того как хранится в БД
         } else if (locationType === 'moldova') {
           // Работа в Молдове - только 3 источника (без hh.ru)
           sourcesArray = ['rabota.md', '999.md', 'makler.md'];
+          workLocationType = 'moldova';
         } else {
           // Если не указано ничего - возьмется по умолчанию все 3
           if (source) {
@@ -77,6 +81,7 @@ export async function vacancyRoutes(fastify: FastifyInstance): Promise<void> {
           sources: sourcesArray,
           useSemanticSearch: useSemanticSearch === 'true',
           searchBy: searchBy as 'title' | 'category' | undefined, // Новый параметр
+          workLocationType, // Фильтр по типу локации
           limit: Number(limit),
           page: Number(page),
         };

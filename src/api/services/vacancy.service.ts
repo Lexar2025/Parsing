@@ -115,6 +115,7 @@ export class VacancyService {
     limit?: number;
     page?: number;
     category?: string; // Новый параметр: фильтр по категории
+    workLocationType?: 'moldova' | 'abroad' | 'international'; // Фильтр по типу локации
   }): Promise<Vacancy[]> {
     const where: Prisma.VacancyWhereInput = {};
     const OR_conditions: Prisma.VacancyWhereInput[] = [];
@@ -192,6 +193,11 @@ export class VacancyService {
     // Категория (новый фильтр)
     if (filters.category) {
       where.category = filters.category;
+    }
+
+    // Тип локации (Молдова / за границей)
+    if (filters.workLocationType) {
+      where.workLocationType = filters.workLocationType;
     }
 
     // Дата публикации (AND условие)

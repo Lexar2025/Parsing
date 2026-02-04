@@ -91,7 +91,8 @@ export interface SearchFilters {
   page?: number;          // Номер страницы (начиная с 1)
   useSemanticSearch?: boolean; // Использовать семантический поиск
   searchBy?: 'title' | 'category'; // Новый параметр: поиск по названию или категории
-  locationType?: 'moldova' | 'abroad'; // Новый параметр: локация (Молдова/за границей)
+  locationType?: 'moldova' | 'abroad' | 'aboard'; // Новый параметр: локация (Молдова/за границей), поддерживаем 'aboard' для совместимости
+  workLocationType?: 'moldova' | 'abroad' | 'international'; // Фильтр по типу локации работы
 }
 
 export interface SearchResult {
@@ -150,7 +151,8 @@ export class VacancyManager {
     // Определяем источники на основе locationType
     let sources = filters.sources || ['rabota.md', '999.md', 'makler.md'];
     
-    if (filters.locationType === 'abroad') {
+    // Поддерживаем оба варианта: 'abroad' и 'aboard' (опечатка)
+    if (filters.locationType === 'abroad' || filters.locationType === 'aboard') {
       // Работа за границей - все 4 источника
       sources = ['rabota.md', '999.md', 'makler.md', 'hh.ru'];
     } else if (filters.locationType === 'moldova') {
@@ -357,6 +359,7 @@ export class VacancyManager {
     const allVacancies = await vacancyService.findByFilters({
       ...filters,
       sources,
+      workLocationType: filters.workLocationType, // Фильтр по типу локации
       limit: undefined, // Берем ВСЕ вакансии
       page: undefined
     });
@@ -430,6 +433,7 @@ export class VacancyManager {
     const freshVacancies = await vacancyService.findByFilters({
       ...filters,
       sources,
+      workLocationType: filters.workLocationType, // Фильтр по типу локации
       limit: undefined,
       page: undefined
     });
@@ -486,6 +490,7 @@ export class VacancyManager {
     const allVacancies = await vacancyService.findByFilters({
       ...filters,
       sources,
+      workLocationType: filters.workLocationType, // Фильтр по типу локации
       limit: undefined,
       page: undefined
     });
@@ -598,6 +603,7 @@ export class VacancyManager {
       const cachedVacancies = await vacancyService.findByFilters({
         ...filters,
         sources,
+        workLocationType: filters.workLocationType, // Фильтр по типу локации
         limit: undefined,
         page: undefined
       });
@@ -632,6 +638,7 @@ export class VacancyManager {
     const freshVacancies = await vacancyService.findByFilters({
       ...filters,
       sources,
+      workLocationType: filters.workLocationType, // Фильтр по типу локации
       limit: undefined,
       page: undefined
     });
