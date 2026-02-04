@@ -55,7 +55,7 @@ model Vacancy {
   
   title           String
   company         String
-  description     String   @db.Text
+  description     String
   location        String?
   salaryMin       Int?
   salaryMax       Int?
@@ -99,7 +99,7 @@ model ParseLog {
   vacanciesFound  Int      @default(0)
   vacanciesNew    Int      @default(0)
   duration        Int
-  error           String?  @db.Text
+  error           String?
   
   createdAt       DateTime @default(now())
   

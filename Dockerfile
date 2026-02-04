@@ -1,7 +1,7 @@
 # Многоэтапная сборка для оптимизации размера образа
 
 # Этап 1: Сборка
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 # Установка зависимостей для Puppeteer
 RUN apk add --no-cache \
@@ -43,7 +43,7 @@ RUN npm prune --production && \
     npm cache clean --force
 
 # Этап 2: Production образ
-FROM node:20-alpine
+FROM node:22-alpine
 
 # Установка зависимостей для Puppeteer и PostgreSQL клиента
 RUN apk add --no-cache \

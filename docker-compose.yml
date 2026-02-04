@@ -41,6 +41,7 @@ services:
 
   # Основное приложение (API)
   app:
+    image: parsing-app:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -80,6 +81,7 @@ services:
 
   # Worker для обработки фоновых задач
   worker:
+    image: parsing-worker:latest
     build:
       context: .
       dockerfile: Dockerfile
