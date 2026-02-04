@@ -12,12 +12,13 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${POSTGRES_PORT:-5433}:5432"  # Изменен внешний порт на 5433 чтобы не конфликтовать с локальной БД
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-parser} -d ${POSTGRES_DB:-parsing}"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 30s
     networks:
       - parsing-network
 

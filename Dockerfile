@@ -75,6 +75,10 @@ COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
 # Копируем скрипты
 COPY --chown=nodejs:nodejs scripts ./scripts
 
+# Создаем пустой .env файл (переменные передаются через docker-compose.yml)
+RUN echo "# Environment variables are provided by docker-compose.yml" > .env && \
+    chown nodejs:nodejs .env
+
 # Даём права на выполнение скриптов
 RUN chmod +x scripts/*.sh 2>/dev/null || true
 
