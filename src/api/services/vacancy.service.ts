@@ -7,7 +7,6 @@ import { Prisma, Vacancy } from '@prisma/client';
 import { getAdapter } from '../../parsers/adapters/index.js';
 import { Vacancy as ParsedVacancy } from '../../types/vacancy.js';
 import CANONICAL_PROFESSIONS from '../../utils/dictionaries/canonical-professions.js';
-import type { CanonicalProfession } from '../../utils/dictionaries/canonical-professions.js';
 
 export class VacancyService {
   /**
@@ -52,7 +51,7 @@ export class VacancyService {
         } else {
           updated++;
         }
-      } catch (error: unknown) {
+      } catch (error) {
         console.error(`❌ Ошибка получения адаптера для источника ${vacancy.source}:`, {
           error: error instanceof Error ? error.message : String(error),
           vacancyId: vacancy.id,

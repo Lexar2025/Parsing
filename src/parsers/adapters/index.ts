@@ -15,7 +15,6 @@ import { MaklerMdAdapter } from './makler.adapter.js';
 import { HHRuAdapter } from './hh.adapter.js';
 import { VacancyAdapter } from './base.adapter.js';
 import CANONICAL_PROFESSIONS from '../../utils/dictionaries/canonical-professions.js';
-import type { CanonicalProfession } from '../../utils/dictionaries/canonical-professions.js';
 
 type SourceName = 'rabota.md' | '999.md' | 'makler.md' | 'hh.ru';
 
