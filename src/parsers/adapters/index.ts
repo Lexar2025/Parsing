@@ -14,6 +14,8 @@ import { NineNineNineMdAdapter } from './999.adapter.js';
 import { MaklerMdAdapter } from './makler.adapter.js';
 import { HHRuAdapter } from './hh.adapter.js';
 import { VacancyAdapter } from './base.adapter.js';
+import CANONICAL_PROFESSIONS from '../../utils/dictionaries/canonical-professions.js';
+import type { CanonicalProfession } from '../../utils/dictionaries/canonical-professions.js';
 
 type SourceName = 'rabota.md' | '999.md' | 'makler.md' | 'hh.ru';
 
@@ -40,4 +42,41 @@ export function getAdapter(source: SourceName): VacancyAdapter {
  */
 export function getAllAdapters(): VacancyAdapter[] {
   return Object.values(adapters);
+}
+
+/**
+ * Определить категорию вакансии на основе названия
+ * Использует канонический справочник для сопоставления
+ */
+export function determineCategory(title: string, source: string): string | null {
+  const titleLower = title.toLowerCase().trim();
+
+  // Ищем в каноническом справочнике
+  for (const prof of CANONICAL_PROFESSIONS) {
+    // Проверяем каноническое название
+    if (titleLower === prof.canonicalName.toLowerCase()) {
+      return prof.canonicalName;
+    }
+
+    // Проверяем синонимы
+    if (prof.synonyms.some(syn => syn.toLowerCase() === titleLower)) {
+      return prof.canonicalName;
+    }
+
+    // Проверяем маппинг для конкретного источника
+    const sourceMapping = prof.sourceMappings[source as keyof typeof prof.sourceMappings];
+    if (sourceMapping) {
+      if (sourceMapping.some(mapping => mapping.toLowerCase() === titleLower)) {
+        return prof.canonicalName;
+      }
+    }
+
+    // Частичное совпадение (подстрока)
+    if (titleLower.includes(prof.canonicalName.toLowerCase())) {
+      return prof.canonicalName;
+    }
+  }
+
+  // Если не нашли категорию - возвращаем null
+  return null;
 }

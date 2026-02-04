@@ -73,11 +73,15 @@ export class MaklerMdAdapter extends BaseVacancyAdapter {
       const normalizedEmployment = this.extractNormalizedEmployment(vacancy.employmentType);
       const normalizedSchedule = this.extractNormalizedSchedule(vacancy.schedule);
 
+      // --- Определяем категорию ---
+      const category = this.determineCategory(vacancy.title);
+
       return {
         title: vacancy.title.trim(),
         company: company,
         description: description,
         location: location,
+        category, // Добавляем категорию
 
         // Зарплата в целевой валюте ('RUB_PMR' по умолчанию)
         salaryMin: convertedMinSalary,

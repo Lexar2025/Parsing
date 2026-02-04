@@ -67,12 +67,16 @@ export class NineNineNineMdAdapter extends BaseVacancyAdapter {
       const convertedMaxSalary = this.extractAndConvertSalaryMax(salary);
       const rawScheduleField = vacancy.schedule; // содержит "полный день" или "удаленно"
 
+      // --- Определяем категорию ---
+      const category = this.determineCategory(vacancy.title);
+
       return {
         // Унифицированные поля
         title: vacancy.title.trim(),
         company: company,
         description: description,
         location: location,
+        category, // Добавляем категорию
 
         // Зарплата - теперь в конвертированной валюте
         salaryMin: convertedMinSalary,

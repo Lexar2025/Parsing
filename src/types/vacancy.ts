@@ -58,3 +58,18 @@ export interface Parser {
   parse(config: ParserConfig): Promise<ParseResult>;
   parseVacancyDetails(url: string): Promise<Partial<Vacancy>>;
 }
+
+// Новые типы для поиска
+export interface SearchFilters {
+  keywords?: string[];
+  locations?: string[];
+  salaryMin?: number;
+  experience?: string[];
+  schedule?: string[];
+  sources?: ('rabota.md' | '999.md' | 'makler.md' | 'hh.ru')[];
+  limit?: number;
+  page?: number;
+  useSemanticSearch?: boolean;
+  searchBy?: 'title' | 'category'; // Новый параметр: поиск по названию или категории
+  locationType?: 'moldova' | 'abroad'; // Новый параметр: локация (Молдова/за границей)
+}

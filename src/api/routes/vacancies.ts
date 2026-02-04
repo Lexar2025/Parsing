@@ -16,6 +16,8 @@ interface VacancyQuery {
   source?: string;  // ОДИН источник (новое)
   sources?: string; // Несколько источников
   useSemanticSearch?: string; // Семантический поиск
+  searchBy?: 'title' | 'category'; // Новый параметр: поиск по названию или категории
+  locationType?: 'moldova' | 'abroad'; // Новый параметр: локация (Молдова/за границей)
   userId?: string;  // ID пользователя для кэширования (для бота)
   limit?: number;
   page?: number;    // Номер страницы (начиная с 1)
@@ -38,22 +40,32 @@ export async function vacancyRoutes(fastify: FastifyInstance): Promise<void> {
           source,  // ОДИН источник
           sources, // Несколько
           useSemanticSearch,
+          searchBy, // Новый параметр
+          locationType, // Новый параметр
           userId,  // ID пользователя (для телеграм бота)
           limit = 10,
           page = 1,
         } = request.query;
 
-        // Определяем источники
+        // Определяем источники на основе locationType
         let sourcesArray: VacancySource[] | undefined = undefined;
         
-        if (source) {
+        if (locationType === 'abroad') {
+          // Работа за границей - все 4 источника
+          sourcesArray = ['rabota.md', '999.md', 'makler.md', 'hh.ru'];
+        } else if (locationType === 'moldova') {
+          // Работа в Молдове - только 3 источника (без hh.ru)
+          sourcesArray = ['rabota.md', '999.md', 'makler.md'];
+        } else {
+          // Если не указано ничего - возьмется по умолчанию все 3
+          if (source) {
           // Если указан ОДИН источник
-          sourcesArray = [source.trim() as VacancySource];
-        } else if (sources) {
+            sourcesArray = [source.trim() as VacancySource];
+          } else if (sources) {
           // Если указано НЕСКОЛЬКО
-          sourcesArray = sources.split(',').map((s) => s.trim() as VacancySource);
+            sourcesArray = sources.split(',').map((s) => s.trim() as VacancySource);
+          }
         }
-        // Если не указано ничего - возьмется по умолчанию все 3
 
         // Формируем фильтры
         const filters = {
@@ -64,6 +76,7 @@ export async function vacancyRoutes(fastify: FastifyInstance): Promise<void> {
           schedule: schedule ? schedule.split(',').map((s) => s.trim()) : undefined,
           sources: sourcesArray,
           useSemanticSearch: useSemanticSearch === 'true',
+          searchBy: searchBy as 'title' | 'category' | undefined, // Новый параметр
           limit: Number(limit),
           page: Number(page),
         };
@@ -81,7 +94,9 @@ export async function vacancyRoutes(fastify: FastifyInstance): Promise<void> {
             limit: filters.limit,
             source: result.meta.source,
             lastUpdate: result.meta.lastUpdate,
-            updating: result.meta.updating
+            updating: result.meta.updating,
+            category: result.meta.category, // Категория (если поиск по категории)
+            locationType // Тип локации для информации
           },
         });
       } catch (error: unknown) {

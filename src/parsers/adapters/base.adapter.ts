@@ -14,6 +14,7 @@ import {
   findMatchingSchedule,
   extractSkillsFromDescription
 } from '../../utils/fuzzy-matcher.js';
+import { determineCategory } from './index.js';
 
 export interface VacancyAdapter {
   sourceName: string;
@@ -318,7 +319,7 @@ protected extractCompanyFromText(text?: string): string | undefined {
   if (!text) return undefined;
   
   // Шаблон 1: "Агентство/Агенция/Agency "Название""
-  const agencyPattern = /(?:агентство|агенция|фирма|компания|организация|agency|firm|company|organizație|organizatie)[\s:]*["«“'„]([^"»”'„]+?)["»”'„]/i;
+  const agencyPattern = /(?:агентство|агенция|фирма|компания|организация|agency|firm|company|organizație|organizatie)[\s:]*["«"'„]([^"»"'„]+?)["»"'„]/i;
   const agencyMatch = text.match(agencyPattern);
   if (agencyMatch?.[1]) {
     return agencyMatch[1].trim();
@@ -334,7 +335,7 @@ protected extractCompanyFromText(text?: string): string | undefined {
   for (const keyword of companyKeywords) {
     // Безопасные границы для кириллицы/латиницы
     const regex = new RegExp(
-      `(?:^|\\s|[,.;:!?()«»"'\\[\\]])${keyword}(?:$|\\s|[,.;:!?()«»"'\\[\\]])`,
+      `(?:^|\s|[,.;:!?()«»"'\\[\\]])${keyword}(?:$|\s|[,.;:!?()«»"'\\[\\]])`,
       'i'
     );
     const match = text.match(regex);
@@ -379,5 +380,14 @@ protected normalizeWorkLocationType(location?: string): string {
   // Любое другое значение = за границей
   return 'За границей';
 }
+
+  // --- Метод определения категории ---
+  /**
+   * Определяет категорию вакансии на основе названия
+   * Использует канонический справочник для сопоставления
+   */
+  protected determineCategory(title: string): string | null {
+    return determineCategory(title, this.sourceName);
+  }
 
 }

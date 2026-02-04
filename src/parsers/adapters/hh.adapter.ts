@@ -50,11 +50,15 @@ export class HHRuAdapter extends BaseVacancyAdapter {
       const convertedMinSalary = this.extractAndConvertSalaryMin(vacancy.salary);
       const convertedMaxSalary = this.extractAndConvertSalaryMax(vacancy.salary);
 
+      // --- Определяем категорию ---
+      const category = this.determineCategory(vacancy.title);
+
       return {
         title: vacancy.title.trim(),
         company,
         description,
         location,
+        category, // Добавляем категорию
         
         // Все вакансии HH = работа за границей
         workLocationType: 'За границей',

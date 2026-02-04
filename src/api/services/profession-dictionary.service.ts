@@ -4,6 +4,8 @@
  */
 
 import { prisma } from '../../db/index.js';
+import CANONICAL_PROFESSIONS from '../../utils/dictionaries/canonical-professions.js';
+import type { CanonicalProfession } from '../../utils/dictionaries/canonical-professions.js';
 
 export interface ProfessionMapping {
   searchQuery: string;
@@ -173,9 +175,10 @@ export class ProfessionDictionaryService {
    * Семантический поиск - находит подходящие специальности для каждого источника
    * 
    * Логика:
-   * 1. Ищем точные совпадения
-   * 2. Ищем совпадения в синонимах
+   * 1. Ищем точные совпадения в канонических названиях и синонимах (через канонический справочник)
+   * 2. Ищем совпадения в словариках источников (через синонимы)
    * 3. Ищем частичные совпадения (подстрока)
+   * 4. Возвращаем каноническое название для каждой найденной профессии (если есть)
    */
   async findProfessionMappings(searchQuery: string, sources?: string[]): Promise<ProfessionMapping> {
     const targetSources = sources || ['rabota.md', '999.md', 'makler.md'];
@@ -183,35 +186,51 @@ export class ProfessionDictionaryService {
 
     console.log(`🔍 Семантический поиск специальностей для "${searchQuery}"`);
 
+    // 1. Ищем в каноническом справочнике сначала (приоритет)
+    const canonicalMatch = this.findCanonicalProfession(searchQuery);
+    
+    if (canonicalMatch) {
+      console.log(`   ✅ Найдено каноническое название: "${canonicalMatch.canonicalName}"`);
+      console.log(`   📂 Категория: ${canonicalMatch.category || 'не указана'}`);
+    }
+
     const mappings = await Promise.all(
       targetSources.map(async (source) => {
-        // Получаем все специальности для источника
+        // Получаем все специальности для источника из БД (уже с синонимами)
         const professions = await this.getProfessionsBySource(source);
 
-        // Ищем совпадения
+        // Ищем совпадения (сначала точные, потом синонимы, потом подстрока)
         const matches = professions
           .map(prof => {
             const profLower = prof.profession.toLowerCase();
             
-            // 1. Точное совпадение
+            // 1. Точное совпадение (приоритет)
             if (profLower === searchLower) {
               return { ...prof, similarity: 1.0 };
             }
 
-            // 2. Совпадение в синонимах
+            // 2. Совпадение в синонимах из БД (приоритет)
             const synonymMatch = prof.synonyms.find(
               syn => syn.toLowerCase() === searchLower
             );
             if (synonymMatch) {
-              return { ...prof, similarity: 0.9 };
+              return { ...prof, similarity: 0.95 };
             }
 
-            // 3. Частичное совпадение (подстрока)
+            // 3. Если есть каноническое совпадение - ищем маппинг для этого источника (приоритет)
+            if (canonicalMatch) {
+              const sourceMapping = canonicalMatch.sourceMappings[source as keyof typeof canonicalMatch.sourceMappings];
+              if (sourceMapping && sourceMapping.includes(prof.profession)) {
+                return { ...prof, similarity: 0.9 };
+              }
+            }
+
+            // 4. Частичное совпадение (подстрока)
             if (profLower.includes(searchLower) || searchLower.includes(profLower)) {
               return { ...prof, similarity: 0.7 };
             }
 
-            // 4. Совпадение первых слов
+            // 5. Совпадение первых слов (низкий приоритет)
             const searchWords = searchLower.split(/\s+/);
             const profWords = profLower.split(/\s+/);
             
@@ -226,9 +245,9 @@ export class ProfessionDictionaryService {
             return null;
           })
           .filter((m): m is NonNullable<typeof m> => m !== null)
-          .sort((a, b) => b.similarity - a.similarity) // Сортируем по релевантности
-          .slice(0, 3); // Берем топ-3
-
+          .sort((a, b) => b.similarity - a.similarity) // Сортируем по релевантности (убывание)
+          .slice(0, 4); // Берем топ-4 самых релевантных совпадений на источник (не больше)
+        // Логируем результаты (для отладки)
         if (matches.length > 0) {
           console.log(`   ${source}: найдено ${matches.length} совпадений (лучшая: "${matches[0].profession}", similarity: ${matches[0].similarity})`);
         } else {
@@ -257,6 +276,48 @@ export class ProfessionDictionaryService {
           similarity: match.similarity
         })))
     };
+  }
+
+  /**
+   * Найти каноническое название профессии по запросу (через канонический справочник)
+   * 
+   * Логика:
+   * 1. Ищем точное совпадение в каноническом названии (приоритет)
+   * 2. Ищем точное совпадение в синонимах канонического справочника (приоритет)
+   * 3. Ищем частичное совпадение в каноническом названии (низкий приоритет)
+   * 4. Ищем частичное совпадение в синонимах канонического справочника (низкий приоритет)
+   * 
+   * Возвращает первое совпадение с самым высоким приоритетом.
+   */
+  private findCanonicalProfession(searchQuery: string): CanonicalProfession | null {
+    const searchLower = searchQuery.toLowerCase().trim();
+
+    // 1. Точное совпадение в каноническом названии (высший приоритет)
+    const exactMatch = CANONICAL_PROFESSIONS.find(
+      prof => prof.canonicalName.toLowerCase() === searchLower
+    );
+    if (exactMatch) return exactMatch;
+
+    // 2. Точное совпадение в синонимах канонического справочника (высший приоритет)
+    const synonymMatch = CANONICAL_PROFESSIONS.find(
+      prof => prof.synonyms.some(syn => syn.toLowerCase() === searchLower)
+    );
+    if (synonymMatch) return synonymMatch;
+
+    // 3. Частичное совпадение в каноническом названии (низкий приоритет)
+    const partialMatch = CANONICAL_PROFESSIONS.find(
+      prof => prof.canonicalName.toLowerCase().includes(searchLower)
+    );
+    if (partialMatch) return partialMatch;
+
+    // 4. Частичное совпадение в синонимах канонического справочника (низкий приоритет)
+    const partialSynonymMatch = CANONICAL_PROFESSIONS.find(
+      prof => prof.synonyms.some(syn => syn.toLowerCase().includes(searchLower))
+    );
+    if (partialSynonymMatch) return partialSynonymMatch;
+
+    // 5. Не найдено ни одного совпадения (возвращаем null)
+    return null;
   }
 
   /**

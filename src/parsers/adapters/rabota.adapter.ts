@@ -130,12 +130,16 @@ export class RabotaMdAdapter extends BaseVacancyAdapter {
       const convertedMinSalary = this.extractAndConvertSalaryMin(vacancy.salary);
       const convertedMaxSalary = this.extractAndConvertSalaryMax(vacancy.salary);
 
+      // --- Определяем категорию ---
+      const category = this.determineCategory(vacancy.title);
+
       return {
         title: vacancy.title.trim(),
         company,
         description,
         location,
         workLocationType,
+        category, // Добавляем категорию
 
         salaryMin: convertedMinSalary,
         salaryMax: convertedMaxSalary,

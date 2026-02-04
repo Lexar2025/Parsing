@@ -6,10 +6,13 @@ import { prisma } from '../../db/index.js';
 import { Prisma, Vacancy } from '@prisma/client';
 import { getAdapter } from '../../parsers/adapters/index.js';
 import { Vacancy as ParsedVacancy } from '../../types/vacancy.js';
+import CANONICAL_PROFESSIONS from '../../utils/dictionaries/canonical-professions.js';
+import type { CanonicalProfession } from '../../utils/dictionaries/canonical-professions.js';
 
 export class VacancyService {
   /**
    * Сохранить вакансии в БД (upsert - создать или обновить)
+   * Добавляем определение категории при сохранении
    */
   async saveVacancies(vacancies: ParsedVacancy[]): Promise<{ created: number; updated: number }> {
     let created = 0;
@@ -21,6 +24,9 @@ export class VacancyService {
         const adapter = getAdapter(source);
         const prismaData = adapter.toPrisma(vacancy);
 
+        // Определяем категорию на основе названия вакансии
+        const category = this.determineCategory(vacancy.title, source);
+
         const result = await prisma.vacancy.upsert({
           where: {
             source_sourceId: {
@@ -28,9 +34,13 @@ export class VacancyService {
               sourceId: prismaData.sourceId,
             },
           },
-          create: prismaData,
+          create: {
+            ...prismaData,
+            category // Добавляем категорию при создании
+          },
           update: {
             ...prismaData,
+            category, // Обновляем категорию при обновлении
             updatedAt: new Date(),
           },
         });
@@ -56,6 +66,43 @@ export class VacancyService {
   }
 
   /**
+   * Определить категорию вакансии на основе названия
+   * Использует канонический справочник для сопоставления
+   */
+  private determineCategory(title: string, source: string): string | null {
+    const titleLower = title.toLowerCase().trim();
+
+    // Ищем в каноническом справочнике
+    for (const prof of CANONICAL_PROFESSIONS) {
+      // Проверяем каноническое название
+      if (titleLower === prof.canonicalName.toLowerCase()) {
+        return prof.canonicalName;
+      }
+
+      // Проверяем синонимы
+      if (prof.synonyms.some(syn => syn.toLowerCase() === titleLower)) {
+        return prof.canonicalName;
+      }
+
+      // Проверяем маппинг для конкретного источника
+      const sourceMapping = prof.sourceMappings[source as keyof typeof prof.sourceMappings];
+      if (sourceMapping) {
+        if (sourceMapping.some(mapping => mapping.toLowerCase() === titleLower)) {
+          return prof.canonicalName;
+        }
+      }
+
+      // Частичное совпадение (подстрока)
+      if (titleLower.includes(prof.canonicalName.toLowerCase())) {
+        return prof.canonicalName;
+      }
+    }
+
+    // Если не нашли категорию - возвращаем null
+    return null;
+  }
+
+  /**
    * Найти вакансии по фильтрам
    */
   async findByFilters(filters: {
@@ -68,6 +115,7 @@ export class VacancyService {
     publishedAfter?: Date;
     limit?: number;
     page?: number;
+    category?: string; // Новый параметр: фильтр по категории
   }): Promise<Vacancy[]> {
     const where: Prisma.VacancyWhereInput = {};
     const OR_conditions: Prisma.VacancyWhereInput[] = [];
@@ -140,6 +188,11 @@ export class VacancyService {
       where.source = {
         in: filters.sources,
       };
+    }
+
+    // Категория (новый фильтр)
+    if (filters.category) {
+      where.category = filters.category;
     }
 
     // Дата публикации (AND условие)
