@@ -176,7 +176,7 @@ export class HHRuParser implements Parser {
   /**
    * Детальная информация о вакансии (не используется, так как HH уже дает полные данные)
    */
-  async parseVacancyDetails(url: string): Promise<Partial<Vacancy>> {
+  async parseVacancyDetails(_url: string): Promise<Partial<Vacancy>> {
     // HH API уже возвращает достаточно данных в списке
     // Детальный запрос не требуется для базовой интеграции
     return {};
