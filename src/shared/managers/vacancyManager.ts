@@ -49,14 +49,17 @@ function mapPrismaToVacancy(prismaVacancy: Prisma.VacancyGetPayload<object>): Va
     return Array.isArray(value) ? value as string[] : undefined;
   };
 
+  // Используем fullDescription если есть, иначе description
+  const fullDesc = getStringField('fullDescription');
+  const descriptionText = fullDesc || prismaVacancy.description || undefined;
+
   return {
     id: prismaVacancy.id,
     title: prismaVacancy.title,
     company: prismaVacancy.company || undefined,
     salary: prismaVacancy.salaryMin ? `${prismaVacancy.salaryMin} - ${prismaVacancy.salaryMax || prismaVacancy.salaryMin}` : undefined,
     location: prismaVacancy.location || undefined,
-    description: prismaVacancy.description || undefined,
-    fullDescription: getStringField('fullDescription'),
+    description: descriptionText,
     url: prismaVacancy.sourceUrl,
     publishedAt: prismaVacancy.publishedAt || undefined,
     education: getStringField('education'),
@@ -86,13 +89,15 @@ export interface SearchFilters {
   salaryMin?: number;
   experience?: string[];
   schedule?: string[];
+  employment?: string[];
+  skills?: string[];
   sources?: ('rabota.md' | '999.md' | 'makler.md' | 'hh.ru')[];
   limit?: number;
-  page?: number;          // Номер страницы (начиная с 1)
-  useSemanticSearch?: boolean; // Использовать семантический поиск
-  searchBy?: 'title' | 'category'; // Новый параметр: поиск по названию или категории
-  locationType?: 'moldova' | 'abroad' | 'aboard'; // Новый параметр: локация (Молдова/за границей), поддерживаем 'aboard' для совместимости
-  workLocationType?: 'moldova' | 'abroad' | 'international'; // Фильтр по типу локации работы
+  page?: number;
+  useSemanticSearch?: boolean;
+  searchBy?: 'title' | 'category';
+  locationType?: 'moldova' | 'abroad' | 'aboard';
+  workLocationType?: 'moldova' | 'abroad' | 'international';
 }
 
 export interface SearchResult {
