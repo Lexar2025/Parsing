@@ -13,14 +13,16 @@ interface VacancyQuery {
   salaryMin?: number;
   experience?: string;
   schedule?: string;
-  source?: string;  // ОДИН источник (новое)
-  sources?: string; // Несколько источников
-  useSemanticSearch?: string; // Семантический поиск
-  searchBy?: 'title' | 'category'; // Новый параметр: поиск по названию или категории
-  locationType?: 'moldova' | 'abroad' | 'aboard'; // Новый параметр: локация (Молдова/за границей), поддержка 'aboard'
-  userId?: string;  // ID пользователя для кэширования (для бота)
+  employment?: string; // Тип занятости
+  skills?: string; // Навыки
+  source?: string;
+  sources?: string;
+  useSemanticSearch?: string;
+  searchBy?: 'title' | 'category';
+  locationType?: 'moldova' | 'abroad' | 'aboard';
+  userId?: string;
   limit?: number;
-  page?: number;    // Номер страницы (начиная с 1)
+  page?: number;
 }
 
 type VacancySource = 'rabota.md' | '999.md' | 'makler.md' | 'hh.ru';
@@ -37,12 +39,14 @@ export async function vacancyRoutes(fastify: FastifyInstance): Promise<void> {
           salaryMin,
           experience,
           schedule,
-          source,  // ОДИН источник
-          sources, // Несколько
+          employment,
+          skills,
+          source,
+          sources,
           useSemanticSearch,
-          searchBy, // Новый параметр
-          locationType, // Новый параметр
-          userId,  // ID пользователя (для телеграм бота)
+          searchBy,
+          locationType,
+          userId,
           limit = 10,
           page = 1,
         } = request.query;
@@ -78,10 +82,12 @@ export async function vacancyRoutes(fastify: FastifyInstance): Promise<void> {
           salaryMin: salaryMin ? Number(salaryMin) : undefined,
           experience: experience ? experience.split(',').map((e) => e.trim()) : undefined,
           schedule: schedule ? schedule.split(',').map((s) => s.trim()) : undefined,
+          employment: employment ? employment.split(',').map((e) => e.trim()) : undefined,
+          skills: skills ? skills.split(',').map((s) => s.trim()) : undefined,
           sources: sourcesArray,
           useSemanticSearch: useSemanticSearch === 'true',
-          searchBy: searchBy as 'title' | 'category' | undefined, // Новый параметр
-          workLocationType, // Фильтр по типу локации
+          searchBy: searchBy as 'title' | 'category' | undefined,
+          workLocationType,
           limit: Number(limit),
           page: Number(page),
         };

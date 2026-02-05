@@ -110,43 +110,41 @@ export class VacancyService {
     salaryMin?: number;
     experience?: string[];
     schedule?: string[];
+    employment?: string[]; // Тип занятости
+    skills?: string[]; // Навыки
     sources?: string[];
     publishedAfter?: Date;
     limit?: number;
     page?: number;
-    category?: string; // Новый параметр: фильтр по категории
-    workLocationType?: 'moldova' | 'abroad' | 'international'; // Фильтр по типу локации
+    category?: string;
+    workLocationType?: 'moldova' | 'abroad' | 'international';
   }): Promise<Vacancy[]> {
     const where: Prisma.VacancyWhereInput = {};
-    const OR_conditions: Prisma.VacancyWhereInput[] = [];
+    const AND_conditions: Prisma.VacancyWhereInput[] = [];
 
-    // Ключевые слова (поиск в title и description)
+    // Ключевые слова (поиск ТОЛЬКО в title)
     if (filters.keywords && filters.keywords.length > 0) {
-      for (const keyword of filters.keywords) {
-        OR_conditions.push({
-          OR: [
-            { title: { contains: keyword, mode: 'insensitive' as const } },
-            { description: { contains: keyword, mode: 'insensitive' as const } },
-          ],
-        });
-      }
+      // Все ключевые слова должны быть в title (AND)
+      AND_conditions.push({
+        AND: filters.keywords.map(keyword => ({
+          title: { contains: keyword, mode: 'insensitive' as const }
+        }))
+      });
     }
 
-    // Локация
-    if (filters.locations && filters.locations.length > 0) {
-      for (const location of filters.locations) {
-        OR_conditions.push({
-          location: {
-            contains: location.trim(),
-            mode: 'insensitive' as const
-          }
-        });
-      }
+    // Локация (только для Moldova, для abroad не применяется)
+    if (filters.locations && filters.locations.length > 0 && filters.workLocationType !== 'abroad' && filters.workLocationType !== 'international') {
+      // Любая из указанных локаций (OR внутри AND)
+      AND_conditions.push({
+        OR: filters.locations.map(location => ({
+          location: { contains: location.trim(), mode: 'insensitive' as const }
+        }))
+      });
     }
 
     // Минимальная зарплата
     if (filters.salaryMin) {
-      OR_conditions.push({
+      AND_conditions.push({
         OR: [
           { salaryMax: { gte: filters.salaryMin } },
           { salaryMin: { gte: filters.salaryMin } }
@@ -154,33 +152,45 @@ export class VacancyService {
       });
     }
 
-    // Опыт
+    // Опыт (любой из указанных)
     if (filters.experience && filters.experience.length > 0) {
-      for (const exp of filters.experience) {
-        OR_conditions.push({
-          experience: {
-            contains: exp.trim(),
-            mode: 'insensitive' as const
-          }
-        });
-      }
+      AND_conditions.push({
+        OR: filters.experience.map(exp => ({
+          experience: { contains: exp.trim(), mode: 'insensitive' as const }
+        }))
+      });
     }
 
-    // График работы
+    // График работы (любой из указанных)
     if (filters.schedule && filters.schedule.length > 0) {
-      for (const schedule of filters.schedule) {
-        OR_conditions.push({
-          schedule: {
-            contains: schedule.trim(),
-            mode: 'insensitive' as const
-          }
-        });
-      }
+      AND_conditions.push({
+        OR: filters.schedule.map(schedule => ({
+          schedule: { contains: schedule.trim(), mode: 'insensitive' as const }
+        }))
+      });
     }
 
-    // Если есть OR условия, объединяем их
-    if (OR_conditions.length > 0) {
-      where.OR = OR_conditions;
+    // Тип занятости (любой из указанных)
+    if (filters.employment && filters.employment.length > 0) {
+      AND_conditions.push({
+        OR: filters.employment.map(emp => ({
+          employment: { contains: emp.trim(), mode: 'insensitive' as const }
+        }))
+      });
+    }
+
+    // Навыки (все указанные должны присутствовать)
+    if (filters.skills && filters.skills.length > 0) {
+      AND_conditions.push({
+        AND: filters.skills.map(skill => ({
+          skills: { has: skill.trim() }
+        }))
+      });
+    }
+
+    // Объединяем все условия через AND
+    if (AND_conditions.length > 0) {
+      where.AND = AND_conditions;
     }
 
     // Источники (AND условие)

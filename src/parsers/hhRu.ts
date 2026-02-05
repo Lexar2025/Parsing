@@ -37,7 +37,7 @@ export class HHRuParser implements Parser {
 
       const params: HHSearchParams = {
         text: config.searchQuery,
-        per_page: 100, // Максимум 100 за запрос
+        per_page: 20, // Максимум 20 за запрос
         page: 0,
         // HH требует эти параметры для корректной работы
         only_with_salary: false,
