@@ -354,12 +354,154 @@ export class VacancyManager {
   /**
    * Обычный поиск (без семантики)
    */
+  /**
+   * Проверяет, нужно ли запускать парсинг на основе истории из ParseLog
+   */
+  private async shouldParse(
+    sources: string[],
+    searchQuery: string,
+    filters: SearchFilters
+  ): Promise<{ shouldParse: boolean; reason: string }> {
+    // Проверяем историю парсинга из таблицы ParseLog
+    const parseHistory = await Promise.all(
+      sources.map(async (source) => {
+        const lastParse = await prisma.parseLog.findFirst({
+          where: { 
+            source, 
+            searchQuery,
+            status: 'success',
+            createdAt: { 
+              gte: new Date(Date.now() - this.STALE_THRESHOLD) // за 12 часов
+            }
+          },
+          orderBy: { createdAt: 'desc' },
+          select: { 
+            createdAt: true,
+            vacanciesFound: true,
+            vacanciesNew: true
+          }
+        });
+
+        return {
+          source,
+          lastParse: lastParse?.createdAt || null,
+          wasRecentlyParsed: !!lastParse,
+          vacanciesFound: lastParse?.vacanciesFound || 0
+        };
+      })
+    );
+
+    // Если ВСЕ источники парсились недавно (< 12 часов)
+    const allRecent = parseHistory.every(h => h.wasRecentlyParsed);
+    
+    if (allRecent) {
+      // Случай А: недавний парсинг вернул 0 вакансий → не парсим снова
+      const allEmpty = parseHistory.every(h => h.vacanciesFound === 0);
+      if (allEmpty) {
+        return { 
+          shouldParse: false, 
+          reason: 'Недавний парсинг вернул 0 вакансий для всех источников' 
+        };
+      }
+      
+      // Случай Б: были найдены вакансии → проверяем фильтры в БД
+      const vacanciesInDb = await vacancyService.findByFilters({
+        ...filters,
+        sources,
+        workLocationType: filters.workLocationType,
+        limit: 1,
+        page: undefined
+      });
+
+      // Если вакансии есть по фильтрам → не парсим
+      if (vacanciesInDb.length > 0) {
+        return { 
+          shouldParse: false,
+          reason: `Найдены вакансии в БД (${vacanciesInDb.length}) по текущим фильтрам`
+        };
+      }
+      
+      // Если вакансий нет по фильтрам, но парсинг был успешным → парсим для обновления данных с новыми фильтрами
+      return { 
+        shouldParse: true,
+        reason: 'Вакансии в БД есть, но не проходят текущие фильтры'
+      };
+    }
+
+    // Если парсинга не было или устарел (> 12 часов) → парсим
+    const neverParsed = parseHistory.filter(h => !h.lastParse);
+    if (neverParsed.length > 0) {
+      return { 
+        shouldParse: true, 
+        reason: `Парсинг никогда не выполнялся для: ${neverParsed.map(h => h.source).join(', ')}`
+      };
+    }
+
+    const oldParses = parseHistory.filter(h => !h.wasRecentlyParsed);
+    return { 
+      shouldParse: true, 
+      reason: `Парсинг устарел (> 12 часов) для: ${oldParses.map(h => h.source).join(', ')}`
+    };
+  }
+
   private async searchRegular(filters: SearchFilters, userId?: string): Promise<SearchResult> {
     const sources = filters.sources || ['rabota.md', '999.md', 'makler.md'];
     const searchQuery = filters.keywords?.[0] || 'работа';
     const limit = filters.limit || 10;
     const page = filters.page || 1;
 
+    // === НОВАЯ ЛОГИКА: Проверяем нужно ли парсить ДО проверки БД ===
+    const parseDecision = await this.shouldParse(sources, searchQuery, filters);
+    
+    console.log(`🔍 Решение о парсинге: ${parseDecision.shouldParse ? 'ДА' : 'НЕТ'}`);
+    console.log(`   Причина: ${parseDecision.reason}`);
+
+    if (!parseDecision.shouldParse) {
+      // Просто возвращаем данные из БД без парсинга
+      const allVacancies = await vacancyService.findByFilters({
+        ...filters,
+        sources,
+        workLocationType: filters.workLocationType,
+        limit: undefined,
+        page: undefined
+      });
+
+      console.log(`📊 Найдено в БД: ${allVacancies.length} вакансий (без парсинга)`);
+      
+      // Кэшируем результаты если есть userId и вакансии найдены
+      if (userId && allVacancies.length > 0) {
+        const cacheKey = cacheService.generateKey(userId, filters);
+        const typedVacancies = allVacancies.map(mapPrismaToVacancy);
+        await cacheService.cacheSearchResults(cacheKey, typedVacancies, filters);
+      }
+
+      // Вычисляем пагинацию
+      const total = allVacancies.length;
+      const totalPages = Math.ceil(total / limit);
+      const offset = (page - 1) * limit;
+      const vacancies = allVacancies.slice(offset, offset + limit);
+
+      // Находим последнюю дату парсинга из истории для мета-данных (используем старую логику)
+      const parseHistory = await this.checkParseHistory(sources, searchQuery);
+      const lastUpdate = parseHistory.reduce((latest, p) => {
+        if (!p.lastParse) return latest;
+        return !latest || p.lastParse > latest ? p.lastParse : latest;
+      }, null as Date | null);
+
+      return {
+        vacancies: vacancies.map(mapPrismaToVacancy),
+        meta: {
+          total,
+          totalPages,
+          source: 'cache',
+          lastUpdate,
+          updating: false,
+          parseReason: parseDecision.reason
+        }
+      };
+    }
+
+    // === СТАРАЯ ЛОГИКА: Если нужно парсить ===
     // 1. СНАЧАЛА проверяем БД - получаем ВСЕ результаты для кэширования
     const allVacancies = await vacancyService.findByFilters({
       ...filters,
