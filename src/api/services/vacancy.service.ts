@@ -122,13 +122,19 @@ export class VacancyService {
     const where: Prisma.VacancyWhereInput = {};
     const AND_conditions: Prisma.VacancyWhereInput[] = [];
 
-    // Ключевые слова (поиск ТОЛЬКО в title)
+    // Ключевые слова (поиск в title ИЛИ по категории)
     if (filters.keywords && filters.keywords.length > 0) {
-      // Все ключевые слова должны быть в title (AND)
+      // Ищем по всем ключевым словам (поиск по названию ИЛИ по категории)
+      const keywordConditions = filters.keywords.map(keyword => ({
+        OR: [
+          { title: { contains: keyword, mode: 'insensitive' as const } },
+          { category: { contains: keyword, mode: 'insensitive' as const } }
+        ]
+      }));
+      
+      // Все ключевые слова должны совпасть (AND между условиями)
       AND_conditions.push({
-        AND: filters.keywords.map(keyword => ({
-          title: { contains: keyword, mode: 'insensitive' as const }
-        }))
+        AND: keywordConditions
       });
     }
 
@@ -206,8 +212,19 @@ export class VacancyService {
     }
 
     // Тип локации (Молдова / за границей)
+    // В БД значения хранятся как "В Молдове" и "За границей"
     if (filters.workLocationType) {
-      where.workLocationType = filters.workLocationType;
+      let locationValue: string | undefined;
+      
+      if (filters.workLocationType === 'moldova') {
+        locationValue = 'В Молдове';
+      } else if (filters.workLocationType === 'abroad' || filters.workLocationType === 'international') {
+        locationValue = 'За границей';
+      }
+      
+      if (locationValue) {
+        where.workLocationType = locationValue;
+      }
     }
 
     // Дата публикации (AND условие)
