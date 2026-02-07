@@ -41,6 +41,9 @@ export class HHRuAdapter extends BaseVacancyAdapter {
       const schedule = this.extractNormalizedSchedule(vacancy.schedule);
       const employment = this.extractNormalizedEmployment(vacancy.employmentType);
 
+      // --- Experience ---
+      const experience = this.extractNormalizedExperience(vacancy.experience);
+
       // --- Skills ---
       // Парсер уже извлёк professional_roles, дополняем из описания
       const skills = this.extractNormalizedSkills(description);
@@ -67,7 +70,7 @@ export class HHRuAdapter extends BaseVacancyAdapter {
         salaryMax: convertedMaxSalary,
         salaryCurrency: currencyInfo?.source || 'RUB',
 
-        experience: this.extractNormalizedExperience(vacancy.experience),
+        experience,
         employment,
         schedule,
 

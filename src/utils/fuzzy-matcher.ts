@@ -1598,7 +1598,7 @@ const SCHEDULE_SYNONYMS: CategoryEntry[] = [
       // Английский
       'remote', 'remote work', 'work from home', 'WFH', 'telecommute',
       'telecommuting', 'home office', 'home-based', 'fully remote',
-      'remote-first', 'distributed',
+      'remote-first', 'distributed', 
       // Общие
       'онлайн', 'online'
     ]
@@ -1616,7 +1616,7 @@ const SCHEDULE_SYNONYMS: CategoryEntry[] = [
       'on-site', 'la locul de muncă', 'la locul de munca',
       // Английский
       'office', 'in office', 'office work', 'on-site', 'onsite',
-      'at office', 'workplace', 'in-person', 'on location',
+      'at office', 'workplace', 'in-person', 'on location', 
       // Общие
       'стационар', 'централизовано'
     ]

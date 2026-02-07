@@ -124,6 +124,8 @@ export class RabotaMdAdapter extends BaseVacancyAdapter {
       // --- Description & Skills ---
       const description = vacancy.description?.trim() || vacancy.fullDescription?.trim() || '';
       const skills = this.extractNormalizedSkills(description, vacancy.fullDescription);
+      // --- Experience ---
+      const experience = this.extractNormalizedExperience(vacancy.experience);
 
       // --- Зарплата ---
       const currencyInfo = this.extractSourceAndTargetCurrency(vacancy.salary);
@@ -145,7 +147,7 @@ export class RabotaMdAdapter extends BaseVacancyAdapter {
         salaryMax: convertedMaxSalary,
         salaryCurrency: currencyInfo?.source || 'MDL',
 
-        experience: this.extractNormalizedExperience(vacancy.experience),
+        experience,
         employment,
         schedule,
 

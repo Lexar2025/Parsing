@@ -66,9 +66,18 @@ export class NineNineNineMdAdapter extends BaseVacancyAdapter {
       const convertedMinSalary = this.extractAndConvertSalaryMin(salary);
       const convertedMaxSalary = this.extractAndConvertSalaryMax(salary);
       const rawScheduleField = vacancy.schedule; // содержит "полный день" или "удаленно"
-
+      // --- Нормализуем график работы, учитывая оба поля ---
+      const schedule = this.extractNormalizedSchedule(rawScheduleField) || 'office';
+      // --- Нормализуем тип локации ---
+      const workLocationType = this.normalizeWorkLocationType(vacancy.workLocationType);
+      
+      const experience = this.extractNormalizedExperience(vacancy.experience);
       // --- Определяем категорию ---
       const category = this.determineCategory(vacancy.title);
+      // --- Нормализуем тип занятости, учитывая оба поля ---
+      const employment = this.extractNormalizedEmployment(rawScheduleField) ||
+                         this.extractNormalizedEmployment(vacancy.employmentType) ||
+                         'full-time'; 
 
       return {
         // Унифицированные поля
@@ -85,14 +94,13 @@ export class NineNineNineMdAdapter extends BaseVacancyAdapter {
         salaryCurrency: currencyInfo?.source || 'MDL',
 
         // Опыт и тип работы - используем новые методы с fuzzy-matching
-        experience: this.extractNormalizedExperience(vacancy.experience),
+        experience: experience,
 
         // ✅ ПРАВИЛЬНО (обрабатываем оба поля из vacancy.schedule):
-        employment: this.extractNormalizedEmployment(rawScheduleField) || 
-            this.extractNormalizedEmployment(vacancy.employmentType),
+        employment: employment,
 
-        schedule: this.extractNormalizedSchedule(rawScheduleField) || 'office',
-        workLocationType: this.normalizeWorkLocationType(vacancy.workLocationType),
+        schedule: schedule,
+        workLocationType: workLocationType,
 
         // Навыки (из языков если есть)
         skills: skills,
